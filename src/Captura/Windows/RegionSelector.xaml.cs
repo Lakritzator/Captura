@@ -8,6 +8,10 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+using ManagedBass;
+using Screna;
 using Color = System.Windows.Media.Color;
 
 namespace Captura
@@ -17,6 +21,8 @@ namespace Captura
         readonly IVideoSourcePicker _videoSourcePicker;
 
         bool _widthBoxChanging, _heightBoxChanging, _resizing;
+
+        DispatcherTimer _followTimer;
 
         public RegionSelector(IVideoSourcePicker VideoSourcePicker)
         {
@@ -42,6 +48,31 @@ namespace Captura
             SizeBox.Value = 10;
 
             InkCanvas.DefaultDrawingAttributes.FitToCurve = true;
+
+            _followTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+
+            _followTimer.Tick += (Sender, Args) =>
+            {
+                var curPos = MouseCursor.CursorPosition;
+
+                var region = SelectedRegion;
+
+                if (Rectangle.Inflate(region, -100, -100).Contains(curPos))
+                    return;
+
+                var deskRect = WindowProvider.DesktopRectangle;
+
+                var left = (curPos.X - region.Width / 2).Clip(deskRect.Left, deskRect.Right - region.Width) / Dpi.X;
+                var top = (curPos.Y - region.Height / 2).Clip(deskRect.Top, deskRect.Bottom - region.Height) / Dpi.Y;
+
+                BeginAnimation(LeftProperty, new DoubleAnimation(left, new Duration(TimeSpan.FromMilliseconds(300))));
+                BeginAnimation(TopProperty, new DoubleAnimation(top, new Duration(TimeSpan.FromMilliseconds(300))));
+            };
+
+            Loaded += (S, E) => _followTimer.Start();
         }
 
         void SizeBox_OnValueChanged(object Sender, RoutedPropertyChangedEventArgs<object> E)
