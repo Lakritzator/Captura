@@ -1,59 +1,59 @@
 ﻿// ReSharper disable RedundantAssignment
-namespace Captura
+namespace Captura.ImageEditor.Effects
 {
     public static class PixelFunctionFactory
     {
-        static void Negative(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Negative(ref byte red, ref byte green, ref byte blue)
         {
-            Red = (byte)(255 - Red);
-            Green = (byte)(255 - Green);
-            Blue = (byte)(255 - Blue);
+            red = (byte)(255 - red);
+            green = (byte)(255 - green);
+            blue = (byte)(255 - blue);
         }
 
-        static void Green(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Green(ref byte red, ref byte green, ref byte blue)
         {
-            Red = Blue = 0;
+            red = blue = 0;
         }
 
-        static void Red(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Red(ref byte red, ref byte green, ref byte blue)
         {
-            Green = Blue = 0;
+            green = blue = 0;
         }
 
-        static void Blue(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Blue(ref byte red, ref byte green, ref byte blue)
         {
-            Red = Green = 0;
+            red = green = 0;
         }
 
-        static void Grayscale(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Grayscale(ref byte red, ref byte green, ref byte blue)
         {
-            var pixel = 0.299 * Red + 0.587 * Green + 0.114 * Blue;
+            var pixel = 0.299 * red + 0.587 * green + 0.114 * blue;
 
             if (pixel > 255)
                 pixel = 255;
 
-            Red = Green = Blue = (byte)pixel;
+            red = green = blue = (byte)pixel;
         }
 
-        static void Sepia(ref byte Red, ref byte Green, ref byte Blue)
+        private static void Sepia(ref byte red, ref byte green, ref byte blue)
         {
-            var newRed = 0.393 * Red + 0.769 * Green + 0.189 * Blue;
-            var newGreen = 0.349 * Red + 0.686 * Green + 0.168 * Blue;
-            var newBlue = 0.272 * Red + 0.534 * Green + 0.131 * Blue;
+            var newRed = 0.393 * red + 0.769 * green + 0.189 * blue;
+            var newGreen = 0.349 * red + 0.686 * green + 0.168 * blue;
+            var newBlue = 0.272 * red + 0.534 * green + 0.131 * blue;
 
             // Red
-            Red = (byte)(newRed > 255 ? 255 : newRed);
+            red = (byte)(newRed > 255 ? 255 : newRed);
 
             // Green
-            Green = (byte)(newGreen > 255 ? 255 : newGreen);
+            green = (byte)(newGreen > 255 ? 255 : newGreen);
 
             // Blue
-            Blue = (byte)(newBlue > 255 ? 255 : newBlue);
+            blue = (byte)(newBlue > 255 ? 255 : newBlue);
         }
 
-        public static ModifyPixel GetEffectFunction(ImageEffect Effect)
+        public static ModifyPixel GetEffectFunction(ImageEffect effect)
         {
-            switch (Effect)
+            switch (effect)
             {
                 case ImageEffect.Negative:
                     return Negative;

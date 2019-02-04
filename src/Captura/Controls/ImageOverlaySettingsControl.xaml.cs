@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.Controls
 {
     public partial class ImageOverlaySettingsControl
     {

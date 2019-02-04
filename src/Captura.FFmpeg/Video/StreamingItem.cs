@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.FFmpeg.Settings;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     public class StreamingItem : FFmpegItem
     {
-        readonly FFmpegItem _baseItem;
-        readonly Func<string> _linkFunction;
+        private readonly FFmpegItem _baseItem;
+        private readonly Func<string> _linkFunction;
 
-        StreamingItem(string Name, Func<string> LinkFunction, FFmpegItem BaseItem, string Description) : base(Name, () => BaseItem.Extension, Description)
+        private StreamingItem(string name, Func<string> linkFunction, FFmpegItem baseItem, string description) : base(name, () => baseItem.Extension, description)
         {
-            _baseItem = BaseItem;
-            _linkFunction = LinkFunction;
+            _baseItem = baseItem;
+            _linkFunction = linkFunction;
         }
 
-        public override IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args)
+        public override IVideoFileWriter GetVideoFileWriter(VideoWriterArgs args)
         {
-            Args.FileName = _linkFunction();
+            args.FileName = _linkFunction();
 
-            return _baseItem.GetVideoFileWriter(Args, "-g 20 -r 10 -f flv");
+            return _baseItem.GetVideoFileWriter(args, "-g 20 -r 10 -f flv");
         }
         
         public static IEnumerable<StreamingItem> StreamingItems { get; } = new[]

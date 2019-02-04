@@ -1,129 +1,153 @@
 ﻿using System;
 using System.Reflection;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Images;
+using Captura.Base.Recent;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Bass;
+using Captura.Core.Models;
+using Captura.Core.Models.Discard;
+using Captura.Core.Models.ImageWriterItems;
+using Captura.Core.Models.Recents;
+using Captura.Core.Models.UpdateCheckers;
+using Captura.Core.ViewModels;
+using Captura.FFmpeg;
+using Captura.FFmpeg.Video;
+using Captura.HotKeys;
+using Captura.Imgur;
+using Captura.Loc;
+using Captura.MouseKeyHook;
 using Captura.NAudio;
-using Captura.ViewModels;
-using Screna;
+using Captura.SharpAvi;
+using Captura.Windows;
+using Captura.YouTube;
+using DesktopDuplication;
+using Screna.Frames;
+using Screna.Services;
+using Screna.VideoItems;
+using Screna.VideoSourceProviders;
 
-namespace Captura
+namespace Captura.Core
 {
     public class CoreModule : IModule
     {
         /// <summary>
         /// Binds both as Inteface as Class
         /// </summary>
-        static void BindAsInterfaceAndClass<TInterface, TClass>(IBinder Binder) where  TClass : TInterface
+        static void BindAsInterfaceAndClass<TInterface, TClass>(IBinder binder) where  TClass : TInterface
         {
-            Binder.BindSingleton<TClass>();
+            binder.BindSingleton<TClass>();
 
             // ReSharper disable once ConvertClosureToMethodGroup
-            Binder.Bind<TInterface>(() => ServiceProvider.Get<TClass>());
+            binder.Bind<TInterface>(() => ServiceProvider.Get<TClass>());
         }
 
-        public void OnLoad(IBinder Binder)
+        public void OnLoad(IBinder binder)
         {
-            BindViewModels(Binder);
-            BindSettings(Binder);
-            BindImageWriters(Binder);
-            BindVideoWriterProviders(Binder);
-            BindVideoSourceProviders(Binder);
-            BindAudioSource(Binder);
-            BindUpdateChecker(Binder);
+            BindViewModels(binder);
+            BindSettings(binder);
+            BindImageWriters(binder);
+            BindVideoWriterProviders(binder);
+            BindVideoSourceProviders(binder);
+            BindAudioSource(binder);
+            BindUpdateChecker(binder);
 
             // Recent
-            Binder.Bind<IRecentList, RecentListRepository>();
-            Binder.Bind<IRecentItemSerializer, FileRecentSerializer>();
-            Binder.Bind<IRecentItemSerializer, UploadRecentSerializer>();
+            binder.Bind<IRecentList, RecentListRepository>();
+            binder.Bind<IRecentItemSerializer, FileRecentSerializer>();
+            binder.Bind<IRecentItemSerializer, UploadRecentSerializer>();
 
-            Binder.Bind<IDialogService, DialogService>();
-            Binder.Bind<IClipboardService, ClipboardService>();
-            Binder.Bind<IImageUploader, ImgurUploader>();
-            Binder.Bind<IIconSet, MaterialDesignIcons>();
-            Binder.Bind<IImgurApiKeys, ApiKeys>();
-            Binder.Bind<IYouTubeApiKeys, ApiKeys>();
-            Binder.Bind<IPlatformServices, WindowsPlatformServices>();
-            Binder.Bind<IImagingSystem, DrawingImagingSystem>();
+            binder.Bind<IDialogService, DialogService>();
+            binder.Bind<IClipboardService, ClipboardService>();
+            binder.Bind<IImageUploader, ImgurUploader>();
+            binder.Bind<IIconSet, MaterialDesignIcons>();
+            binder.Bind<IImgurApiKeys, ApiKeys>();
+            binder.Bind<IYouTubeApiKeys, ApiKeys>();
+            binder.Bind<IPlatformServices, WindowsPlatformServices>();
+            binder.Bind<IImagingSystem, DrawingImagingSystem>();
 
-            Binder.BindSingleton<FullScreenItem>();
-            Binder.BindSingleton<FFmpegLog>();
-            Binder.BindSingleton<HotKeyManager>();
-            Binder.Bind(() => LanguageManager.Instance);
+            binder.BindSingleton<FullScreenItem>();
+            binder.BindSingleton<FFmpegLog>();
+            binder.BindSingleton<HotKeyManager>();
+            binder.Bind(() => LanguageManager.Instance);
         }
 
         public void Dispose() { }
 
-        static void BindImageWriters(IBinder Binder)
+        static void BindImageWriters(IBinder binder)
         {
-            BindAsInterfaceAndClass<IImageWriterItem, DiskWriter>(Binder);
-            BindAsInterfaceAndClass<IImageWriterItem, ClipboardWriter>(Binder);
-            BindAsInterfaceAndClass<IImageWriterItem, ImageUploadWriter>(Binder);
+            BindAsInterfaceAndClass<IImageWriterItem, DiskWriter>(binder);
+            BindAsInterfaceAndClass<IImageWriterItem, ClipboardWriter>(binder);
+            BindAsInterfaceAndClass<IImageWriterItem, ImageUploadWriter>(binder);
         }
 
-        static void BindViewModels(IBinder Binder)
+        static void BindViewModels(IBinder binder)
         {
-            Binder.BindSingleton<TimerModel>();
-            Binder.BindSingleton<MainModel>();
-            Binder.BindSingleton<ScreenShotModel>();
-            Binder.BindSingleton<RecordingModel>();
-            Binder.BindSingleton<VideoSourcesViewModel>();
-            Binder.BindSingleton<VideoWritersViewModel>();
-            Binder.BindSingleton<FFmpegCodecsViewModel>();
-            Binder.BindSingleton<KeymapViewModel>();
+            binder.BindSingleton<TimerModel>();
+            binder.BindSingleton<MainModel>();
+            binder.BindSingleton<ScreenShotModel>();
+            binder.BindSingleton<RecordingModel>();
+            binder.BindSingleton<VideoSourcesViewModel>();
+            binder.BindSingleton<VideoWritersViewModel>();
+            binder.BindSingleton<FFmpegCodecsViewModel>();
+            binder.BindSingleton<KeymapViewModel>();
         }
 
-        static void BindUpdateChecker(IBinder Binder)
+        static void BindUpdateChecker(IBinder binder)
         {
             var version = Assembly.GetEntryAssembly()?.GetName().Version;
 
             if (version?.Major == 0)
             {
-                Binder.Bind<IUpdateChecker, DevUpdateChecker>();
+                binder.Bind<IUpdateChecker, DevUpdateChecker>();
             }
-            else Binder.Bind<IUpdateChecker, UpdateChecker>();
+            else binder.Bind<IUpdateChecker, UpdateChecker>();
         }
 
-        static void BindAudioSource(IBinder Binder)
+        static void BindAudioSource(IBinder binder)
         {
             // Check if Bass is available
             if (BassAudioSource.Available)
             {
-                Binder.Bind<AudioSource, BassAudioSource>();
+                binder.Bind<AudioSource, BassAudioSource>();
             }
-            else Binder.Bind<AudioSource, NAudioSource>();
+            else binder.Bind<AudioSource, NAudioSource>();
         }
 
-        static void BindVideoSourceProviders(IBinder Binder)
+        static void BindVideoSourceProviders(IBinder binder)
         {
-            BindAsInterfaceAndClass<IVideoSourceProvider, NoVideoSourceProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoSourceProvider, FullScreenSourceProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoSourceProvider, ScreenSourceProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoSourceProvider, WindowSourceProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoSourceProvider, RegionSourceProvider>(Binder);
+            BindAsInterfaceAndClass<IVideoSourceProvider, NoVideoSourceProvider>(binder);
+            BindAsInterfaceAndClass<IVideoSourceProvider, FullScreenSourceProvider>(binder);
+            BindAsInterfaceAndClass<IVideoSourceProvider, ScreenSourceProvider>(binder);
+            BindAsInterfaceAndClass<IVideoSourceProvider, WindowSourceProvider>(binder);
+            BindAsInterfaceAndClass<IVideoSourceProvider, RegionSourceProvider>(binder);
 
             if (Windows8OrAbove)
             {
-                BindAsInterfaceAndClass<IVideoSourceProvider, DeskDuplSourceProvider>(Binder);
+                BindAsInterfaceAndClass<IVideoSourceProvider, DesktopDuplicationSourceProvider>(binder);
             }
         }
 
-        static void BindVideoWriterProviders(IBinder Binder)
+        static void BindVideoWriterProviders(IBinder binder)
         {
-            BindAsInterfaceAndClass<IVideoWriterProvider, FFmpegWriterProvider>(Binder);
+            BindAsInterfaceAndClass<IVideoWriterProvider, FFmpegWriterProvider>(binder);
             // BindAsInterfaceAndClass<IVideoWriterProvider, GifWriterProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoWriterProvider, SharpAviWriterProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoWriterProvider, StreamingWriterProvider>(Binder);
-            BindAsInterfaceAndClass<IVideoWriterProvider, DiscardWriterProvider>(Binder);
+            BindAsInterfaceAndClass<IVideoWriterProvider, SharpAviWriterProvider>(binder);
+            BindAsInterfaceAndClass<IVideoWriterProvider, StreamingWriterProvider>(binder);
+            BindAsInterfaceAndClass<IVideoWriterProvider, DiscardWriterProvider>(binder);
         }
 
-        static void BindSettings(IBinder Binder)
+        static void BindSettings(IBinder binder)
         {
-            Binder.BindSingleton<Settings>();
-            Binder.Bind(() => ServiceProvider.Get<Settings>().Audio);
-            Binder.Bind(() => ServiceProvider.Get<Settings>().FFmpeg);
-            Binder.Bind(() => ServiceProvider.Get<Settings>().Gif);
-            Binder.Bind(() => ServiceProvider.Get<Settings>().Proxy);
-            Binder.Bind(() => ServiceProvider.Get<Settings>().Sounds);
-            Binder.Bind(() => ServiceProvider.Get<Settings>().Imgur);
+            binder.BindSingleton<Settings.Settings>();
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().Audio);
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().FFmpeg);
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().Gif);
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().Proxy);
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().Sounds);
+            binder.Bind(() => ServiceProvider.Get<Settings.Settings>().Imgur);
         }
 
         static bool Windows8OrAbove

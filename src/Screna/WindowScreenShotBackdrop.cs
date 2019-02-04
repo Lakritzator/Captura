@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Captura.Models;
+using Captura.Base;
 using Captura.Native;
+using Captura.Native.Enums;
+using Screna.ImageProviders;
 
 namespace Screna
 {
     public class WindowScreenShotBackdrop : IDisposable
     {
-        readonly IWindow _window;
-        readonly Form _form;
+        private readonly IWindow _window;
+        private readonly Form _form;
 
-        bool _shown;
+        private bool _shown;
 
         public Rectangle Rectangle { get; }
 
-        public WindowScreenShotBackdrop(IWindow Window)
+        public WindowScreenShotBackdrop(IWindow window)
         {
-            _window = Window;
+            _window = window;
 
             // Show and Focus
-            User32.ShowWindow(Window.Handle, 5);
+            User32.ShowWindow(window.Handle, 5);
 
             _form = new Form
             {
@@ -30,7 +32,7 @@ namespace Screna
                 ShowInTaskbar = false
             };
 
-            var r = Window.Rectangle;
+            var r = window.Rectangle;
 
             // Add a margin for window shadows. Excess transparency is trimmed out later
             r.Inflate(20, 20);
@@ -41,7 +43,7 @@ namespace Screna
             Rectangle = r;
         }
 
-        void Show()
+        private void Show()
         {
             if (_shown)
                 return;

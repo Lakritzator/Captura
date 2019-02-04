@@ -1,41 +1,43 @@
 ﻿using System;
 using System.Text;
 using System.Windows.Input;
+using Captura.Base;
+using Captura.Base.Services;
 
-namespace Captura.Models
+namespace Captura.FFmpeg
 {
     public class FFmpegLogItem : NotifyPropertyChanged
     {
         public string Name { get; }
 
-        public FFmpegLogItem(string Name, IClipboardService ClipboardService)
+        public FFmpegLogItem(string name, IClipboardService clipboardService)
         {
-            this.Name = Name;
+            Name = name;
 
             CopyToClipboardCommand = new DelegateCommand(() =>
             {
-                ClipboardService.SetText(_complete.ToString());
+                clipboardService.SetText(_complete.ToString());
             });
 
             RemoveCommand = new DelegateCommand(() => RemoveRequested?.Invoke());
         }
 
-        string _content = "", _frame = "";
+        private string _content = "", _frame = "";
 
-        readonly StringBuilder _complete = new StringBuilder();
+        private readonly StringBuilder _complete = new StringBuilder();
 
-        public void Write(string Text)
+        public void Write(string text)
         {
-            if (Text == null)
+            if (text == null)
                 return;
 
-            _complete.AppendLine(Text);
+            _complete.AppendLine(text);
 
-            if (Text.StartsWith("frame=") || Text.StartsWith("size="))
+            if (text.StartsWith("frame=") || text.StartsWith("size="))
             {
-                Frame = Text;
+                Frame = text;
             }
-            else Content += Text + Environment.NewLine;
+            else Content += text + Environment.NewLine;
         }
 
         public string Frame

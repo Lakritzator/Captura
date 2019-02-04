@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Captura.StatusBar"
+﻿<UserControl x:Class="Captura.Controls.StatusBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              DataContext="{Binding UpdateCheckerViewModel, Source={StaticResource ServiceLocator}}">

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using Captura.Base;
 using Captura.Native;
 
-namespace Captura.Models
+namespace Captura.HotKeys
 {
-    public class Hotkey : NotifyPropertyChanged
+    public class HotKey : NotifyPropertyChanged
     {
-        Service _service;
+        private Service _service;
 
         public Service Service
         {
@@ -20,16 +21,16 @@ namespace Captura.Models
             }
         }
 
-        public Hotkey(HotkeyModel Model)
+        public HotKey(HotKeyModel model)
         {
-            Service = HotKeyManager.AllServices.FirstOrDefault(M => M.ServiceName == Model.ServiceName);
-            Key = Model.Key;
-            Modifiers = Model.Modifiers;
+            Service = HotKeyManager.AllServices.FirstOrDefault(service => service.ServiceName == model.ServiceName);
+            Key = model.Key;
+            Modifiers = model.Modifiers;
 
-            IsActive = Model.IsActive;
+            IsActive = model.IsActive;
         }
 
-        bool _active;
+        private bool _active;
 
         public bool IsActive
         {
@@ -44,7 +45,7 @@ namespace Captura.Models
                 }
                 else if (!value && IsRegistered)
                 {
-                    Unregister();
+                    UnRegister();
                 }
 
                 OnPropertyChanged();
@@ -77,28 +78,30 @@ namespace Captura.Models
 
         public Modifiers Modifiers { get; private set; }
 
-        public void Change(Keys NewKey, Modifiers NewModifiers)
+        public void Change(Keys newKey, Modifiers newModifiers)
         {
-            Unregister();
+            UnRegister();
 
-            Key = NewKey;
-            Modifiers = NewModifiers;
+            Key = newKey;
+            Modifiers = newModifiers;
 
             Register();
         }
 
-        public void Unregister()
+        public void UnRegister()
         {
             if (!IsRegistered)
                 return;
 
-            if (User32.UnregisterHotKey(IntPtr.Zero, Id))
+            if (!User32.UnregisterHotKey(IntPtr.Zero, Id))
             {
-                IsRegistered = false;
-
-                Kernel32.GlobalDeleteAtom(Id);
-                Id = 0;
+                return;
             }
+
+            IsRegistered = false;
+
+            Kernel32.GlobalDeleteAtom(Id);
+            Id = 0;
         }
 
         public override string ToString()

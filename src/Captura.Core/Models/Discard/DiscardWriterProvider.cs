@@ -1,16 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Captura.Base.Services;
+using Captura.Base.Video;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Discard
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class DiscardWriterProvider : IVideoWriterProvider
     {
         readonly IPreviewWindow _previewWindow;
 
-        public DiscardWriterProvider(IPreviewWindow PreviewWindow)
+        public DiscardWriterProvider(IPreviewWindow previewWindow)
         {
-            _previewWindow = PreviewWindow;
+            _previewWindow = previewWindow;
         }
 
         public IEnumerator<IVideoWriterItem> GetEnumerator()

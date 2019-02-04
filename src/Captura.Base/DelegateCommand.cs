@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Windows.Input;
 
-namespace Captura
+namespace Captura.Base
 {
     public class DelegateCommand : ICommand
     {
@@ -10,25 +10,25 @@ namespace Captura
         bool _canExecute;
         readonly SynchronizationContext _syncContext = SynchronizationContext.Current;
         
-        public DelegateCommand(Action<object> OnExecute, bool CanExecute = true)
+        public DelegateCommand(Action<object> onExecute, bool canExecute = true)
         {
-            _execute = OnExecute;
-            _canExecute = CanExecute;
+            _execute = onExecute;
+            _canExecute = canExecute;
         }
 
-        public DelegateCommand(Action OnExecute, bool CanExecute = true)
+        public DelegateCommand(Action onExecute, bool canExecute = true)
         {
-            _execute = O => OnExecute?.Invoke();
-            _canExecute = CanExecute;
+            _execute = o => onExecute?.Invoke();
+            _canExecute = canExecute;
         }
 
-        public bool CanExecute(object Parameter) => _canExecute;
+        public bool CanExecute(object parameter) => _canExecute;
 
-        public void Execute(object Parameter) => _execute?.Invoke(Parameter);
+        public void Execute(object parameter) => _execute?.Invoke(parameter);
 
-        public void RaiseCanExecuteChanged(bool CanExecute)
+        public void RaiseCanExecuteChanged(bool canExecute)
         {
-            _canExecute = CanExecute;
+            _canExecute = canExecute;
 
             void Do()
             {
@@ -37,7 +37,7 @@ namespace Captura
 
             if (_syncContext != null)
             {
-                _syncContext.Post(S => Do(), null);
+                _syncContext.Post(state => Do(), null);
             }
             else Do();
         }

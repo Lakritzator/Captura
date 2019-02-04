@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.ArgsBuilder
 {
     public class FFmpegArgsBuilder
     {
-        readonly List<FFmpegInputArgs> _inputs = new List<FFmpegInputArgs>();
-        readonly List<FFmpegOutputArgs> _outputs = new List<FFmpegOutputArgs>();
+        private readonly List<FFmpegInputArgs> _inputs = new List<FFmpegInputArgs>();
+        private readonly List<FFmpegOutputArgs> _outputs = new List<FFmpegOutputArgs>();
 
-        const string PipePrefix = @"\\.\pipe\";
+        private const string PipePrefix = @"\\.\pipe\";
 
-        public FFmpegInputArgs AddInputFile(string FileName)
+        public FFmpegInputArgs AddInputFile(string fileName)
         {
-            var input = new FFmpegInputArgs($"\"{FileName}\"");
+            var input = new FFmpegInputArgs($"\"{fileName}\"");
 
             _inputs.Add(input);
 
@@ -27,18 +27,18 @@ namespace Captura.Models
             return input;
         }
 
-        public FFmpegInputArgs AddInputPipe(string NamedPipe)
+        public FFmpegInputArgs AddInputPipe(string namedPipe)
         {
-            var input = new FFmpegInputArgs($"{PipePrefix}{NamedPipe}");
+            var input = new FFmpegInputArgs($"{PipePrefix}{namedPipe}");
 
             _inputs.Add(input);
 
             return input;
         }
 
-        public FFmpegOutputArgs AddOutputFile(string FileName)
+        public FFmpegOutputArgs AddOutputFile(string fileName)
         {
-            var output = new FFmpegOutputArgs($"\"{FileName}\"");
+            var output = new FFmpegOutputArgs($"\"{fileName}\"");
 
             _outputs.Add(output);
 
@@ -54,9 +54,9 @@ namespace Captura.Models
             return output;
         }
 
-        public FFmpegOutputArgs AddOutputPipe(string NamedPipe)
+        public FFmpegOutputArgs AddOutputPipe(string namedPipe)
         {
-            var output = new FFmpegOutputArgs($"{PipePrefix}{NamedPipe}");
+            var output = new FFmpegOutputArgs($"{PipePrefix}{namedPipe}");
 
             _outputs.Add(output);
 

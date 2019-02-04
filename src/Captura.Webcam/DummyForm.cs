@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Captura.Webcam
+namespace Captura.WebCam
 {
-    class DummyForm : Form
+    internal class DummyForm : Form
     {
         public DummyForm()
         {
@@ -11,16 +11,16 @@ namespace Captura.Webcam
             ShowInTaskbar = false;
         }
 
-        protected override void WndProc(ref Message M)
+        protected override void WndProc(ref Message message)
         {
             const int msgLeftButtonDown = 513;
 
-            if (M.Msg == msgLeftButtonDown)
+            if (message.Msg == msgLeftButtonDown)
             {
                 OnClick(EventArgs.Empty);
             }
 
-            base.WndProc(ref M);
+            base.WndProc(ref message);
         }
     }
 }

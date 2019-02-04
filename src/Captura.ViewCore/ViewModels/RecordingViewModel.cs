@@ -1,53 +1,56 @@
 ﻿using System.Reactive.Linq;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Core.Models;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RecordingViewModel : NotifyPropertyChanged
     {
-        readonly RecordingModel _recordingModel;
+        private readonly RecordingModel _recordingModel;
 
         public ICommand RecordCommand { get; }
         public ICommand PauseCommand { get; }
 
-        public RecordingViewModel(RecordingModel RecordingModel,
-            Settings Settings,
-            TimerModel TimerModel,
-            VideoSourcesViewModel VideoSourcesViewModel)
+        public RecordingViewModel(RecordingModel recordingModel,
+            Settings settings,
+            TimerModel timerModel,
+            VideoSourcesViewModel videoSourcesViewModel)
         {
-            _recordingModel = RecordingModel;
+            _recordingModel = recordingModel;
 
             RecordCommand = new[]
                 {
-                    Settings.Audio
-                        .ObserveProperty(M => M.Enabled),
-                    VideoSourcesViewModel
-                        .ObserveProperty(M => M.SelectedVideoSourceKind)
-                        .Select(M => !(M is NoVideoSourceProvider))
+                    settings.Audio
+                        .ObserveProperty(audioSettings => audioSettings.Enabled),
+                    videoSourcesViewModel
+                        .ObserveProperty(sourcesViewModel => sourcesViewModel.SelectedVideoSourceKind)
+                        .Select(videoSourceProvider => !(videoSourceProvider is NoVideoSourceProvider))
                 }
-                .CombineLatest(M => M[0] || M[1])
+                .CombineLatest(bools => bools[0] || bools[1])
                 .ToReactiveCommand()
-                .WithSubscribe(RecordingModel.OnRecordExecute);
+                .WithSubscribe(recordingModel.OnRecordExecute);
 
             PauseCommand = new[]
                 {
-                    TimerModel
-                        .ObserveProperty(M => M.Waiting),
-                    RecordingModel
-                        .ObserveProperty(M => M.RecorderState)
-                        .Select(M => M != RecorderState.NotRecording)
+                    timerModel
+                        .ObserveProperty(model => model.Waiting),
+                    recordingModel
+                        .ObserveProperty(model => model.RecorderState)
+                        .Select(recorderState => recorderState != RecorderState.NotRecording)
                 }
-                .CombineLatest(M => !M[0] && M[1])
+                .CombineLatest(bools => !bools[0] && bools[1])
                 .ToReactiveCommand()
-                .WithSubscribe(RecordingModel.OnPauseExecute);
+                .WithSubscribe(recordingModel.OnPauseExecute);
 
-            RecordingModel.PropertyChanged += (S, E) =>
+            recordingModel.PropertyChanged += (sender, e) =>
             {
-                switch (E.PropertyName)
+                switch (e.PropertyName)
                 {
                     case "":
                     case null:

@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.ImageEditor.Effects;
+
+namespace Captura.ImageEditor.History
 {
     public class HistoryState : IHistoryItem
     {

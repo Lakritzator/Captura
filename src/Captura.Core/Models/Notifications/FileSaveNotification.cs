@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Notification;
+using Captura.Base.Services;
+using Captura.Core.Models.Recents;
+using Captura.Loc;
 
-namespace Captura
+namespace Captura.Core.Models.Notifications
 {
     public class FileSaveNotification : NotifyPropertyChanged, INotification
     {
@@ -13,15 +17,15 @@ namespace Captura
         readonly LanguageManager _loc;
         readonly IIconSet _icons;
 
-        public FileSaveNotification(FileRecentItem RecentItem)
+        public FileSaveNotification(FileRecentItem recentItem)
         {
-            _recentItem = RecentItem;
+            _recentItem = recentItem;
 
             _loc = ServiceProvider.Get<LanguageManager>();
             _icons = ServiceProvider.Get<IIconSet>();
 
             PrimaryText = $"Saving {_recentItem.FileType} ...";
-            SecondaryText = Path.GetFileName(RecentItem.FileName);
+            SecondaryText = Path.GetFileName(recentItem.FileName);
         }
 
         public void Saved()

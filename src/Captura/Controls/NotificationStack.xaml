@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="Captura.NotificationStack"
+﻿<UserControl x:Class="Captura.Controls.NotificationStack"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Captura"
+             xmlns:controls="clr-namespace:Captura.Controls"
              Width="400"
              Margin="10,60"
              BorderThickness="1"
@@ -17,7 +17,7 @@
     </UserControl.Resources>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top">
-            <local:ModernButton ToolTip="{Binding Close, Source={StaticResource Loc}, Mode=OneWay}"
+            <controls:ModernButton ToolTip="{Binding Close, Source={StaticResource Loc}, Mode=OneWay}"
                                 Click="CloseButton_Click"
                                 IconData="{Binding Icons.ClearNotifications, Source={StaticResource ServiceLocator}}"
                                 DockPanel.Dock="Right"/>

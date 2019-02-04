@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Windows.Shapes;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
-namespace Captura
+namespace Captura.Presentation
 {
     public class PuncturedRect : Shape
     {
@@ -21,9 +21,9 @@ namespace Captura
                 null
             );
 
-        static object CoerceRectInterior(DependencyObject D, object Value)
+        private static object CoerceRectInterior(DependencyObject dependencyObject, object value)
         {
-            if (D is PuncturedRect pr && Value is Rect rcProposed)
+            if (dependencyObject is PuncturedRect pr && value is Rect rcProposed)
             {
                 var rcExterior = pr.RectExterior;
 
@@ -35,7 +35,7 @@ namespace Captura
                 return new Rect(left, top, width, height);
             }
 
-            return Value;
+            return value;
         }
 
         public Rect RectInterior
@@ -68,10 +68,10 @@ namespace Captura
         
         public PuncturedRect() : this(new Rect(0, 0, double.MaxValue, double.MaxValue), new Rect()) { }
 
-        public PuncturedRect(Rect RectExterior, Rect RectInterior)
+        public PuncturedRect(Rect rectExterior, Rect rectInterior)
         {
-            this.RectInterior = RectInterior;
-            this.RectExterior = RectExterior;
+            RectInterior = rectInterior;
+            RectExterior = rectExterior;
         }
         
         protected override Geometry DefiningGeometry

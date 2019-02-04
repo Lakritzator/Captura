@@ -1,30 +1,31 @@
-﻿using Captura.Audio;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
+using Captura.Base.Audio;
+using Captura.FFmpeg.ArgsBuilder;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Audio
 {
-    class FFmpegAudioWriter : IAudioFileWriter
+    internal class FFmpegAudioWriter : IAudioFileWriter
     {
-        readonly Process _ffmpegProcess;
-        readonly Stream _ffmpegIn;
+        private readonly Process _ffmpegProcess;
+        private readonly Stream _ffmpegIn;
         
-        public FFmpegAudioWriter(string FileName, int AudioQuality, FFmpegAudioArgsProvider AudioArgsProvider, int Frequency = 44100, int Channels = 2)
+        public FFmpegAudioWriter(string fileName, int audioQuality, FFmpegAudioArgsProvider audioArgsProvider, int frequency = 44100, int channels = 2)
         {
             var argsBuilder  = new FFmpegArgsBuilder();
 
             argsBuilder.AddStdIn()
                 .SetFormat("s16le")
                 .SetAudioCodec("pcm_s16le")
-                .SetAudioFrequency(Frequency)
-                .SetAudioChannels(Channels)
+                .SetAudioFrequency(frequency)
+                .SetAudioChannels(channels)
                 .DisableVideo();
 
-            argsBuilder.AddOutputFile(FileName)
-                .AddArg(AudioArgsProvider(AudioQuality));
+            argsBuilder.AddOutputFile(fileName)
+                .AddArg(audioArgsProvider(audioQuality));
 
-            _ffmpegProcess = FFmpegService.StartFFmpeg(argsBuilder.GetArgs(), FileName);
+            _ffmpegProcess = FFmpegService.StartFFmpeg(argsBuilder.GetArgs(), fileName);
             
             _ffmpegIn = _ffmpegProcess.StandardInput.BaseStream;
         }
@@ -42,14 +43,14 @@ namespace Captura.Models
             _ffmpegIn.Flush();
         }
 
-        public void Write(byte[] Data, int Offset, int Count)
+        public void Write(byte[] data, int offset, int count)
         {
             if (_ffmpegProcess.HasExited)
             {
                 throw new Exception("An Error Occurred with FFmpeg");
             }
 
-            _ffmpegIn.Write(Data, Offset, Count);
+            _ffmpegIn.Write(data, offset, count);
         }
     }
 }

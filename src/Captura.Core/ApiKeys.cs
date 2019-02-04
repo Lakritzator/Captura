@@ -1,6 +1,8 @@
 ﻿using System;
+using Captura.Imgur;
+using Captura.YouTube;
 
-namespace Captura
+namespace Captura.Core
 {
     /// <summary>
     /// Holds Api Keys.
@@ -10,7 +12,7 @@ namespace Captura
     // ReSharper disable once ClassNeverInstantiated.Global
     class ApiKeys : IImgurApiKeys, IYouTubeApiKeys
     {
-        static string Get(string Key) => Environment.GetEnvironmentVariable(Key, EnvironmentVariableTarget.User) ?? "";
+        static string Get(string key) => Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.User) ?? "";
 
         public string ImgurClientId => Get("imgur_client_id");
 

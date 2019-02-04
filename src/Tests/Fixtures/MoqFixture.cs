@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Drawing;
-using Captura.Audio;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Audio.WaveFormat;
+using Captura.Base.Images;
+using Captura.Base.Video;
 using Moq;
-using Screna;
+using Screna.Frames;
 
-namespace Captura.Tests
+namespace Tests.Fixtures
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MoqFixture : IDisposable
     {
         public void Dispose() { }
 
-        public Mock<IImageProvider> GetImageProviderMock(int Width = 100, int Height = 50)
+        public Mock<IImageProvider> GetImageProviderMock(int width = 100, int height = 50)
         {
             var mock = new Mock<IImageProvider>();
 
-            mock.Setup(M => M.Width).Returns(Width);
+            mock.Setup(imageProvider => imageProvider.Width).Returns(width);
 
-            mock.Setup(M => M.Height).Returns(Height);
+            mock.Setup(imageProvider => imageProvider.Height).Returns(height);
 
-            mock.Setup(M => M.Capture()).Returns(new GraphicsEditor(new Bitmap(Width, Height)));
+            mock.Setup(imageProvider => imageProvider.Capture()).Returns(new GraphicsEditor(new Bitmap(width, height)));
 
             return mock;
         }
@@ -28,7 +32,7 @@ namespace Captura.Tests
         {
             var mock = new Mock<IAudioProvider>();
 
-            mock.Setup(M => M.WaveFormat).Returns(new WaveFormat());
+            mock.Setup(audioProvider => audioProvider.WaveFormat).Returns(new WaveFormat());
 
             return mock;
         }
@@ -42,10 +46,10 @@ namespace Captura.Tests
         {
             var mock = new Mock<IVideoFileWriter>();
 
-            mock.Setup(M => M.WriteFrame(It.IsAny<IBitmapFrame>()))
-                .Callback<IBitmapFrame>(M => M.Dispose());
+            mock.Setup(videoFileWriter => videoFileWriter.WriteFrame(It.IsAny<IBitmapFrame>()))
+                .Callback<IBitmapFrame>(bitmapFrame => bitmapFrame.Dispose());
 
-            mock.Setup(M => M.SupportsAudio).Returns(true);
+            mock.Setup(videoFileWriter => videoFileWriter.SupportsAudio).Returns(true);
 
             return mock;
         }

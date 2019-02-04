@@ -7,46 +7,46 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using DColor = System.Drawing.Color;
 
-namespace Captura
+namespace Captura.Presentation
 {
     public static class WpfExtensions
     {
-        public static void ShowAndFocus(this Window W)
+        public static void ShowAndFocus(this Window window)
         {
-            if (W.IsVisible && W.WindowState == WindowState.Minimized)
+            if (window.IsVisible && window.WindowState == WindowState.Minimized)
             {
-                W.WindowState = WindowState.Normal;
+                window.WindowState = WindowState.Normal;
             }
 
-            W.Show();
+            window.Show();
 
-            W.Activate();
+            window.Activate();
         }
 
-        public static DColor ToDrawingColor(this Color C)
+        public static DColor ToDrawingColor(this Color color)
         {
-            return DColor.FromArgb(C.A, C.R, C.G, C.B);
+            return DColor.FromArgb(color.A, color.R, color.G, color.B);
         }
 
-        public static Color ToWpfColor(this DColor C)
+        public static Color ToWpfColor(this DColor dColor)
         {
-            return Color.FromArgb(C.A, C.R, C.G, C.B);
+            return Color.FromArgb(dColor.A, dColor.R, dColor.G, dColor.B);
         }
 
-        public static Color ParseColor(string S)
+        public static Color ParseColor(string colorString)
         {
-            if (ColorConverter.ConvertFromString(S) is Color c)
+            if (ColorConverter.ConvertFromString(colorString) is Color c)
                 return c;
 
             return Colors.Transparent;
         }
 
-        public static void Shake(this FrameworkElement Element)
+        public static void Shake(this FrameworkElement element)
         {
-            Element.Dispatcher.Invoke(() =>
+            element.Dispatcher.Invoke(() =>
             {
                 var transform = new TranslateTransform();
-                Element.RenderTransform = transform;
+                element.RenderTransform = transform;
 
                 const int delta = 5;
 
@@ -69,7 +69,7 @@ namespace Captura
             });
         }
 
-        public static bool SaveToPickedFile(this BitmapSource Bitmap, string DefaultFileName = null)
+        public static bool SaveToPickedFile(this BitmapSource bitmap, string defaultFileName = null)
         {
             var sfd = new SaveFileDialog
             {
@@ -78,11 +78,11 @@ namespace Captura
                 Filter = "PNG Image|*.png|JPEG Image|*.jpg;*.jpeg|Bitmap Image|*.bmp|TIFF Image|*.tiff"
             };
 
-            if (DefaultFileName != null)
+            if (defaultFileName != null)
             {
-                sfd.FileName = Path.GetFileNameWithoutExtension(DefaultFileName);
+                sfd.FileName = Path.GetFileNameWithoutExtension(defaultFileName);
 
-                var dir = Path.GetDirectoryName(DefaultFileName);
+                var dir = Path.GetDirectoryName(defaultFileName);
 
                 if (dir != null)
                 {
@@ -116,7 +116,7 @@ namespace Captura
                     break;
             }
 
-            encoder.Frames.Add(BitmapFrame.Create(Bitmap));
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
             using (var stream = sfd.OpenFile())
             {

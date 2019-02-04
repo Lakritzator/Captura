@@ -15,9 +15,9 @@ namespace Captura.Native
         byte* _pBase;
         readonly int _width;
 
-        public UnsafeBitmap(Bitmap InputBitmap) 
+        public UnsafeBitmap(Bitmap inputBitmap) 
         {
-            _inputBitmap = InputBitmap;
+            _inputBitmap = inputBitmap;
 
             var bounds = new Rectangle(Point.Empty, _inputBitmap.Size);
 
@@ -31,7 +31,7 @@ namespace Captura.Native
             _pBase = (byte*)_bitmapData.Scan0;
         }
 
-        public PixelData* this[int X, int Y] => (PixelData*)(_pBase + Y * _width + X * sizeof(PixelData));
+        public PixelData* this[int x, int y] => (PixelData*)(_pBase + y * _width + x * sizeof(PixelData));
 
         public void Dispose()
         {

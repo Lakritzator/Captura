@@ -1,4 +1,4 @@
-﻿namespace Captura.Models
+﻿namespace Screna.Overlays.Settings
 {
     public class CustomImageOverlaySettings : ImageOverlaySettings
     {

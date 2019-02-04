@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 
-namespace Captura
+namespace Captura.Loc
 {
     public class LanguageManager : LanguageFields
     {
@@ -24,8 +24,9 @@ namespace Captura
 
             if (entryLocation != null)
             {
-                _langDir = Path.Combine(Path.GetDirectoryName(entryLocation), "Languages");
-                
+                var location = Path.GetDirectoryName(entryLocation);
+                _langDir = string.IsNullOrEmpty(location) ? null : Path.Combine(location, "Languages");
+
                 if (Directory.Exists(_langDir))
                 {
                     foreach (var file in Directory.EnumerateFiles(_langDir, "*.json"))
@@ -57,7 +58,7 @@ namespace Captura
             if (cultures.Count == 0)
                 cultures.Add(CurrentCulture);
 
-            cultures.Sort((X, Y) => string.Compare(X.DisplayName, Y.DisplayName, StringComparison.Ordinal));
+            cultures.Sort((cultureInfo, y) => string.Compare(cultureInfo.DisplayName, y.DisplayName, StringComparison.Ordinal));
 
             AvailableCultures = cultures;
         }
@@ -85,11 +86,11 @@ namespace Captura
 
         public event Action<CultureInfo> LanguageChanged;
 
-        JObject LoadLang(string LanguageId)
+        JObject LoadLang(string languageId)
         {
             try
             {
-                var filePath = Path.Combine(_langDir, $"{LanguageId}.json");
+                var filePath = Path.Combine(_langDir, $"{languageId}.json");
 
                 return JObject.Parse(File.ReadAllText(filePath));
             }
@@ -99,29 +100,29 @@ namespace Captura
             }
         }
 
-        public string this[string Key]
+        public string this[string key]
         {
             get
             {
-                if (Key == null)
+                if (key == null)
                     return "";
 
                 if (_currentLanguage != null
-                    && _currentLanguage.TryGetValue(Key, out var value)
+                    && _currentLanguage.TryGetValue(key, out var value)
                     && value.ToString() is string s
                     && !string.IsNullOrWhiteSpace(s))
                     return s;
 
                 if (_defaultLanguage != null
-                    && _defaultLanguage.TryGetValue(Key, out value)
+                    && _defaultLanguage.TryGetValue(key, out value)
                     && value.ToString() is string t
                     && !string.IsNullOrWhiteSpace(t))
                     return t;
 
-                return Key;
+                return key;
             }
         }
 
-        protected override string GetValue(string PropertyName) => this[PropertyName];
+        protected override string GetValue(string propertyName) => this[propertyName];
     }
 }

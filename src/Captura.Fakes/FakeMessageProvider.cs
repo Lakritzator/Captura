@@ -1,16 +1,17 @@
 ﻿using System;
+using Captura.Base.Services;
 
-namespace Captura.Models
+namespace Captura.Fakes
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     class FakeMessageProvider : IMessageProvider
     {
-        public void ShowError(string Message, string Header = null)
+        public void ShowError(string message, string header = null)
         {
-            if (Header != null)
-                Console.WriteLine(Header);
+            if (header != null)
+                Console.WriteLine(header);
 
-            Console.Error.WriteLine(Message);
+            Console.Error.WriteLine(message);
         }
 
         public void ShowFFmpegUnavailable()
@@ -18,14 +19,14 @@ namespace Captura.Models
             ShowError("FFmpeg is not available.\nYou can install ffmpeg by calling: captura ffmpeg --install [path]");
         }
 
-        public void ShowException(Exception Exception, string Message, bool Blocking = false)
+        public void ShowException(Exception exception, string message, bool blocking = false)
         {
-            ShowError(Exception.ToString());
+            ShowError(exception.ToString());
         }
 
-        public bool ShowYesNo(string Message, string Title)
+        public bool ShowYesNo(string message, string title)
         {
-            Console.Write($"{Message} (Y/N): ");
+            Console.Write($"{message} (Y/N): ");
 
             var reply = Console.ReadLine();
 

@@ -1,32 +1,35 @@
 ﻿using System;
-using Captura.Models;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.ImageEditor;
+using Captura.ViewModels;
 using Hardcodet.Wpf.TaskbarNotification;
 
-namespace Captura
+namespace Captura.Models
 {
     public class MainModule : IModule
     {
-        public void OnLoad(IBinder Binder)
+        public void OnLoad(IBinder binder)
         {
             // Use singleton to ensure the same instance is used every time.
-            Binder.Bind<IMessageProvider, MessageProvider>();
-            Binder.Bind<IRegionProvider, RegionSelectorProvider>();
-            Binder.Bind<ISystemTray, SystemTray>();
-            Binder.Bind<IPreviewWindow, PreviewWindowService>();
-            Binder.Bind<IVideoSourcePicker, VideoSourcePicker>();
-            Binder.Bind<IAudioPlayer, AudioPlayer>();
+            binder.Bind<IMessageProvider, MessageProvider>();
+            binder.Bind<IRegionProvider, RegionSelectorProvider>();
+            binder.Bind<ISystemTray, SystemTray>();
+            binder.Bind<IPreviewWindow, PreviewWindowService>();
+            binder.Bind<IVideoSourcePicker, VideoSourcePicker>();
+            binder.Bind<IAudioPlayer, AudioPlayer>();
 
-            Binder.BindSingleton<EditorWriter>();
-            Binder.Bind<IImageWriterItem>(ServiceProvider.Get<EditorWriter>);
+            binder.BindSingleton<EditorWriter>();
+            binder.Bind<IImageWriterItem>(ServiceProvider.Get<EditorWriter>);
 
-            Binder.Bind<IWebCamProvider, WebCamProvider>();
+            binder.Bind<IWebCamProvider, WebCamProvider>();
             
-            Binder.BindSingleton<AboutViewModel>();
-            Binder.BindSingleton<RegionSelectorViewModel>();
+            binder.BindSingleton<AboutViewModel>();
+            binder.BindSingleton<RegionSelectorViewModel>();
 
             // Bind as a Function to ensure the UI objects are referenced only after they have been created.
-            Binder.Bind<Func<TaskbarIcon>>(() => () => MainWindow.Instance.SystemTray);
-            Binder.Bind<IMainWindow>(() => new MainWindowProvider(() => MainWindow.Instance));
+            binder.Bind<Func<TaskbarIcon>>(() => () => Windows.MainWindow.Instance.SystemTray);
+            binder.Bind<IMainWindow>(() => new MainWindowProvider(() => Windows.MainWindow.Instance));
         }
 
         public void Dispose() { }

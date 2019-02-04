@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Captura.Models
+namespace Captura.Core.Models.UpdateCheckers
 {
     public interface IUpdateChecker
     {

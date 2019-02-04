@@ -14,43 +14,43 @@ namespace DesktopDuplication
 {
     public class Direct2DEditorSession : IDisposable
     {
-        Texture2D _texture;
+        private Texture2D _texture;
 
         public Device Device { get; private set; }
         public Texture2D StagingTexture { get; private set; }
         public RenderTarget RenderTarget { get; private set; }
         public Texture2D PreviewTexture { get; private set; }
 
-        SolidColorBrush _solidColorBrush;
-        Factory1 _factory;
-        Factory _writeFactory;
-        ImagingFactory _imagingFactory;
+        private SolidColorBrush _solidColorBrush;
+        private Factory1 _factory;
+        private Factory _writeFactory;
+        private ImagingFactory _imagingFactory;
 
         public Factory WriteFactory => _writeFactory ?? (_writeFactory = new Factory());
 
         public ImagingFactory ImagingFactory => _imagingFactory ?? (_imagingFactory = new ImagingFactory());
 
-        public SolidColorBrush GetSolidColorBrush(RawColor4 Color)
+        public SolidColorBrush GetSolidColorBrush(RawColor4 color)
         {
             if (_solidColorBrush == null)
             {
-                _solidColorBrush = new SolidColorBrush(RenderTarget, Color);
+                _solidColorBrush = new SolidColorBrush(RenderTarget, color);
             }
-            else _solidColorBrush.Color = Color;
+            else _solidColorBrush.Color = color;
 
             return _solidColorBrush;
         }
 
-        public Direct2DEditorSession(Texture2D Texture, Device Device, Texture2D StagingTexture)
+        public Direct2DEditorSession(Texture2D texture, Device device, Texture2D stagingTexture)
         {
-            _texture = Texture;
-            this.Device = Device;
-            this.StagingTexture = StagingTexture;
+            _texture = texture;
+            Device = device;
+            StagingTexture = stagingTexture;
 
-            var desc = Texture.Description;
+            var desc = texture.Description;
             desc.OptionFlags = ResourceOptionFlags.Shared;
 
-            PreviewTexture = new Texture2D(Device, desc);
+            PreviewTexture = new Texture2D(device, desc);
 
             _factory = new Factory1(FactoryType.MultiThreaded);
 
@@ -61,7 +61,7 @@ namespace DesktopDuplication
                 Type = RenderTargetType.Hardware
             };
 
-            using (var surface = Texture.QueryInterface<Surface>())
+            using (var surface = texture.QueryInterface<Surface>())
             {
                 RenderTarget = new RenderTarget(_factory, surface, renderTargetProps);
             }

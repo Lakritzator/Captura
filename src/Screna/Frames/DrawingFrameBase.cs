@@ -2,38 +2,38 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using Captura;
+using Captura.Base.Images;
 
-namespace Screna
+namespace Screna.Frames
 {
     public abstract class DrawingFrameBase : IBitmapFrame
     {
         public Bitmap Bitmap { get; }
 
-        protected DrawingFrameBase(Bitmap Bitmap)
+        protected DrawingFrameBase(Bitmap bitmap)
         {
-            this.Bitmap = Bitmap;
-            Width = Bitmap.Width;
-            Height = Bitmap.Height;
+            Bitmap = bitmap;
+            Width = bitmap.Width;
+            Height = bitmap.Height;
         }
 
         public abstract void Dispose();
 
-        public void SaveGif(Stream Stream)
+        public void SaveGif(Stream stream)
         {
-            Bitmap.Save(Stream, ImageFormat.Gif);
+            Bitmap.Save(stream, ImageFormat.Gif);
         }
 
         public int Width { get; }
         public int Height { get; }
 
-        public void CopyTo(byte[] Buffer, int Length)
+        public void CopyTo(byte[] buffer, int length)
         {
             var bits = Bitmap.LockBits(new Rectangle(Point.Empty, Bitmap.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
             try
             {
-                Marshal.Copy(bits.Scan0, Buffer, 0, Length);
+                Marshal.Copy(bits.Scan0, buffer, 0, length);
             }
             finally
             {

@@ -1,11 +1,11 @@
-﻿namespace Captura.Models
+﻿namespace Captura.ViewCore
 {
     public class FileNameFormatItem
     {
-        public FileNameFormatItem(string Format, string Description)
+        public FileNameFormatItem(string format, string description)
         {
-            this.Format = Format;
-            this.Description = Description;
+            Format = format;
+            Description = description;
         }
 
         public string Format { get; }

@@ -1,12 +1,13 @@
 ﻿using System;
+using Captura.Base.Images;
 
-namespace Captura.Models
+namespace Captura.Base.Services
 {
     public interface IPreviewWindow : IDisposable
     {
-        void Init(int Width, int Height);
+        void Init(int width, int height);
 
-        void Display(IBitmapFrame Frame);
+        void Display(IBitmapFrame frame);
 
         void Show();
     }

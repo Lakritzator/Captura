@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class LayerFrame
     {
@@ -12,9 +12,9 @@ namespace Captura
 
         public event Action<Rect> PositionUpdated;
 
-        public void RaisePositionChanged(Rect Rect)
+        public void RaisePositionChanged(Rect rect)
         {
-            PositionUpdated?.Invoke(Rect);
+            PositionUpdated?.Invoke(rect);
         }
     }
 }

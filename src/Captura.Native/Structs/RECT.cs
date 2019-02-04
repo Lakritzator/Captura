@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Captura.Native
+namespace Captura.Native.Structs
 {
     [Serializable, StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
@@ -12,9 +12,9 @@ namespace Captura.Native
         public int Right;
         public int Bottom;
 
-        public RECT(int Dimension)
+        public RECT(int dimension)
         {
-            Left = Top = Right = Bottom = Dimension;
+            Left = Top = Right = Bottom = dimension;
         }
     }
 }

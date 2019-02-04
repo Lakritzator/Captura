@@ -1,33 +1,35 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Forms;
-using Captura.Webcam;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
 
-namespace Captura.Models
+namespace Captura.WebCam
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class CoreWebCamProvider : NotifyPropertyChanged, IWebCamProvider
     {
         public CoreWebCamProvider()
         {
-            AvailableCams = new ReadOnlyObservableCollection<IWebcamItem>(_cams);
+            AvailableCams = new ReadOnlyObservableCollection<IWebCamItem>(_cams);
 
             _previewForm = new Form();
             
             Refresh();
         }
 
-        readonly Form _previewForm;
+        private readonly Form _previewForm;
 
-        CaptureWebcam _captureWebcam;
+        private CaptureWebCam _captureWebCam;
 
-        readonly ObservableCollection<IWebcamItem> _cams = new ObservableCollection<IWebcamItem>();
+        private readonly ObservableCollection<IWebCamItem> _cams = new ObservableCollection<IWebCamItem>();
 
-        public ReadOnlyObservableCollection<IWebcamItem> AvailableCams { get; }
-        
-        IWebcamItem _selectedCam = WebcamItem.NoWebcam;
+        public ReadOnlyObservableCollection<IWebCamItem> AvailableCams { get; }
 
-        public IWebcamItem SelectedCam
+        private IWebCamItem _selectedCam = WebCamItem.NoWebCam;
+
+        public IWebCamItem SelectedCam
         {
             get => _selectedCam;
             set
@@ -37,21 +39,21 @@ namespace Captura.Models
 
                 _selectedCam = value;
 
-                if (_captureWebcam != null)
+                if (_captureWebCam != null)
                 {
-                    _captureWebcam.StopPreview();
-                    _captureWebcam.Dispose();
+                    _captureWebCam.StopPreview();
+                    _captureWebCam.Dispose();
 
-                    _captureWebcam = null;
+                    _captureWebCam = null;
                 }
 
-                if (value is WebcamItem model)
+                if (value is WebCamItem model)
                 {
                     try
                     {
-                        _captureWebcam = new CaptureWebcam(model.Cam, null, _previewForm.Handle);
+                        _captureWebCam = new CaptureWebCam(model.Cam, null, _previewForm.Handle);
 
-                        _captureWebcam.StartPreview();
+                        _captureWebCam.StartPreview();
 
                         _selectedCam = value;
 
@@ -59,7 +61,7 @@ namespace Captura.Models
                     }
                     catch (Exception e)
                     {
-                        ServiceProvider.MessageProvider.ShowException(e, "Could not Start Webcam");
+                        ServiceProvider.MessageProvider.ShowException(e, "Could not Start WebCam");
                     }
                 }
 
@@ -71,25 +73,27 @@ namespace Captura.Models
         {
             _cams.Clear();
 
-            _cams.Add(WebcamItem.NoWebcam);
+            _cams.Add(WebCamItem.NoWebCam);
 
             foreach (var cam in Filter.VideoInputDevices)
-                _cams.Add(new WebcamItem(cam));
+            {
+                _cams.Add(new WebCamItem(cam));
+            }
 
-            SelectedCam = WebcamItem.NoWebcam;
+            SelectedCam = WebCamItem.NoWebCam;
         }
 
-        public IDisposable Capture(IBitmapLoader BitmapLoader)
+        public IDisposable Capture(IBitmapLoader bitmapLoader)
         {
             try
             {
-                return _captureWebcam?.GetFrame(BitmapLoader);
+                return _captureWebCam?.GetFrame(bitmapLoader);
             }
             catch { return null; }
         }
 
-        public int Width => _captureWebcam?.Size.Width ?? 0;
+        public int Width => _captureWebCam?.Size.Width ?? 0;
 
-        public int Height => _captureWebcam?.Size.Height ?? 0;
+        public int Height => _captureWebCam?.Size.Height ?? 0;
     }
 }

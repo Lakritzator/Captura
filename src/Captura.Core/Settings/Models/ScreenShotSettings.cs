@@ -1,4 +1,7 @@
-﻿namespace Captura
+﻿using Captura.Base.Images;
+using Captura.Base.Settings;
+
+namespace Captura.Core.Settings.Models
 {
     public class ScreenShotSettings : PropertyStore
     {

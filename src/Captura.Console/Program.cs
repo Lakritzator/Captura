@@ -1,8 +1,12 @@
-﻿using Captura.ViewModels;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Captura.Base.Services;
+using Captura.CmdOptions;
+using Captura.Core;
+using Captura.Fakes;
+using Captura.FFmpeg;
 using Captura.Native;
 using CommandLine;
 using static System.Console;
@@ -10,14 +14,18 @@ using static System.Console;
 
 namespace Captura
 {
-    static class Program
+    internal static class Program
     {
-        static void Main(string[] Args)
+        private static void Main(string[] args)
         {
-            if (Args.Length == 0)
+            if (args.Length == 0)
             {
-                var uiPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                    "captura.exe");
+                var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (string.IsNullOrEmpty(location))
+                {
+                    return;
+                }
+                var uiPath = Path.Combine(location, "captura.exe");
 
                 if (File.Exists(uiPath))
                 {
@@ -32,8 +40,8 @@ namespace Captura
             ServiceProvider.LoadModule(new CoreModule());
             ServiceProvider.LoadModule(new FakesModule());
 
-            Parser.Default.ParseArguments<StartCmdOptions, ShotCmdOptions, FFmpegCmdOptions, ListCmdOptions>(Args)
-                .WithParsed((ListCmdOptions Options) =>
+            Parser.Default.ParseArguments<StartCmdOptions, ShotCmdOptions, FFmpegCmdOptions, ListCmdOptions>(args)
+                .WithParsed((ListCmdOptions options) =>
                 {
                     Banner();
 
@@ -41,7 +49,7 @@ namespace Captura
 
                     lister.List();
                 })
-                .WithParsed((StartCmdOptions Options) =>
+                .WithParsed((StartCmdOptions options) =>
                 {
                     Banner();
 
@@ -49,27 +57,27 @@ namespace Captura
                     {
                         manager.CopySettings();
 
-                        manager.Start(Options);
+                        manager.Start(options);
                     }
                 })
-                .WithParsed((ShotCmdOptions Options) =>
+                .WithParsed((ShotCmdOptions options) =>
                 {
                     Banner();
 
                     using (var manager = ServiceProvider.Get<ConsoleManager>())
                     {
-                        manager.Shot(Options);
+                        manager.Shot(options);
                     }
                 })
-                .WithParsed((FFmpegCmdOptions Options) =>
+                .WithParsed((FFmpegCmdOptions options) =>
                 {
                     Banner();
 
-                    FFmpeg(Options);
+                    FFmpeg(options);
                 });
         }
 
-        static void Banner()
+        private static void Banner()
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
@@ -78,11 +86,11 @@ namespace Captura
 ");
         }
 
-        static async void FFmpeg(FFmpegCmdOptions FFmpegOptions)
+        private static async void FFmpeg(FFmpegCmdOptions fFmpegOptions)
         {
-            if (FFmpegOptions.Install != null)
+            if (fFmpegOptions.Install != null)
             {
-                var downloadFolder = FFmpegOptions.Install;
+                var downloadFolder = fFmpegOptions.Install;
 
                 if (!Directory.Exists(downloadFolder))
                 {
@@ -92,7 +100,7 @@ namespace Captura
 
                 var ffMpegDownload = ServiceProvider.Get<FFmpegDownloadViewModel>();
 
-                ffMpegDownload.TargetFolder = FFmpegOptions.Install;
+                ffMpegDownload.TargetFolder = fFmpegOptions.Install;
 
                 await ffMpegDownload.Start();
                 

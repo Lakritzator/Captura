@@ -3,23 +3,23 @@ using System.Windows.Interop;
 
 namespace Captura.Models
 {
-    public class HotkeyListener
+    public class HotKeyListener
     {
-        const int WindowsMessageHotkey = 786;
+        private const int WindowsMessageHotKey = 786;
 
-        public HotkeyListener()
+        public HotKeyListener()
         {
-            ComponentDispatcher.ThreadPreprocessMessage += (ref MSG Message, ref bool Handled) =>
+            ComponentDispatcher.ThreadPreprocessMessage += (ref MSG message, ref bool handled) =>
             {
-                if (Message.message == WindowsMessageHotkey)
+                if (message.message == WindowsMessageHotKey)
                 {
-                    var id = Message.wParam.ToInt32();
+                    var id = message.wParam.ToInt32();
 
-                    HotkeyReceived?.Invoke(id);
+                    HotKeyReceived?.Invoke(id);
                 }
             };
         }
 
-        public event Action<int> HotkeyReceived;
+        public event Action<int> HotKeyReceived;
     }
 }

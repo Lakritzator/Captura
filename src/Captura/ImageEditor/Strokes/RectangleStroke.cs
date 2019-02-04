@@ -2,15 +2,16 @@
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Input;
+using Captura.ImageEditor.DynamicRenderers;
 
-namespace Captura.ImageEditor
+namespace Captura.ImageEditor.Strokes
 {
     public class RectangleStroke : Stroke
     {
-        static StylusPointCollection Points(StylusPointCollection StylusPointCollection)
+        private static StylusPointCollection Points(StylusPointCollection stylusPointCollection)
         {
-            var start = StylusPointCollection.First().ToPoint();
-            var end = StylusPointCollection.Last().ToPoint();
+            var start = stylusPointCollection.First().ToPoint();
+            var end = stylusPointCollection.Last().ToPoint();
 
             RectangleDynamicRenderer.Prepare(ref start, ref end, out var _, out var _);
 
@@ -24,14 +25,14 @@ namespace Captura.ImageEditor
             });
         }
 
-        static DrawingAttributes ModifyAttribs(DrawingAttributes DrawingAttributes)
+        private static DrawingAttributes ModifyAttribs(DrawingAttributes drawingAttributes)
         {
-            DrawingAttributes.FitToCurve = false;
+            drawingAttributes.FitToCurve = false;
 
-            return DrawingAttributes;
+            return drawingAttributes;
         }
 
-        public RectangleStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttributes)
-            : base(Points(StylusPoints), ModifyAttribs(DrawingAttributes)) { }
+        public RectangleStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttributes)
+            : base(Points(stylusPoints), ModifyAttribs(drawingAttributes)) { }
     }
 }

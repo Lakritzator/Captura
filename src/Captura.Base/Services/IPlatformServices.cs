@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Captura.Models;
 
-namespace Captura
+namespace Captura.Base.Services
 {
     public interface IPlatformServices
     {
@@ -10,12 +9,12 @@ namespace Captura
 
         IEnumerable<IWindow> EnumerateWindows();
 
-        IWindow GetWindow(IntPtr Handle);
+        IWindow GetWindow(IntPtr handle);
 
         IWindow DesktopWindow { get; }
 
         IWindow ForegroundWindow { get; }
 
-        bool DeleteFile(string FilePath);
+        bool DeleteFile(string filePath);
     }
 }

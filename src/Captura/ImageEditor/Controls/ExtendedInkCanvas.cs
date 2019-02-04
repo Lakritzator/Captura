@@ -1,32 +1,33 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Ink;
+using Captura.ImageEditor.DynamicRenderers;
 
-namespace Captura
+namespace Captura.ImageEditor.Controls
 {
     public class ExtendedInkCanvas : InkCanvas
     {
-        public void SetInkTool(ExtendedInkTool InkTool)
+        public void SetInkTool(ExtendedInkTool inkTool)
         {
-            EditingMode = InkTool.EditingMode;
+            EditingMode = inkTool.EditingMode;
 
-            var dynamicRenderer = InkTool.DynamicRendererFunc?.Invoke();
+            var dynamicRenderer = inkTool.DynamicRendererFunc?.Invoke();
 
             if (dynamicRenderer != null)
                 DynamicRenderer = dynamicRenderer;
 
-            if (InkTool.Cursor != null)
+            if (inkTool.Cursor != null)
             {
-                Cursor = InkTool.Cursor;
+                Cursor = inkTool.Cursor;
                 UseCustomCursor = true;
             }
             else UseCustomCursor = false;
         }
 
-        protected override void OnStrokeCollected(InkCanvasStrokeCollectedEventArgs E)
+        protected override void OnStrokeCollected(InkCanvasStrokeCollectedEventArgs inkCanvasStrokeCollectedEventArgs)
         {
-            void AddCustomStroke(Stroke CustomStroke)
+            void AddCustomStroke(Stroke customStroke)
             {
-                Strokes.Remove(E.Stroke);
+                Strokes.Remove(inkCanvasStrokeCollectedEventArgs.Stroke);
 
                 // Remove two history items
                 if (DataContext is ImageEditorViewModel vm)
@@ -35,18 +36,18 @@ namespace Captura
                     vm.RemoveLastHistory();
                 }
 
-                Strokes.Add(CustomStroke);
+                Strokes.Add(customStroke);
 
-                var args = new InkCanvasStrokeCollectedEventArgs(CustomStroke);
+                var args = new InkCanvasStrokeCollectedEventArgs(customStroke);
 
                 base.OnStrokeCollected(args);
             }
 
             if (DynamicRenderer is IDynamicRenderer renderer)
             {
-                AddCustomStroke(renderer.GetStroke(E.Stroke.StylusPoints, E.Stroke.DrawingAttributes));
+                AddCustomStroke(renderer.GetStroke(inkCanvasStrokeCollectedEventArgs.Stroke.StylusPoints, inkCanvasStrokeCollectedEventArgs.Stroke.DrawingAttributes));
             }
-            else base.OnStrokeCollected(E);
+            else base.OnStrokeCollected(inkCanvasStrokeCollectedEventArgs);
         }
     }
 }

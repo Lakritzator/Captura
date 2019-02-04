@@ -1,17 +1,19 @@
-﻿using Captura.Models;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
+using Captura.Base.Services;
+using Captura.FFmpeg.Settings;
+using Captura.Loc;
 
-namespace Captura
+namespace Captura.FFmpeg
 {
     public static class FFmpegService
     {
-        const string FFmpegExeName = "ffmpeg.exe";
+        private const string FFmpegExeName = "ffmpeg.exe";
 
-        static FFmpegSettings GetSettings() => ServiceProvider.Get<FFmpegSettings>();
+        private static FFmpegSettings GetSettings() => ServiceProvider.Get<FFmpegSettings>();
 
         public static bool FFmpegExists
         {
@@ -71,9 +73,9 @@ namespace Captura
                 }
 
                 // application directory
-                var cpath = Path.Combine(Assembly.GetEntryAssembly().Location, FFmpegExeName);
+                var exePath = Path.Combine(Assembly.GetEntryAssembly().Location, FFmpegExeName);
 
-                return File.Exists(cpath) ? cpath : FFmpegExeName;
+                return File.Exists(exePath) ? exePath : FFmpegExeName;
             }
         }
 
@@ -91,14 +93,14 @@ namespace Captura
 
         public static Action FFmpegDownloader { get; set; }
 
-        public static Process StartFFmpeg(string Arguments, string OutputFileName)
+        public static Process StartFFmpeg(string arguments, string outputFileName)
         {
             var process = new Process
             {
                 StartInfo =
                 {
                     FileName = FFmpegExePath,
-                    Arguments = Arguments,
+                    Arguments = arguments,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardError = true,
@@ -107,9 +109,9 @@ namespace Captura
                 EnableRaisingEvents = true
             };
 
-            var logItem = ServiceProvider.Get<FFmpegLog>().CreateNew(Path.GetFileName(OutputFileName));
+            var logItem = ServiceProvider.Get<FFmpegLog>().CreateNew(Path.GetFileName(outputFileName));
                         
-            process.ErrorDataReceived += (S, E) => logItem.Write(E.Data);
+            process.ErrorDataReceived += (sender, e) => logItem.Write(e.Data);
 
             process.Start();
 
@@ -118,15 +120,15 @@ namespace Captura
             return process;
         }
 
-        public static bool WaitForConnection(this NamedPipeServerStream ServerStream, int Timeout)
+        public static bool WaitForConnection(this NamedPipeServerStream serverStream, int timeout)
         {
-            var asyncResult = ServerStream.BeginWaitForConnection(Ar => {}, null);
+            var asyncResult = serverStream.BeginWaitForConnection(result => {}, null);
 
-            if (asyncResult.AsyncWaitHandle.WaitOne(Timeout))
+            if (asyncResult.AsyncWaitHandle.WaitOne(timeout))
             {
-                ServerStream.EndWaitForConnection(asyncResult);
+                serverStream.EndWaitForConnection(asyncResult);
 
-                return ServerStream.IsConnected;
+                return serverStream.IsConnected;
             }
 
             return false;

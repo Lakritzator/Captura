@@ -1,29 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Captura.Models
+namespace Captura.MouseKeyHook.KeyRecord
 {
     class KeyRecords : IEnumerable<IKeyRecord>
     {
         readonly List<IKeyRecord> _records = new List<IKeyRecord>();
 
-        public KeyRecords(int Size)
+        public KeyRecords(int size)
         {
-            this.Size = Size;
+            Size = size;
         }
 
         public int Size { get; }
 
         public void Clear() => _records.Clear();
 
-        public void Add(IKeyRecord KeyRecord)
+        public void Add(IKeyRecord keyRecord)
         {
             if (_records.Count == Size)
             {
                 _records.RemoveAt(0);
             }
 
-            _records.Add(KeyRecord);
+            _records.Add(keyRecord);
         }
         
         public IKeyRecord Last

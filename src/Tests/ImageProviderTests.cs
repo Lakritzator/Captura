@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base.Images;
 using Moq;
-using Screna;
+using Screna.ImageProviders;
+using Tests.Fixtures;
 using Xunit;
 
-namespace Captura.Tests
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class ImageProviderTests
     {
         readonly MoqFixture _moq;
 
-        public ImageProviderTests(MoqFixture Moq)
+        public ImageProviderTests(MoqFixture moq)
         {
-            _moq = Moq;
+            _moq = moq;
         }
 
         [Fact]
@@ -23,7 +25,7 @@ namespace Captura.Tests
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using (new OverlayedImageProvider(null, P => P, overlay)) { }
+                using (new OverlayedImageProvider(null, point => point, overlay)) { }
             });
         }
 
@@ -34,7 +36,7 @@ namespace Captura.Tests
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using (new OverlayedImageProvider(imageProvider, P => P, null)) { }
+                using (new OverlayedImageProvider(imageProvider, point => point, null)) { }
             });
         }
 
@@ -104,7 +106,7 @@ namespace Captura.Tests
             var imgProvider = _moq.GetImageProviderMock().Object;
             var overlay = _moq.GetOverlayMock().Object;
 
-            using (var provider = new OverlayedImageProvider(imgProvider, P => P, overlay))
+            using (var provider = new OverlayedImageProvider(imgProvider, point => point, overlay))
             {
                 Assert.Equal(provider.Width, imgProvider.Width);
                 Assert.Equal(provider.Height, imgProvider.Height);
@@ -123,17 +125,17 @@ namespace Captura.Tests
             var imgProviderMock = _moq.GetImageProviderMock();
             var overlayMock = _moq.GetOverlayMock();
 
-            using (var provider = new OverlayedImageProvider(imgProviderMock.Object, P => P, overlayMock.Object))
+            using (var provider = new OverlayedImageProvider(imgProviderMock.Object, point => point, overlayMock.Object))
             {
                 using (provider.Capture())
                 {
-                    imgProviderMock.Verify(M => M.Capture(), Times.Once);
-                    overlayMock.Verify(M => M.Draw(It.IsAny<IEditableFrame>(), It.IsAny<Func<Point, Point>>()), Times.Once);
+                    imgProviderMock.Verify(imageProvider => imageProvider.Capture(), Times.Once);
+                    overlayMock.Verify(overlay => overlay.Draw(It.IsAny<IEditableFrame>(), It.IsAny<Func<Point, Point>>()), Times.Once);
                 }
             }
 
-            imgProviderMock.Verify(M => M.Dispose(), Times.Once);
-            overlayMock.Verify(M => M.Dispose(), Times.Once);
+            imgProviderMock.Verify(imageProvider => imageProvider.Dispose(), Times.Once);
+            overlayMock.Verify(overlay => overlay.Dispose(), Times.Once);
         }
     }
 }

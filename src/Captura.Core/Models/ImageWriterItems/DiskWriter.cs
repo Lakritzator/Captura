@@ -1,52 +1,58 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Recent;
+using Captura.Base.Services;
+using Captura.Core.Models.Recents;
+using Captura.Loc;
 using Screna;
 
-namespace Captura.Models
+namespace Captura.Core.Models.ImageWriterItems
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class DiskWriter : NotifyPropertyChanged, IImageWriterItem
     {
         readonly ISystemTray _systemTray;
         readonly IMessageProvider _messageProvider;
-        readonly Settings _settings;
+        readonly Settings.Settings _settings;
         readonly LanguageManager _loc;
         readonly IRecentList _recentList;
 
-        public DiskWriter(ISystemTray SystemTray,
-            IMessageProvider MessageProvider,
-            Settings Settings,
-            LanguageManager Loc,
-            IRecentList RecentList)
+        public DiskWriter(ISystemTray systemTray,
+            IMessageProvider messageProvider,
+            Settings.Settings settings,
+            LanguageManager loc,
+            IRecentList recentList)
         {
-            _systemTray = SystemTray;
-            _messageProvider = MessageProvider;
-            _settings = Settings;
-            _loc = Loc;
-            _recentList = RecentList;
+            _systemTray = systemTray;
+            _messageProvider = messageProvider;
+            _settings = settings;
+            _loc = loc;
+            _recentList = recentList;
 
-            Loc.LanguageChanged += L => RaisePropertyChanged(nameof(Display));
+            loc.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Display));
         }
 
-        public Task Save(IBitmapImage Image, ImageFormats Format, string FileName)
+        public Task Save(IBitmapImage image, ImageFormats format, string fileName)
         {
             try
             {
                 _settings.EnsureOutPath();
 
-                var extension = Format.ToString().ToLower();
+                var extension = format.ToString().ToLower();
 
-                var fileName = _settings.GetFileName(extension, FileName);
+                var saveFileName = _settings.GetFileName(extension, fileName);
 
-                Image.Save(fileName, Format);
+                image.Save(saveFileName, format);
                 
-                _recentList.Add(new FileRecentItem(fileName, RecentFileType.Image));
+                _recentList.Add(new FileRecentItem(saveFileName, RecentFileType.Image));
 
                 // Copy path to clipboard only when clipboard writer is off
                 if (_settings.CopyOutPathToClipboard && !ServiceProvider.Get<ClipboardWriter>().Active)
-                    fileName.WriteToClipboard();
+                    saveFileName.WriteToClipboard();
 
-                _systemTray.ShowScreenShotNotification(fileName);
+                _systemTray.ShowScreenShotNotification(saveFileName);
             }
             catch (Exception e)
             {

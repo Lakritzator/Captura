@@ -1,25 +1,28 @@
-﻿namespace Captura.ViewModels
+﻿using Captura.Base.Services;
+using Captura.ViewCore.ViewModels;
+
+namespace Captura.ViewCore
 {
     public class ViewCoreModule : IModule
     {
-        public void OnLoad(IBinder Binder)
+        public void OnLoad(IBinder binder)
         {
-            Binder.BindSingleton<CrashLogsViewModel>();
-            Binder.BindSingleton<FileNameFormatViewModel>();
-            Binder.BindSingleton<LicensesViewModel>();
-            Binder.BindSingleton<ProxySettingsViewModel>();
-            Binder.BindSingleton<SoundsViewModel>();
-            Binder.BindSingleton<RecentViewModel>();
-            Binder.BindSingleton<UpdateCheckerViewModel>();
-            Binder.BindSingleton<ScreenShotViewModel>();
-            Binder.BindSingleton<RecordingViewModel>();
-            Binder.BindSingleton<MainViewModel>();
-            Binder.BindSingleton<ViewConditionsModel>();
+            binder.BindSingleton<CrashLogsViewModel>();
+            binder.BindSingleton<FileNameFormatViewModel>();
+            binder.BindSingleton<LicensesViewModel>();
+            binder.BindSingleton<ProxySettingsViewModel>();
+            binder.BindSingleton<SoundsViewModel>();
+            binder.BindSingleton<RecentViewModel>();
+            binder.BindSingleton<UpdateCheckerViewModel>();
+            binder.BindSingleton<ScreenShotViewModel>();
+            binder.BindSingleton<RecordingViewModel>();
+            binder.BindSingleton<MainViewModel>();
+            binder.BindSingleton<ViewConditionsModel>();
 
-            Binder.BindSingleton<CustomOverlaysViewModel>();
-            Binder.BindSingleton<CustomImageOverlaysViewModel>();
-            Binder.BindSingleton<CensorOverlaysViewModel>();
-            Binder.BindSingleton<HotkeyActionRegisterer>();
+            binder.BindSingleton<CustomOverlaysViewModel>();
+            binder.BindSingleton<CustomImageOverlaysViewModel>();
+            binder.BindSingleton<CensorOverlaysViewModel>();
+            binder.BindSingleton<HotKeyActionRegisterer>();
         }
 
         public void Dispose() { }

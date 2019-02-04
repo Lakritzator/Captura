@@ -1,27 +1,31 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core.Settings.Models;
+using Screna.Overlays;
 
-namespace Captura.Models
+namespace Captura.Core
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class WebcamOverlay : ImageOverlay<WebcamOverlaySettings>
+    public class WebCamOverlay : ImageOverlay<WebCamOverlaySettings>
     {
         readonly IWebCamProvider _webCamProvider;
 
-        public WebcamOverlay(IWebCamProvider WebCamProvider, Settings Settings) : base(Settings.WebcamOverlay, true)
+        public WebCamOverlay(IWebCamProvider webCamProvider, Settings.Settings settings) : base(settings.WebCamOverlay, true)
         {
-            _webCamProvider = WebCamProvider;
+            _webCamProvider = webCamProvider;
         }
 
-        protected override IDisposable GetImage(IEditableFrame Editor, out Size Size)
+        protected override IDisposable GetImage(IEditableFrame editor, out Size size)
         {
-            Size = new Size(_webCamProvider.Width, _webCamProvider.Height);
+            size = new Size(_webCamProvider.Width, _webCamProvider.Height);
 
-            // No Webcam
+            // No WebCam
             if (_webCamProvider.AvailableCams.Count < 1 || _webCamProvider.SelectedCam == _webCamProvider.AvailableCams[0])
                 return null;
 
-            return _webCamProvider.Capture(Editor);
+            return _webCamProvider.Capture(editor);
         }
     }
 }

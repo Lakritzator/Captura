@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
+using Captura.Base.Settings;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.Loc;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ProxySettingsViewModel : ViewModelBase
     {
-        public ProxySettingsViewModel(Settings Settings, LanguageManager LanguageManager)
-            : base(Settings, LanguageManager)
+        public ProxySettingsViewModel(Settings settings, LanguageManager languageManager)
+            : base(settings, languageManager)
         {
-            Settings.Proxy.PropertyChanged += (S, E) => RaiseAllChanged();
+            settings.Proxy.PropertyChanged += (sender, e) => RaiseAllChanged();
         }
 
         public ProxySettings ProxySettings => Settings.Proxy;

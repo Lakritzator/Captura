@@ -1,27 +1,28 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Captura.Base;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     public abstract class OverlayListViewModel<T> : NotifyPropertyChanged where T : class, new()
     {
-        protected OverlayListViewModel(ObservableCollection<T> Collection)
+        protected OverlayListViewModel(ObservableCollection<T> collection)
         {
-            _collection = Collection;
+            _collection = collection;
 
-            this.Collection = new ReadOnlyObservableCollection<T>(_collection);
+            Collection = new ReadOnlyObservableCollection<T>(_collection);
 
             AddCommand = new DelegateCommand(OnAddExecute);
 
             RemoveCommand = new DelegateCommand(OnRemoveExecute);
 
-            if (Collection.Count > 0)
+            if (collection.Count > 0)
             {
-                SelectedItem = Collection[0];
+                SelectedItem = collection[0];
             }
         }
 
-        void OnAddExecute()
+        private void OnAddExecute()
         {
             var item = new T();
 
@@ -30,9 +31,9 @@ namespace Captura.ViewModels
             SelectedItem = item;
         }
 
-        void OnRemoveExecute(object O)
+        private void OnRemoveExecute(object o)
         {
-            if (O is T setting)
+            if (o is T setting)
             {
                 _collection.Remove(setting);
             }
@@ -40,7 +41,7 @@ namespace Captura.ViewModels
             SelectedItem = _collection.Count > 0 ? _collection[0] : null;
         }
 
-        readonly ObservableCollection<T> _collection;
+        private readonly ObservableCollection<T> _collection;
 
         public ReadOnlyObservableCollection<T> Collection { get; }
 
@@ -48,7 +49,7 @@ namespace Captura.ViewModels
 
         public ICommand RemoveCommand { get; }
 
-        T _selectedItem;
+        private T _selectedItem;
 
         public T SelectedItem
         {

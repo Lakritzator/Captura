@@ -1,29 +1,34 @@
-﻿namespace Captura.ViewModels
+﻿using Captura.Core;
+using Captura.Core.Settings;
+using Captura.HotKeys;
+using Captura.ViewCore.ViewModels;
+
+namespace Captura.ViewCore
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class HotkeyActionRegisterer
+    public class HotKeyActionRegisterer
     {
-        readonly ScreenShotViewModel _screenShotViewModel;
-        readonly HotKeyManager _hotKeyManager;
-        readonly RecordingViewModel _recordingViewModel;
-        readonly Settings _settings;
+        private readonly ScreenShotViewModel _screenShotViewModel;
+        private readonly HotKeyManager _hotKeyManager;
+        private readonly RecordingViewModel _recordingViewModel;
+        private readonly Settings _settings;
 
-        public HotkeyActionRegisterer(ScreenShotViewModel ScreenShotViewModel,
-            HotKeyManager HotKeyManager,
-            RecordingViewModel RecordingViewModel,
-            Settings Settings)
+        public HotKeyActionRegisterer(ScreenShotViewModel screenShotViewModel,
+            HotKeyManager hotKeyManager,
+            RecordingViewModel recordingViewModel,
+            Settings settings)
         {
-            _screenShotViewModel = ScreenShotViewModel;
-            _hotKeyManager = HotKeyManager;
-            _recordingViewModel = RecordingViewModel;
-            _settings = Settings;
+            _screenShotViewModel = screenShotViewModel;
+            _hotKeyManager = hotKeyManager;
+            _recordingViewModel = recordingViewModel;
+            _settings = settings;
         }
 
         public void Register()
         {
-            _hotKeyManager.HotkeyPressed += Service =>
+            _hotKeyManager.HotKeyPressed += service =>
             {
-                switch (Service)
+                switch (service)
                 {
                     case ServiceName.Recording:
                         _recordingViewModel.RecordCommand.ExecuteIfCan();

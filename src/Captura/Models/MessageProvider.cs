@@ -2,22 +2,27 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Captura.Views;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.FFmpeg;
+using Captura.Loc;
+using Captura.Presentation;
 using FirstFloor.ModernUI.Windows.Controls;
+using ExceptionWindow = Captura.Windows.ExceptionWindow;
 
 namespace Captura.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MessageProvider : IMessageProvider
     {
-        readonly IAudioPlayer _audioPlayer;
+        private readonly IAudioPlayer _audioPlayer;
 
-        public MessageProvider(IAudioPlayer AudioPlayer)
+        public MessageProvider(IAudioPlayer audioPlayer)
         {
-            _audioPlayer = AudioPlayer;
+            _audioPlayer = audioPlayer;
         }
 
-        public void ShowError(string Message, string Header = null)
+        public void ShowError(string message, string header = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -30,14 +35,14 @@ namespace Captura.Models
                         {
                             new TextBlock
                             {
-                                Text = Header,
+                                Text = header,
                                 Margin = new Thickness(0, 0, 0, 10),
                                 FontSize = 15
                             },
 
                             new ScrollViewer
                             {
-                                Content = Message,
+                                Content = message,
                                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                                 Padding = new Thickness(0, 0, 0, 10)
                             }
@@ -73,11 +78,11 @@ namespace Captura.Models
 
                 // Yes -> Select FFmpeg Folder
                 dialog.YesButton.Content = LanguageManager.Instance.SelectFFmpegFolder;
-                dialog.YesButton.Click += (S, E) => FFmpegService.SelectFFmpegFolder();
+                dialog.YesButton.Click += (sender, e) => FFmpegService.SelectFFmpegFolder();
 
                 // No -> Download FFmpeg
                 dialog.NoButton.Content = "Download FFmpeg";
-                dialog.NoButton.Click += (S, E) => FFmpegService.FFmpegDownloader?.Invoke();
+                dialog.NoButton.Click += (sender, e) => FFmpegService.FFmpegDownloader?.Invoke();
 
                 dialog.CancelButton.Content = "Cancel";
 
@@ -89,15 +94,15 @@ namespace Captura.Models
             });
         }
 
-        public void ShowException(Exception Exception, string Message, bool Blocking = false)
+        public void ShowException(Exception exception, string message, bool blocking = false)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var win = new ExceptionWindow(Exception, Message);
+                var win = new ExceptionWindow(exception, message);
 
                 _audioPlayer.Play(SoundKind.Error);
 
-                if (Blocking)
+                if (blocking)
                 {
                     win.ShowDialog();
                 }
@@ -105,16 +110,16 @@ namespace Captura.Models
             });
         }
 
-        public bool ShowYesNo(string Message, string Title)
+        public bool ShowYesNo(string message, string title)
         {
             return Application.Current.Dispatcher.Invoke(() =>
             {
                 var dialog = new ModernDialog
                 {
-                    Title = Title,
+                    Title = title,
                     Content = new ScrollViewer
                     {
-                        Content = Message,
+                        Content = message,
                         HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                         Padding = new Thickness(0, 0, 0, 10)
                     }
@@ -123,7 +128,7 @@ namespace Captura.Models
                 var result = false;
 
                 dialog.YesButton.Content = LanguageManager.Instance.Yes;
-                dialog.YesButton.Click += (S, E) => result = true;
+                dialog.YesButton.Click += (sender, e) => result = true;
 
                 dialog.NoButton.Content = LanguageManager.Instance.No;
 

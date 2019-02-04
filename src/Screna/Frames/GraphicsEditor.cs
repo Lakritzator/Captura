@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using Captura;
-using Captura.Models;
+using Captura.Base.Images;
 
-namespace Screna
+namespace Screna.Frames
 {
     public class GraphicsEditor : IEditableFrame
     {
-        readonly Bitmap _image;
-        readonly Graphics _graphics;
+        private readonly Bitmap _image;
+        private readonly Graphics _graphics;
 
-        public GraphicsEditor(Bitmap Image)
+        public GraphicsEditor(Bitmap image)
         {
-            _image = Image;
+            _image = image;
 
-            _graphics = Graphics.FromImage(Image);
+            _graphics = Graphics.FromImage(image);
         }
 
         public IBitmapFrame GenerateFrame()
@@ -25,80 +24,80 @@ namespace Screna
             return new OneTimeFrame(_image);
         }
 
-        public IDisposable CreateBitmapBgr32(Size Size, IntPtr MemoryData, int Stride)
+        public IDisposable CreateBitmapBgr32(Size size, IntPtr memoryData, int stride)
         {
-            return GraphicsBitmapLoader.Instance.CreateBitmapBgr32(Size, MemoryData, Stride);
+            return GraphicsBitmapLoader.Instance.CreateBitmapBgr32(size, memoryData, stride);
         }
 
-        public IDisposable LoadBitmap(string FileName, out Size Size)
+        public IDisposable LoadBitmap(string fileName, out Size size)
         {
-            return GraphicsBitmapLoader.Instance.LoadBitmap(FileName, out Size);
+            return GraphicsBitmapLoader.Instance.LoadBitmap(fileName, out size);
         }
 
-        public void DrawImage(object Image, Rectangle? Region, int Opacity = 100)
+        public void DrawImage(object image, Rectangle? region, int opacity = 100)
         {
-            if (!(Image is Image img))
+            if (!(image is Image img))
                 return;
 
-            var region = Region ?? new Rectangle(Point.Empty, img.Size);
+            var regionToUse = region ?? new Rectangle(Point.Empty, img.Size);
 
-            if (Opacity < 100)
+            if (opacity < 100)
             {
-                var colormatrix = new ColorMatrix
+                var colorMatrix = new ColorMatrix
                 {
-                    Matrix33 = Opacity / 100.0f
+                    Matrix33 = opacity / 100.0f
                 };
 
                 var imgAttribute = new ImageAttributes();
-                imgAttribute.SetColorMatrix(colormatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                imgAttribute.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
-                _graphics.DrawImage(img, region, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, imgAttribute);
+                _graphics.DrawImage(img, regionToUse, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, imgAttribute);
             }
-            else _graphics.DrawImage(img, region);
+            else _graphics.DrawImage(img, regionToUse);
         }
 
-        public void FillRectangle(Color Color, RectangleF Rectangle)
+        public void FillRectangle(Color color, RectangleF rectangle)
         {
-            _graphics.FillRectangle(new SolidBrush(Color), Rectangle);
+            _graphics.FillRectangle(new SolidBrush(color), rectangle);
         }
 
-        public void FillRectangle(Color Color, RectangleF Rectangle, int CornerRadius)
+        public void FillRectangle(Color color, RectangleF rectangle, int cornerRadius)
         {
-            _graphics.FillRoundedRectangle(new SolidBrush(Color), Rectangle, CornerRadius);
+            _graphics.FillRoundedRectangle(new SolidBrush(color), rectangle, cornerRadius);
         }
 
-        public void FillEllipse(Color Color, RectangleF Rectangle)
+        public void FillEllipse(Color color, RectangleF rectangle)
         {
-            _graphics.FillEllipse(new SolidBrush(Color), Rectangle);
+            _graphics.FillEllipse(new SolidBrush(color), rectangle);
         }
 
-        public void DrawEllipse(Color Color, float StrokeWidth, RectangleF Rectangle)
+        public void DrawEllipse(Color color, float strokeWidth, RectangleF rectangle)
         {
-            _graphics.DrawEllipse(new Pen(Color, StrokeWidth), Rectangle);
+            _graphics.DrawEllipse(new Pen(color, strokeWidth), rectangle);
         }
 
-        public void DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle)
+        public void DrawRectangle(Color color, float strokeWidth, RectangleF rectangle)
         {
-            _graphics.DrawRectangle(new Pen(Color, StrokeWidth), Rectangle.X, Rectangle.Y, Rectangle.Width, Rectangle.Height);
+            _graphics.DrawRectangle(new Pen(color, strokeWidth), rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
-        public void DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle, int CornerRadius)
+        public void DrawRectangle(Color color, float strokeWidth, RectangleF rectangle, int cornerRadius)
         {
-            _graphics.DrawRoundedRectangle(new Pen(Color, StrokeWidth), Rectangle, CornerRadius);
+            _graphics.DrawRoundedRectangle(new Pen(color, strokeWidth), rectangle, cornerRadius);
         }
 
-        public SizeF MeasureString(string Text, int FontSize)
+        public SizeF MeasureString(string text, int fontSize)
         {
-            var font = new Font(FontFamily.GenericMonospace, FontSize);
+            var font = new Font(FontFamily.GenericMonospace, fontSize);
 
-            return _graphics.MeasureString(Text, font);
+            return _graphics.MeasureString(text, font);
         }
 
-        public void DrawString(string Text, int FontSize, Color Color, RectangleF LayoutRectangle)
+        public void DrawString(string text, int fontSize, Color color, RectangleF layoutRectangle)
         {
-            var font = new Font(FontFamily.GenericMonospace, FontSize);
+            var font = new Font(FontFamily.GenericMonospace, fontSize);
 
-            _graphics.DrawString(Text, font, new SolidBrush(Color), LayoutRectangle);
+            _graphics.DrawString(text, font, new SolidBrush(color), layoutRectangle);
         }
 
         public float Width => _graphics.VisibleClipBounds.Width;

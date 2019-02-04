@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Core.Settings.Models;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class SoundsViewModel : NotifyPropertyChanged
     {
         public IReadOnlyCollection<SoundsViewModelItem> Items { get; }
 
-        public SoundsViewModel(IDialogService DialogService, SoundSettings Settings)
+        public SoundsViewModel(IDialogService dialogService, SoundSettings settings)
         {
             Items = new[]
             {
@@ -19,7 +22,7 @@ namespace Captura.ViewModels
                 SoundKind.Shot,
                 SoundKind.Error,
                 SoundKind.Notification
-            }.Select(Kind => new SoundsViewModelItem(Kind, DialogService, Settings)).ToList();
+            }.Select(kind => new SoundsViewModelItem(kind, dialogService, settings)).ToList();
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using Captura.Audio;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Captura.Models
+namespace Captura.Base.Audio
 {
     public abstract class AudioSource : NotifyPropertyChanged, IDisposable
     {
@@ -25,13 +24,13 @@ namespace Captura.Models
         {
             // Retain previously active sources
             var lastMicNames = RecordingSources
-                .Where(M => M.Active)
-                .Select(M => M.Name)
+                .Where(audioItem => audioItem.Active)
+                .Select(audioItem => audioItem.Name)
                 .ToArray();
 
             var lastSpeakerNames = LoopbackSources
-                .Where(M => M.Active)
-                .Select(M => M.Name)
+                .Where(audioItem => audioItem.Active)
+                .Select(audioItem => audioItem.Name)
                 .ToArray();
 
             RecordingSources.Clear();

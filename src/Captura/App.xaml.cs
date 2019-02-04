@@ -4,41 +4,47 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using Captura.Base.Services;
+using Captura.Core;
+using Captura.Core.Settings;
+using Captura.Loc;
 using Captura.Models;
-using Captura.ViewModels;
-using Captura.Views;
+using Captura.MouseKeyHook;
+using Captura.Presentation;
+using Captura.ViewCore;
 using CommandLine;
+using ExceptionWindow = Captura.Windows.ExceptionWindow;
 
 namespace Captura
 {
     public partial class App
     {
         public static CmdOptions CmdOptions { get; private set; }
-        
-        void App_OnDispatcherUnhandledException(object Sender, DispatcherUnhandledExceptionEventArgs Args)
+
+        private void App_OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs args)
         {
             var dir = Path.Combine(ServiceProvider.SettingsDir, "Crashes");
 
             Directory.CreateDirectory(dir);
 
-            File.WriteAllText(Path.Combine(dir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"), Args.Exception.ToString());
+            File.WriteAllText(Path.Combine(dir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"), args.Exception.ToString());
 
-            Args.Handled = true;
+            args.Handled = true;
 
-            new ExceptionWindow(Args.Exception).ShowDialog();
+            new ExceptionWindow(args.Exception).ShowDialog();
         }
 
-        void Application_Startup(object Sender, StartupEventArgs Args)
+        private void Application_Startup(object sender, StartupEventArgs args)
         {
-            AppDomain.CurrentDomain.UnhandledException += (S, E) =>
+            AppDomain.CurrentDomain.UnhandledException += (o, unhandledExceptionEventArgs) =>
             {
                 var dir = Path.Combine(ServiceProvider.SettingsDir, "Crashes");
 
                 Directory.CreateDirectory(dir);
 
-                File.WriteAllText(Path.Combine(dir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"), E.ExceptionObject.ToString());
+                File.WriteAllText(Path.Combine(dir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt"), unhandledExceptionEventArgs.ExceptionObject.ToString());
 
-                if (E.ExceptionObject is Exception e)
+                if (unhandledExceptionEventArgs.ExceptionObject is Exception e)
                 {
                     Current.Dispatcher.Invoke(() => new ExceptionWindow(e).ShowDialog());
                 }
@@ -49,8 +55,8 @@ namespace Captura
             ServiceProvider.LoadModule(new CoreModule());
             ServiceProvider.LoadModule(new ViewCoreModule());
 
-            Parser.Default.ParseArguments<CmdOptions>(Args.Args)
-                .WithParsed(M => CmdOptions = M);
+            Parser.Default.ParseArguments<CmdOptions>(args.Args)
+                .WithParsed(cmdOptions => CmdOptions = cmdOptions);
 
             if (CmdOptions.Settings != null)
             {
@@ -64,39 +70,39 @@ namespace Captura
                 settings.Load();
             }
 
-            if (settings.UI.DarkTheme)
+            if (settings.Ui.DarkTheme)
             {
                 AppearanceManager.Current.ThemeSource = AppearanceManager.DarkThemeSource;
             }
 
-            var accent = settings.UI.AccentColor;
+            var accent = settings.Ui.AccentColor;
 
             if (!string.IsNullOrEmpty(accent))
             {
                 AppearanceManager.Current.AccentColor = WpfExtensions.ParseColor(accent);
             }
 
-            if (!string.IsNullOrWhiteSpace(settings.UI.Language))
+            if (!string.IsNullOrWhiteSpace(settings.Ui.Language))
             {
-                var matchedCulture = LanguageManager.Instance.AvailableCultures.FirstOrDefault(M => M.Name == settings.UI.Language);
+                var matchedCulture = LanguageManager.Instance.AvailableCultures.FirstOrDefault(cultureInfo => cultureInfo.Name == settings.Ui.Language);
 
                 if (matchedCulture != null)
                     LanguageManager.Instance.CurrentCulture = matchedCulture;
             }
 
-            LanguageManager.Instance.LanguageChanged += L => settings.UI.Language = L.Name;
+            LanguageManager.Instance.LanguageChanged += cultureInfo => settings.Ui.Language = cultureInfo.Name;
 
             var keymap = ServiceProvider.Get<KeymapViewModel>();
 
             if (!string.IsNullOrWhiteSpace(settings.Keystrokes.KeymapName))
             {
-                var matched = keymap.AvailableKeymaps.FirstOrDefault(M => M.Name == settings.Keystrokes.KeymapName);
+                var matched = keymap.AvailableKeymaps.FirstOrDefault(keymapItem => keymapItem.Name == settings.Keystrokes.KeymapName);
 
                 if (matched != null)
                     keymap.SelectedKeymap = matched;
             }
 
-            keymap.PropertyChanged += (S, E) => settings.Keystrokes.KeymapName = keymap.SelectedKeymap.Name;
+            keymap.PropertyChanged += (o, e) => settings.Keystrokes.KeymapName = keymap.SelectedKeymap.Name;
         }
     }
 }

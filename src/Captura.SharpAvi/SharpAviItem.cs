@@ -1,24 +1,26 @@
-﻿namespace Captura.Models
-{
-    class SharpAviItem : IVideoWriterItem
-    {
-        readonly AviCodec _codec;
+﻿using Captura.Base.Video;
 
-        public SharpAviItem(AviCodec Codec, string Description)
+namespace Captura.SharpAvi
+{
+    internal class SharpAviItem : IVideoWriterItem
+    {
+        private readonly AviCodec _codec;
+
+        public SharpAviItem(AviCodec codec, string description)
         {
-            _codec = Codec;
-            this.Description = Description;
+            _codec = codec;
+            Description = description;
         }
 
         public string Extension { get; } = ".avi";
 
         public string Description { get; }
 
-        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args)
+        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs args)
         {
-            _codec.Quality = Args.VideoQuality;
+            _codec.Quality = args.VideoQuality;
 
-            return new AviWriter(Args.FileName, _codec, Args.ImageProvider, Args.FrameRate, Args.AudioProvider);
+            return new AviWriter(args.FileName, _codec, args.ImageProvider, args.FrameRate, args.AudioProvider);
         }
         
         public override string ToString() => _codec.Name;

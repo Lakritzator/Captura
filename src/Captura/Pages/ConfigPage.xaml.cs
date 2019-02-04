@@ -1,15 +1,16 @@
 ﻿using System.Windows;
+using Captura.Windows;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class ConfigPage
     {
-        void OpenOverlayManager(object Sender, RoutedEventArgs E)
+        private void OpenOverlayManager(object sender, RoutedEventArgs e)
         {
             OverlayWindow.ShowInstance();
         }
 
-        void OpenSettings(object Sender, RoutedEventArgs E)
+        private void OpenSettings(object sender, RoutedEventArgs e)
         {
             SettingsWindow.ShowInstance();
         }

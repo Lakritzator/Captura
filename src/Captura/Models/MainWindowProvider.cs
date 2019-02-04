@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Windows;
-using Captura.Views;
+using Captura.Base.Services;
+using Captura.ImageEditor;
+using Captura.Presentation;
+using Captura.Windows;
 
 namespace Captura.Models
 {
-    class MainWindowProvider : IMainWindow
+    internal class MainWindowProvider : IMainWindow
     {
-        readonly Func<Window> _window;
+        private readonly Func<Window> _window;
 
-        public MainWindowProvider(Func<Window> Window)
+        public MainWindowProvider(Func<Window> window)
         {
-            _window = Window;
+            _window = window;
         }
 
         public bool IsVisible
@@ -30,34 +33,34 @@ namespace Captura.Models
             set => _window.Invoke().WindowState = value ? WindowState.Minimized : WindowState.Normal;
         }
 
-        public void EditImage(string FileName)
+        public void EditImage(string fileName)
         {
             var win = new ImageEditorWindow();
 
-            win.Open(FileName);
+            win.Open(fileName);
 
             win.ShowAndFocus();
         }
 
-        public void CropImage(string FileName)
+        public void CropImage(string fileName)
         {
-            new CropWindow(FileName).ShowAndFocus();
+            new Windows.CropWindow(fileName).ShowAndFocus();
         }
 
-        public void TrimMedia(string FileName)
+        public void TrimMedia(string fileName)
         {
             var win = new TrimmerWindow();
 
-            win.Open(FileName);
+            win.Open(fileName);
 
             win.ShowAndFocus();
         }
 
-        public void UploadToYouTube(string FileName)
+        public void UploadToYouTube(string fileName)
         {
-            var win = new YouTubeUploaderWindow();
+            var win = new Windows.YouTubeUploaderWindow();
 
-            win.Open(FileName);
+            win.Open(fileName);
 
             win.ShowAndFocus();
         }

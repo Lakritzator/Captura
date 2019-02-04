@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Captura.Models
+namespace Captura.Base.Recent
 {
     public class RecentAction
     {
-        public RecentAction(string Name, string Icon, Action OnClick)
+        public RecentAction(string name, string icon, Action onClick)
         {
-            this.Name = Name;
-            this.Icon = Icon;
+            Name = name;
+            Icon = icon;
 
-            ClickCommand = new DelegateCommand(() => OnClick?.Invoke());
+            ClickCommand = new DelegateCommand(() => onClick?.Invoke());
         }
 
         public string Name { get; set; }

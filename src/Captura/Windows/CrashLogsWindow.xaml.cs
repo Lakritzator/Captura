@@ -1,13 +1,15 @@
-﻿namespace Captura.Views
+﻿using Captura.Presentation;
+
+namespace Captura.Windows
 {
     public partial class CrashLogsWindow
     {
-        CrashLogsWindow()
+        private CrashLogsWindow()
         {
             InitializeComponent();
         }
 
-        static CrashLogsWindow _instance;
+        private static CrashLogsWindow _instance;
 
         public static void ShowInstance()
         {
@@ -15,7 +17,7 @@
             {
                 _instance = new CrashLogsWindow();
 
-                _instance.Closed += (S, E) => _instance = null;
+                _instance.Closed += (sender, e) => _instance = null;
             }
 
             _instance.ShowAndFocus();

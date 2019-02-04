@@ -1,4 +1,5 @@
-﻿using Captura.Models;
+﻿using Captura.Base;
+using Captura.Base.Audio;
 using NAudio.CoreAudioApi;
 
 namespace Captura.NAudio
@@ -9,11 +10,11 @@ namespace Captura.NAudio
 
         public string Name { get; }
 
-        public NAudioItem(MMDevice Device)
+        public NAudioItem(MMDevice device)
         {
-            this.Device = Device;
+            Device = device;
 
-            Name = Device.FriendlyName;
+            Name = device.FriendlyName;
         }
 
         bool _active;

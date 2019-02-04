@@ -1,31 +1,34 @@
 ﻿using System;
-using Screna;
 using System.Drawing;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Video;
+using Screna.ImageProviders;
 
-namespace Captura.Models
+namespace Screna.VideoItems
 {
     public class WindowItem : NotifyPropertyChanged, IVideoItem
     {
         public IWindow Window { get; }
 
-        public WindowItem(IWindow Window)
+        public WindowItem(IWindow window)
         {
-            this.Window = Window;
-            Name = Window.Title;
+            Window = window;
+            Name = window.Title;
         }
 
         public override string ToString() => Name;
 
         public string Name { get; }
 
-        public IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform)
+        public IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform)
         {
             if (!Window.IsAlive)
             {
                 throw new WindowClosedException();
             }
 
-            return new WindowProvider(Window, IncludeCursor, out Transform);
+            return new WindowProvider(Window, includeCursor, out transform);
         }
     }
 }

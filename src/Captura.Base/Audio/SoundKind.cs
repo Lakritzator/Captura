@@ -1,4 +1,4 @@
-﻿namespace Captura.Models
+﻿namespace Captura.Base.Audio
 {
     public enum SoundKind
     {

@@ -1,15 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Core.Models;
+using Captura.HotKeys;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MainModel : NotifyPropertyChanged, IDisposable
     {
-        readonly Settings _settings;
-        bool _persist, _hotkeys, _remembered;
+        readonly Settings.Settings _settings;
+        bool _persist, _hotKeys, _remembered;
 
         readonly RememberByName _rememberByName;
 
@@ -18,26 +22,26 @@ namespace Captura.ViewModels
         readonly AudioSource _audioSource;
         readonly HotKeyManager _hotKeyManager;
 
-        public MainModel(Settings Settings,
-            IWebCamProvider WebCamProvider,
-            VideoWritersViewModel VideoWritersViewModel,
-            AudioSource AudioSource,
-            HotKeyManager HotKeyManager,
-            RememberByName RememberByName)
+        public MainModel(Settings.Settings settings,
+            IWebCamProvider webCamProvider,
+            VideoWritersViewModel videoWritersViewModel,
+            AudioSource audioSource,
+            HotKeyManager hotKeyManager,
+            RememberByName rememberByName)
         {
-            _settings = Settings;
-            _webCamProvider = WebCamProvider;
-            _videoWritersViewModel = VideoWritersViewModel;
-            _audioSource = AudioSource;
-            _hotKeyManager = HotKeyManager;
-            _rememberByName = RememberByName;
+            _settings = settings;
+            _webCamProvider = webCamProvider;
+            _videoWritersViewModel = videoWritersViewModel;
+            _audioSource = audioSource;
+            _hotKeyManager = hotKeyManager;
+            _rememberByName = rememberByName;
 
-            // If Output Dircetory is not set. Set it to Documents\Captura\
-            if (string.IsNullOrWhiteSpace(Settings.OutPath))
-                Settings.OutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Captura");
+            // If Output Directory is not set. Set it to Documents\Captura\
+            if (string.IsNullOrWhiteSpace(settings.OutPath))
+                settings.OutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Captura");
 
             // Create the Output Directory if it does not exist
-            Settings.EnsureOutPath();
+            settings.EnsureOutPath();
         }
 
         public void Refresh()
@@ -46,30 +50,30 @@ namespace Captura.ViewModels
 
             _audioSource.Refresh();
 
-            #region Webcam
-            var lastWebcamName = _webCamProvider.SelectedCam?.Name;
+            #region WebCam
+            var lastWebCamName = _webCamProvider.SelectedCam?.Name;
 
             _webCamProvider.Refresh();
 
-            var matchingWebcam = _webCamProvider.AvailableCams.FirstOrDefault(M => M.Name == lastWebcamName);
+            var matchingWebCam = _webCamProvider.AvailableCams.FirstOrDefault(webCamItem => webCamItem.Name == lastWebCamName);
 
-            if (matchingWebcam != null)
+            if (matchingWebCam != null)
             {
-                _webCamProvider.SelectedCam = matchingWebcam;
+                _webCamProvider.SelectedCam = matchingWebCam;
             }
             #endregion
         }
 
-        public void Init(bool Persist, bool Remembered, bool Hotkeys)
+        public void Init(bool persist, bool remembered, bool hotKeys)
         {
-            _persist = Persist;
-            _hotkeys = Hotkeys;
+            _persist = persist;
+            _hotKeys = hotKeys;
 
-            // Register Hotkeys if not console
-            if (_hotkeys)
+            // Register HotKeys if not console
+            if (_hotKeys)
                 _hotKeyManager.RegisterAll();
 
-            if (Remembered)
+            if (remembered)
             {
                 _remembered = true;
 
@@ -81,14 +85,14 @@ namespace Captura.ViewModels
         {
             if (_remembered)
             {
-                // Restore Webcam
-                if (!string.IsNullOrEmpty(_settings.Video.Webcam))
+                // Restore WebCam
+                if (!string.IsNullOrEmpty(_settings.Video.WebCam))
                 {
-                    var webcam = _webCamProvider.AvailableCams.FirstOrDefault(C => C.Name == _settings.Video.Webcam);
+                    var webCam = _webCamProvider.AvailableCams.FirstOrDefault(webCamItem => webCamItem.Name == _settings.Video.WebCam);
 
-                    if (webcam != null)
+                    if (webCam != null)
                     {
-                        _webCamProvider.SelectedCam = webcam;
+                        _webCamProvider.SelectedCam = webCam;
                     }
                 }
             }

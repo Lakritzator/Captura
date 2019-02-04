@@ -1,17 +1,20 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Services;
+using Captura.Base.Video;
+
+namespace Captura.Core.Models.Discard
 {
     public class DiscardWriterItem : IVideoWriterItem
     {
         readonly IPreviewWindow _previewWindow;
 
-        public DiscardWriterItem(IPreviewWindow PreviewWindow)
+        public DiscardWriterItem(IPreviewWindow previewWindow)
         {
-            _previewWindow = PreviewWindow;
+            _previewWindow = previewWindow;
         }
 
         public string Extension { get; } = "";
 
-        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args)
+        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs args)
         {
             _previewWindow.Show();
 

@@ -2,30 +2,35 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Threading.Tasks;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.FFmpeg.ArgsBuilder;
+using Captura.FFmpeg.Settings;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     /// <summary>
     /// Encode Video using FFmpeg.exe
     /// </summary>
     public class FFmpegWriter : IVideoFileWriter
     {
-        readonly NamedPipeServerStream _audioPipe;
+        private readonly NamedPipeServerStream _audioPipe;
 
-        readonly Process _ffmpegProcess;
-        readonly NamedPipeServerStream _ffmpegIn;
-        byte[] _videoBuffer;
+        private readonly Process _ffmpegProcess;
+        private readonly NamedPipeServerStream _ffmpegIn;
+        private byte[] _videoBuffer;
 
-        static string GetPipeName() => $"captura-{Guid.NewGuid()}";
+        private static string GetPipeName() => $"captura-{Guid.NewGuid()}";
 
         /// <summary>
         /// Creates a new instance of <see cref="FFmpegWriter"/>.
         /// </summary>
-        public FFmpegWriter(FFmpegVideoWriterArgs Args)
+        public FFmpegWriter(FFmpegVideoWriterArgs args)
         {
             var settings = ServiceProvider.Get<FFmpegSettings>();
 
-            _videoBuffer = new byte[Args.ImageProvider.Width * Args.ImageProvider.Height * 4];
+            _videoBuffer = new byte[args.ImageProvider.Width * args.ImageProvider.Height * 4];
 
             Console.WriteLine($"Video Buffer Allocated: {_videoBuffer.Length}");
 
@@ -35,14 +40,14 @@ namespace Captura.Models
 
             argsBuilder.AddInputPipe(videoPipeName)
                 .AddArg("-thread_queue_size 512")
-                .AddArg($"-framerate {Args.FrameRate}")
+                .AddArg($"-framerate {args.FrameRate}")
                 .SetFormat("rawvideo")
                 .AddArg("-pix_fmt rgb32")
-                .SetVideoSize(Args.ImageProvider.Width, Args.ImageProvider.Height);
+                .SetVideoSize(args.ImageProvider.Width, args.ImageProvider.Height);
 
-            var output = argsBuilder.AddOutputFile(Args.FileName)
-                .AddArg(Args.VideoArgsProvider(Args.VideoQuality))
-                .SetFrameRate(Args.FrameRate);
+            var output = argsBuilder.AddOutputFile(args.FileName)
+                .AddArg(args.VideoArgsProvider(args.VideoQuality))
+                .SetFrameRate(args.FrameRate);
             
             if (settings.Resize)
             {
@@ -58,7 +63,7 @@ namespace Captura.Models
                 output.AddArg($"-vf scale={width}:{height}");
             }
 
-            if (Args.AudioProvider != null)
+            if (args.AudioProvider != null)
             {
                 var audioPipeName = GetPipeName();
 
@@ -66,22 +71,22 @@ namespace Captura.Models
                     .AddArg("-thread_queue_size 512")
                     .SetFormat("s16le")
                     .SetAudioCodec("pcm_s16le")
-                    .SetAudioFrequency(Args.Frequency)
-                    .SetAudioChannels(Args.Channels);
+                    .SetAudioFrequency(args.Frequency)
+                    .SetAudioChannels(args.Channels);
 
-                output.AddArg(Args.AudioArgsProvider(Args.AudioQuality));
+                output.AddArg(args.AudioArgsProvider(args.AudioQuality));
 
                 // UpdatePeriod * Frequency * (Bytes per Second) * Channels * 2
-                var audioBufferSize = (int)((1000.0 / Args.FrameRate) * 44.1 * 2 * 2 * 2);
+                var audioBufferSize = (int)((1000.0 / args.FrameRate) * 44.1 * 2 * 2 * 2);
 
                 _audioPipe = new NamedPipeServerStream(audioPipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, audioBufferSize);
             }
 
             _ffmpegIn = new NamedPipeServerStream(videoPipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, _videoBuffer.Length);
 
-            output.AddArg(Args.OutputArgs);
+            output.AddArg(args.OutputArgs);
 
-            _ffmpegProcess = FFmpegService.StartFFmpeg(argsBuilder.GetArgs(), Args.FileName);
+            _ffmpegProcess = FFmpegService.StartFFmpeg(argsBuilder.GetArgs(), args.FileName);
         }
 
         /// <summary>
@@ -103,16 +108,16 @@ namespace Captura.Models
         /// </summary>
         public bool SupportsAudio { get; } = true;
 
-        bool _firstAudio = true;
+        private bool _firstAudio = true;
 
-        Task _lastAudio;
+        private Task _lastAudio;
 
         /// <summary>
         /// Write audio block to Audio Stream.
         /// </summary>
-        /// <param name="Buffer">Buffer containing audio data.</param>
-        /// <param name="Length">Length of audio data in bytes.</param>
-        public void WriteAudio(byte[] Buffer, int Length)
+        /// <param name="buffer">Buffer containing audio data.</param>
+        /// <param name="length">Length of audio data in bytes.</param>
+        public void WriteAudio(byte[] buffer, int length)
         {
             if (_ffmpegProcess.HasExited)
             {
@@ -131,21 +136,21 @@ namespace Captura.Models
 
             _lastAudio?.Wait();
 
-            _lastAudio = _audioPipe.WriteAsync(Buffer, 0, Length);
+            _lastAudio = _audioPipe.WriteAsync(buffer, 0, length);
         }
 
-        bool _firstFrame = true;
+        private bool _firstFrame = true;
 
-        Task _lastFrameTask;
+        private Task _lastFrameTask;
 
         /// <summary>
         /// Writes an Image frame.
         /// </summary>
-        public void WriteFrame(IBitmapFrame Frame)
+        public void WriteFrame(IBitmapFrame frame)
         {
             if (_ffmpegProcess.HasExited)
             {
-                Frame.Dispose();
+                frame.Dispose();
                 throw new Exception($"An Error Occurred with FFmpeg, Exit Code: {_ffmpegProcess.ExitCode}");
             }
             
@@ -161,11 +166,11 @@ namespace Captura.Models
 
             _lastFrameTask?.Wait();
 
-            if (!(Frame is RepeatFrame))
+            if (!(frame is RepeatFrame))
             {
-                using (Frame)
+                using (frame)
                 {
-                    Frame.CopyTo(_videoBuffer, _videoBuffer.Length);
+                    frame.CopyTo(_videoBuffer, _videoBuffer.Length);
                 }
             }
 

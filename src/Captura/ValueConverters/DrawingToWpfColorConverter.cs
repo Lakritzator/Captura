@@ -2,23 +2,24 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Data;
+using Captura.Presentation;
 using WpfColor = System.Windows.Media.Color;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class DrawingToWpfColorConverter : IValueConverter
     {
-        public object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (Value is Color c)
+            if (value is Color c)
                 return c.ToWpfColor();
 
             return Binding.DoNothing;
         }
 
-        public object ConvertBack(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch (Value)
+            switch (value)
             {
                 case string s:
                     return ColorTranslator.FromHtml(s);

@@ -1,8 +1,8 @@
-﻿<Page x:Class="Captura.ConfigPage"
+﻿<Page x:Class="Captura.Pages.ConfigPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-      xmlns:loc="clr-namespace:Captura;assembly=Captura.Loc"
+      xmlns:loc1="clr-namespace:Captura.Loc;assembly=Captura.Loc"
       DataContext="{Binding MainViewModel, Source={StaticResource ServiceLocator}}">
     <Grid>        
         <ScrollViewer>
@@ -24,7 +24,7 @@
                            ContentStringFormat="{}{0}:"
                            Margin="5,0,10,0"/>
                     <ComboBox VerticalAlignment="Center"
-                              DataContext="{x:Static loc:LanguageManager.Instance}"
+                              DataContext="{x:Static loc1:LanguageManager.Instance}"
                               ItemsSource="{Binding AvailableCultures}"
                               SelectedValue="{Binding CurrentCulture, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -68,7 +68,7 @@
                                         ToolTip="No of seconds after which recording is stopped automatically. 0 = don't stop automatically"/>
                 </Grid>
 
-                <CheckBox IsChecked="{Binding Settings.UI.MinimizeOnStart}"
+                <CheckBox IsChecked="{Binding Settings.Ui.MinimizeOnStart}"
                           Margin="0,2">
                     <TextBlock TextWrapping="Wrap"
                                Text="{Binding MinCapture, Source={StaticResource Loc}, Mode=OneWay}"/>
@@ -81,7 +81,7 @@
                 </CheckBox>
 
                 <CheckBox Content="{Binding AlwaysOnTop, Source={StaticResource Loc}, Mode=OneWay}"
-                          IsChecked="{Binding Settings.UI.MainWindowTopmost}"
+                          IsChecked="{Binding Settings.Ui.MainWindowTopmost}"
                           Margin="0,2"/>
 
                 <Button Click="OpenOverlayManager"

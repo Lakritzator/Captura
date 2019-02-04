@@ -1,6 +1,7 @@
-﻿using Captura.Audio;
+﻿using Captura.Base.Audio;
+using Captura.Base.Images;
 
-namespace Captura.Models
+namespace Captura.Base.Video
 {
     public class VideoWriterArgs
     {

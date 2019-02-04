@@ -1,20 +1,20 @@
 ﻿using System;
 using System.IO;
-using Captura.Audio;
+using Captura.Base.Audio;
 using IAudioEncoder = SharpAvi.Codecs.IAudioEncoder;
 
-namespace Captura.Models
+namespace Captura.SharpAvi
 {
     /// <summary>
     /// Enables a Screna based Audio Provider to be used with SharpAvi.
     /// </summary>
-    class IAudioProviderAdapter : IAudioEncoder
+    internal class AudioProviderAdapter : IAudioEncoder
     {
-        readonly IAudioProvider _provider;
+        private readonly IAudioProvider _provider;
 
-        public IAudioProviderAdapter(IAudioProvider Provider)
+        public AudioProviderAdapter(IAudioProvider provider)
         {
-            _provider = Provider;
+            _provider = provider;
         }
 
         public int BitsPerSample => _provider.WaveFormat.BitsPerSample;
@@ -54,15 +54,15 @@ namespace Captura.Models
 
         public int SamplesPerSecond => _provider.WaveFormat.SampleRate;
 
-        public int EncodeBlock(byte[] Source, int SourceOffset, int SourceCount, byte[] Destination, int DestinationOffset)
+        public int EncodeBlock(byte[] source, int sourceOffset, int sourceCount, byte[] destination, int destinationOffset)
         {
-            Array.Copy(Source, SourceOffset, Destination, DestinationOffset, SourceCount);
+            Array.Copy(source, sourceOffset, destination, destinationOffset, sourceCount);
 
-            return SourceCount;
+            return sourceCount;
         }
 
-        public int Flush(byte[] Destination, int DestinationOffset) => 0;
+        public int Flush(byte[] destination, int destinationOffset) => 0;
 
-        public int GetMaxEncodedLength(int SourceCount) => SourceCount;
+        public int GetMaxEncodedLength(int sourceCount) => sourceCount;
     }
 }

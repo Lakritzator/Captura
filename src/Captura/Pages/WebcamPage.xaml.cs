@@ -1,21 +1,24 @@
 ﻿using System.Windows;
-using Captura.ViewModels;
+using Captura.Base.Services;
+using Captura.Presentation;
+using Captura.ViewCore.ViewModels;
+using Captura.Windows;
 
-namespace Captura
+namespace Captura.Pages
 {
-    public partial class WebcamPage
+    public partial class WebCamPage
     {
-        public WebcamPage()
+        public WebCamPage()
         {
             InitializeComponent();
 
             ServiceProvider.Get<MainViewModel>().Refreshed += () =>
             {
-                WebcamComboBox.Shake();
+                WebCamComboBox.Shake();
             };
         }
 
-        void Preview_Click(object Sender, RoutedEventArgs E)
+        private void Preview_Click(object sender, RoutedEventArgs e)
         {
             WebCamWindow.Instance.ShowAndFocus();
         }

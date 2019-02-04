@@ -5,15 +5,18 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Captura.Base.Images;
+using Captura.Models;
+using Captura.Presentation;
 using Screna;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Point = System.Windows.Point;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class RegionPickerWindow
     {
-        RegionPickerWindow()
+        private RegionPickerWindow()
         {
             InitializeComponent();
 
@@ -25,7 +28,7 @@ namespace Captura
             UpdateBackground();
         }
 
-        void UpdateBackground()
+        private void UpdateBackground()
         {
             using (var bmp = ScreenShot.Capture())
             {
@@ -39,36 +42,36 @@ namespace Captura
             }
         }
 
-        void CloseClick(object Sender, RoutedEventArgs E)
+        private void CloseClick(object sender, RoutedEventArgs e)
         {
             _start = _end = null;
 
             Close();
         }
 
-        void UpdateSizeDisplay(Rect? Rect)
+        private void UpdateSizeDisplay(Rect? rect)
         {
-            if (Rect == null)
+            if (rect == null)
             {
                 SizeText.Visibility = Visibility.Collapsed;
             }
             else
             {
-                var rect = Rect.Value;
+                var newRect = rect.Value;
 
-                SizeText.Text = $"{(int) rect.Width} x {(int) rect.Height}";
+                SizeText.Text = $"{(int) newRect.Width} x {(int) newRect.Height}";
 
-                SizeText.Margin = new Thickness(rect.Left + rect.Width / 2 - SizeText.ActualWidth / 2, rect.Top + rect.Height / 2 - SizeText.ActualHeight / 2, 0, 0);
+                SizeText.Margin = new Thickness(newRect.Left + newRect.Width / 2 - SizeText.ActualWidth / 2, newRect.Top + newRect.Height / 2 - SizeText.ActualHeight / 2, 0, 0);
 
                 SizeText.Visibility = Visibility.Visible;
             }
         }
 
-        void WindowMouseMove(object Sender, MouseEventArgs E)
+        private void WindowMouseMove(object sender, MouseEventArgs e)
         {
             if (_isDragging)
             {
-                _end = E.GetPosition(Grid);
+                _end = e.GetPosition(Grid);
 
                 var r = GetRegion();
 
@@ -91,14 +94,14 @@ namespace Captura
             }
         }
 
-        bool _isDragging;
-        Point? _start, _end;
-        CroppingAdorner _croppingAdorner;
+        private bool _isDragging;
+        private Point? _start, _end;
+        private CroppingAdorner _croppingAdorner;
 
-        void WindowMouseLeftButtonDown(object Sender, MouseButtonEventArgs E)
+        private void WindowMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _isDragging = true;
-            _start = E.GetPosition(Grid);
+            _start = e.GetPosition(Grid);
             _end = null;
 
             if (_croppingAdorner != null)
@@ -111,10 +114,10 @@ namespace Captura
             }
         }
 
-        void WindowMouseLeftButtonUp(object Sender, MouseButtonEventArgs E)
+        private void WindowMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _isDragging = false;
-            _end = E.GetPosition(Grid);
+            _end = e.GetPosition(Grid);
             Border.Visibility = Visibility.Collapsed;
 
             var layer = AdornerLayer.GetAdornerLayer(Grid);
@@ -134,7 +137,7 @@ namespace Captura
 
             layer.Add(_croppingAdorner);
 
-            _croppingAdorner.CropChanged += (S, Args) => UpdateSizeDisplay(_croppingAdorner.SelectedRegion);
+            _croppingAdorner.CropChanged += (o, args) => UpdateSizeDisplay(_croppingAdorner.SelectedRegion);
 
             _croppingAdorner.Checked += () =>
             {
@@ -147,7 +150,7 @@ namespace Captura
             };
         }
 
-        Rect? GetRegion()
+        private Rect? GetRegion()
         {
             if (_start == null || _end == null)
             {
@@ -182,7 +185,7 @@ namespace Captura
             return new Rect(start.X, start.Y, width, height);
         }
 
-        Rectangle? GetRegionScaled()
+        private Rectangle? GetRegionScaled()
         {
             var rect = GetRegion();
 

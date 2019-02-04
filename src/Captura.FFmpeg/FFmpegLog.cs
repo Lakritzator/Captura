@@ -1,30 +1,32 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading;
+using Captura.Base;
+using Captura.Base.Services;
 
-namespace Captura.Models
+namespace Captura.FFmpeg
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FFmpegLog : NotifyPropertyChanged
     {
-        readonly SynchronizationContext _syncContext;
+        private readonly SynchronizationContext _syncContext;
 
-        readonly IClipboardService _clipboardService;
+        private readonly IClipboardService _clipboardService;
 
-        public FFmpegLog(IClipboardService ClipboardService)
+        public FFmpegLog(IClipboardService clipboardService)
         {
-            _clipboardService = ClipboardService;
+            _clipboardService = clipboardService;
             _syncContext = SynchronizationContext.Current;
 
             LogItems = new ReadOnlyObservableCollection<FFmpegLogItem>(_logItems);
         }
 
-        readonly ObservableCollection<FFmpegLogItem> _logItems = new ObservableCollection<FFmpegLogItem>();
+        private readonly ObservableCollection<FFmpegLogItem> _logItems = new ObservableCollection<FFmpegLogItem>();
 
         public ReadOnlyObservableCollection<FFmpegLogItem> LogItems { get; }
 
-        public FFmpegLogItem CreateNew(string Name)
+        public FFmpegLogItem CreateNew(string name)
         {
-            var item = new FFmpegLogItem(Name, _clipboardService);
+            var item = new FFmpegLogItem(name, _clipboardService);
 
             item.RemoveRequested += () => _logItems.Remove(item);
 
@@ -35,7 +37,7 @@ namespace Captura.Models
 
             if (_syncContext != null)
             {
-                _syncContext.Post(S => Insert(), null);
+                _syncContext.Post(state => Insert(), null);
             }
             else Insert();
 
@@ -44,7 +46,7 @@ namespace Captura.Models
             return item;
         }
 
-        FFmpegLogItem _selectedLogItem;
+        private FFmpegLogItem _selectedLogItem;
 
         public FFmpegLogItem SelectedLogItem
         {

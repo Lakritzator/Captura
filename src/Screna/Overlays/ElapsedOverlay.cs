@@ -1,14 +1,15 @@
 ﻿using System;
+using Captura.Base.Settings;
 
-namespace Captura.Models
+namespace Screna.Overlays
 {
     public class ElapsedOverlay : TextOverlay
     {
-        readonly Func<TimeSpan> _elapsed;
+        private readonly Func<TimeSpan> _elapsed;
 
-        public ElapsedOverlay(TextOverlaySettings OverlaySettings, Func<TimeSpan> Elapsed) : base(OverlaySettings)
+        public ElapsedOverlay(TextOverlaySettings overlaySettings, Func<TimeSpan> elapsed) : base(overlaySettings)
         {
-            _elapsed = Elapsed;
+            _elapsed = elapsed;
         }
 
         protected override string GetText() => _elapsed().ToString();

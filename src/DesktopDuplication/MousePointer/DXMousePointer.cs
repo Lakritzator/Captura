@@ -4,47 +4,49 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace DesktopDuplication
+namespace DesktopDuplication.MousePointer
 {
     public class DxMousePointer : IDisposable
     {
-        readonly Direct2DEditorSession _editorSession;
+        private readonly Direct2DEditorSession _editorSession;
 
-        IntPtr _ptrShapeBuffer;
-        int _ptrShapeBufferSize;
-        OutputDuplicatePointerShapeInformation _ptrShapeInfo;
-        OutputDuplicatePointerPosition _pointerPosition;
-        IPointerShape _pointerShape;
+        private IntPtr _ptrShapeBuffer;
+        private int _ptrShapeBufferSize;
+        private OutputDuplicatePointerShapeInformation _ptrShapeInfo;
+        private OutputDuplicatePointerPosition _pointerPosition;
+        private IPointerShape _pointerShape;
 
-        const int PtrShapeMonochrome = 1;
-        const int PtrShapeColor = 2;
-        const int PtrShapeMaskedColor = 4;
+        private const int PtrShapeMonochrome = 1;
+        private const int PtrShapeColor = 2;
+        private const int PtrShapeMaskedColor = 4;
 
-        public DxMousePointer(Direct2DEditorSession EditorSession)
+        public DxMousePointer(Direct2DEditorSession editorSession)
         {
-            _editorSession = EditorSession;
+            _editorSession = editorSession;
         }
 
-        public void Update(Texture2D DesktopTexture, OutputDuplicateFrameInformation FrameInfo, OutputDuplication DeskDupl)
+        public void Update(Texture2D desktopTexture, OutputDuplicateFrameInformation outputDuplicateFrameInformation, OutputDuplication outputDuplication)
         {
             // No update
-            if (FrameInfo.LastMouseUpdateTime == 0)
-                return;
-
-            _pointerPosition = FrameInfo.PointerPosition;
-
-            if (FrameInfo.PointerShapeBufferSize != 0)
+            if (outputDuplicateFrameInformation.LastMouseUpdateTime == 0)
             {
-                if (FrameInfo.PointerShapeBufferSize > _ptrShapeBufferSize)
+                return;
+            }
+
+            _pointerPosition = outputDuplicateFrameInformation.PointerPosition;
+
+            if (outputDuplicateFrameInformation.PointerShapeBufferSize != 0)
+            {
+                if (outputDuplicateFrameInformation.PointerShapeBufferSize > _ptrShapeBufferSize)
                 {
-                    _ptrShapeBufferSize = FrameInfo.PointerShapeBufferSize;
+                    _ptrShapeBufferSize = outputDuplicateFrameInformation.PointerShapeBufferSize;
 
                     _ptrShapeBuffer = _ptrShapeBuffer != IntPtr.Zero
                         ? Marshal.ReAllocCoTaskMem(_ptrShapeBuffer, _ptrShapeBufferSize)
                         : Marshal.AllocCoTaskMem(_ptrShapeBufferSize);
                 }
 
-                DeskDupl.GetFramePointerShape(_ptrShapeBufferSize,
+                outputDuplication.GetFramePointerShape(_ptrShapeBufferSize,
                     _ptrShapeBuffer,
                     out _,
                     out _ptrShapeInfo);
@@ -73,31 +75,35 @@ namespace DesktopDuplication
                 }
             }
 
-            _pointerShape?.Update(DesktopTexture, _pointerPosition);
+            _pointerShape?.Update(desktopTexture, _pointerPosition);
         }
 
-        public void Draw(Direct2DEditor Editor)
+        public void Draw(Direct2DEditor editor)
         {
             if (!_pointerPosition.Visible)
+            {
                 return;
+            }
 
-            var bmp = _pointerShape?.GetBitmap();
+            var bitmap = _pointerShape?.GetBitmap();
 
-            if (bmp == null)
+            if (bitmap == null)
                 return;
 
             var rect = new Rectangle(_pointerPosition.Position.X,
                 _pointerPosition.Position.Y,
-                (int) bmp.Size.Width,
-                (int) bmp.Size.Height);
+                (int) bitmap.Size.Width,
+                (int) bitmap.Size.Height);
 
-            Editor.DrawImage(bmp, rect);
+            editor.DrawImage(bitmap, rect);
         }
 
         public void Dispose()
         {
             if (_ptrShapeBuffer == IntPtr.Zero)
+            {
                 return;
+            }
 
             _pointerShape?.Dispose();
             Marshal.FreeCoTaskMem(_ptrShapeBuffer);

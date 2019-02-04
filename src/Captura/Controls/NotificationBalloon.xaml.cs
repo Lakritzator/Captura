@@ -1,32 +1,34 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
-using System;
+using Captura.Base.Notification;
+using Captura.Models;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class NotificationBalloon : IRemoveRequester
     {
         public INotification Notification { get; }
 
-        public NotificationBalloon(INotification Notification)
+        public NotificationBalloon(INotification notification)
         {
-            this.Notification = Notification;
+            Notification = notification;
 
-            Notification.RemoveRequested += OnClose;
+            notification.RemoveRequested += OnClose;
 
             InitializeComponent();
         }
 
-        void OnClose()
+        private void OnClose()
         {
             RemoveRequested?.Invoke();
         }
 
         public event Action RemoveRequested;
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => OnClose();
-        
-        void TextBlock_MouseUp(object Sender, MouseButtonEventArgs E)
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => OnClose();
+
+        private void TextBlock_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Notification.RaiseClick();
 

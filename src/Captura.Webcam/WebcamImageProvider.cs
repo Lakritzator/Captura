@@ -1,16 +1,17 @@
 ﻿using System.Drawing;
-using Captura.Models;
-using Screna;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Screna.Frames;
 
-namespace Captura.Webcam
+namespace Captura.WebCam
 {
-    public class WebcamImageProvider : IImageProvider
+    public class WebCamImageProvider : IImageProvider
     {
-        readonly IWebCamProvider _webCamProvider;
+        private readonly IWebCamProvider _webCamProvider;
 
-        public WebcamImageProvider(IWebCamProvider WebCamProvider)
+        public WebCamImageProvider(IWebCamProvider webCamProvider)
         {
-            _webCamProvider = WebCamProvider;
+            _webCamProvider = webCamProvider;
         }
 
         public void Dispose() { }
@@ -19,10 +20,12 @@ namespace Captura.Webcam
         {
             try
             {
-                var img = _webCamProvider.Capture(GraphicsBitmapLoader.Instance);
+                var capture = _webCamProvider.Capture(GraphicsBitmapLoader.Instance);
 
-                if (img is Bitmap bmp)
-                    return new GraphicsEditor(bmp);
+                if (capture is Bitmap bitmap)
+                {
+                    return new GraphicsEditor(bitmap);
+                }
 
                 return RepeatFrame.Instance;
             }

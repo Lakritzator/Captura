@@ -1,23 +1,24 @@
 using System;
-using Captura.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Captura.Base;
+using Captura.Base.Services;
 using Newtonsoft.Json;
 
-namespace Captura
+namespace Captura.HotKeys
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class HotKeyManager : IDisposable
     {
-        readonly ObservableCollection<Hotkey> _hotkeys = new ObservableCollection<Hotkey>();
+        private readonly ObservableCollection<HotKey> _hotKeys = new ObservableCollection<HotKey>();
 
-        public ReadOnlyObservableCollection<Hotkey> Hotkeys { get; }
+        public ReadOnlyObservableCollection<HotKey> HotKeys { get; }
 
-        static string GetFilePath() => Path.Combine(ServiceProvider.SettingsDir, "Hotkeys.json");
+        private static string GetFilePath() => Path.Combine(ServiceProvider.SettingsDir, "HotKeys.json");
 
         public ICommand ResetCommand { get; }
 
@@ -27,7 +28,7 @@ namespace Captura
 
         public HotKeyManager()
         {
-            Hotkeys = new ReadOnlyObservableCollection<Hotkey>(_hotkeys);
+            HotKeys = new ReadOnlyObservableCollection<HotKey>(_hotKeys);
 
             ResetCommand = new DelegateCommand(Reset);
 
@@ -36,38 +37,40 @@ namespace Captura
             RemoveCommand = new DelegateCommand(Remove);
         }
 
-        void Remove(object O)
+        private void Remove(object o)
         {
-            if (O is Hotkey hotkey)
+            if (!(o is HotKey hotKey))
             {
-                hotkey.Unregister();
-
-                _hotkeys.Remove(hotkey);
+                return;
             }
+
+            hotKey.UnRegister();
+
+            _hotKeys.Remove(hotKey);
         }
 
-        void Add()
+        private void Add()
         {
-            var hotkey = new Hotkey(new HotkeyModel(ServiceName.None, Keys.None, Modifiers.None, false));
+            var hotKey = new HotKey(new HotKeyModel(ServiceName.None, Keys.None, Modifiers.None, false));
 
-            _hotkeys.Add(hotkey);
+            _hotKeys.Add(hotKey);
         }
 
         public static IEnumerable<Service> AllServices { get; } = Enum
             .GetValues(typeof(ServiceName))
             .Cast<ServiceName>()
-            .Select(M => new Service(M))
+            .Select(serviceName => new Service(serviceName))
             .ToArray(); // Prevent multiple enumerations
 
         public void RegisterAll()
         {
-            IEnumerable<HotkeyModel> models;
+            IEnumerable<HotKeyModel> models;
 
             try
             {
                 var json = File.ReadAllText(GetFilePath());
 
-                models = JsonConvert.DeserializeObject<IEnumerable<HotkeyModel>>(json);
+                models = JsonConvert.DeserializeObject<IEnumerable<HotKeyModel>>(json);
             }
             catch
             {
@@ -81,77 +84,77 @@ namespace Captura
         {
             Dispose();
 
-            _hotkeys.Clear();
+            _hotKeys.Clear();
 
             Populate(Defaults());
         }
 
-        void Populate(IEnumerable<HotkeyModel> Models)
+        private void Populate(IEnumerable<HotKeyModel> models)
         {
-            foreach (var model in Models)
+            foreach (var model in models)
             {
-                var hotkey = new Hotkey(model);
+                var hotKey = new HotKey(model);
 
-                if (hotkey.IsActive && !hotkey.IsRegistered)
-                    _notRegisteredOnStartup.Add(hotkey);
+                if (hotKey.IsActive && !hotKey.IsRegistered)
+                    _notRegisteredOnStartup.Add(hotKey);
 
-                _hotkeys.Add(hotkey);
+                _hotKeys.Add(hotKey);
             }
         }
 
-        readonly List<Hotkey> _notRegisteredOnStartup = new List<Hotkey>();
+        private readonly List<HotKey> _notRegisteredOnStartup = new List<HotKey>();
 
         public void ShowNotRegisteredOnStartup()
         {
             if (_notRegisteredOnStartup.Count > 0)
             {
-                var message = "The following Hotkeys could not be registered:\nOther programs might be using them.\nTry changing them.\n\n";
+                var message = "The following HotKeys could not be registered:\nOther programs might be using them.\nTry changing them.\n\n";
 
-                foreach (var hotkey in _notRegisteredOnStartup)
+                foreach (var hotKey in _notRegisteredOnStartup)
                 {
-                    message += $"{hotkey.Service.Description} - {hotkey}\n\n";
+                    message += $"{hotKey.Service.Description} - {hotKey}\n\n";
                 }
 
-                ServiceProvider.MessageProvider.ShowError(message, "Failed to Register Hotkeys");
+                ServiceProvider.MessageProvider.ShowError(message, "Failed to Register HotKeys");
 
                 _notRegisteredOnStartup.Clear();
             }
         }
 
-        static IEnumerable<HotkeyModel> Defaults()
+        private static IEnumerable<HotKeyModel> Defaults()
         {
             return new[]
             {
-                new HotkeyModel(ServiceName.Recording, Keys.F9, Modifiers.Alt, true),
-                new HotkeyModel(ServiceName.Pause, Keys.F9, Modifiers.Shift, true),
-                new HotkeyModel(ServiceName.ScreenShot, Keys.PrintScreen, 0, true),
-                new HotkeyModel(ServiceName.ActiveScreenShot, Keys.PrintScreen, Modifiers.Alt, true),
-                new HotkeyModel(ServiceName.DesktopScreenShot, Keys.PrintScreen, Modifiers.Shift, true)
+                new HotKeyModel(ServiceName.Recording, Keys.F9, Modifiers.Alt, true),
+                new HotKeyModel(ServiceName.Pause, Keys.F9, Modifiers.Shift, true),
+                new HotKeyModel(ServiceName.ScreenShot, Keys.PrintScreen, 0, true),
+                new HotKeyModel(ServiceName.ActiveScreenShot, Keys.PrintScreen, Modifiers.Alt, true),
+                new HotKeyModel(ServiceName.DesktopScreenShot, Keys.PrintScreen, Modifiers.Shift, true)
             };
         }
         
-        public void ProcessHotkey(int Id)
+        public void ProcessHotKey(int id)
         {
-            var hotkey = Hotkeys.SingleOrDefault(H => H.Id == Id);
+            var hotKey = HotKeys.SingleOrDefault(key => key.Id == id);
 
-            if (hotkey != null)
-                HotkeyPressed?.Invoke(hotkey.Service.ServiceName);
+            if (hotKey != null)
+                HotKeyPressed?.Invoke(hotKey.Service.ServiceName);
         }
 
-        public void FakeHotkey(ServiceName Service)
+        public void FakeHotKey(ServiceName service)
         {
-            HotkeyPressed?.Invoke(Service);
+            HotKeyPressed?.Invoke(service);
         }
 
-        public event Action<ServiceName> HotkeyPressed;
+        public event Action<ServiceName> HotKeyPressed;
         
         public void Dispose()
         {
-            var models = Hotkeys.Select(M =>
+            var models = HotKeys.Select(hotKey =>
             {
-                M.Unregister();
+                hotKey.UnRegister();
 
-                return new HotkeyModel(M.Service.ServiceName, M.Key, M.Modifiers, M.IsActive);
+                return new HotKeyModel(hotKey.Service.ServiceName, hotKey.Key, hotKey.Modifiers, hotKey.IsActive);
             });
 
             try

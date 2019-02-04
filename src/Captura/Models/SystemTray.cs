@@ -1,28 +1,34 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using System;
 using System.Windows.Controls.Primitives;
+using Captura.Base.Audio;
+using Captura.Base.Notification;
+using Captura.Base.Services;
+using Captura.Controls;
+using Captura.Core.Settings;
 
 namespace Captura.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    class SystemTray : ISystemTray
+    internal class SystemTray : ISystemTray
     {
-        bool _first = true;
+        private bool _first = true;
 
         /// <summary>
         /// Using a Function ensures that the <see cref="TaskbarIcon"/> object is used only after it is initialised.
         /// </summary>
-        readonly Func<TaskbarIcon> _trayIcon;
-        readonly Settings _settings;
-        readonly IAudioPlayer _audioPlayer;
+        private readonly Func<TaskbarIcon> _trayIcon;
 
-        readonly NotificationStack _notificationStack = new NotificationStack();
+        private readonly Settings _settings;
+        private readonly IAudioPlayer _audioPlayer;
 
-        public SystemTray(Func<TaskbarIcon> TaskbarIcon, Settings Settings, IAudioPlayer AudioPlayer)
+        private readonly NotificationStack _notificationStack = new NotificationStack();
+
+        public SystemTray(Func<TaskbarIcon> taskbarIcon, Settings settings, IAudioPlayer audioPlayer)
         {
-            _trayIcon = TaskbarIcon;
-            _settings = Settings;
-            _audioPlayer = AudioPlayer;
+            _trayIcon = taskbarIcon;
+            _settings = settings;
+            _audioPlayer = audioPlayer;
 
             _notificationStack.Opacity = 0;
         }
@@ -32,7 +38,7 @@ namespace Captura.Models
             _notificationStack.Hide();
         }
 
-        void Show()
+        private void Show()
         {
             var trayIcon = _trayIcon.Invoke();
 
@@ -48,22 +54,22 @@ namespace Captura.Models
             _notificationStack.Show();
         }
 
-        public void ShowScreenShotNotification(string FilePath)
+        public void ShowScreenShotNotification(string filePath)
         {
             if (!_settings.Tray.ShowNotifications)
                 return;
 
-            _notificationStack.Add(new ScreenShotBalloon(FilePath));
+            _notificationStack.Add(new ScreenShotBalloon(filePath));
 
             Show();
         }
 
-        public void ShowNotification(INotification Notification)
+        public void ShowNotification(INotification notification)
         {
             if (!_settings.Tray.ShowNotifications)
                 return;
 
-            _notificationStack.Add(new NotificationBalloon(Notification));
+            _notificationStack.Add(new NotificationBalloon(notification));
 
             Show();
         }

@@ -2,29 +2,29 @@
 using System.Runtime.InteropServices;
 using SharpDX.DXGI;
 
-namespace DesktopDuplication
+namespace DesktopDuplication.MousePointer
 {
     public class MonochromePointerShape : MaskedPointerShape
     {
-        byte[] _andMaskBuffer, _xorMaskBuffer;
+        private byte[] _andMaskBuffer, _xorMaskBuffer;
 
-        public MonochromePointerShape(IntPtr ShapeBuffer,
-            OutputDuplicatePointerShapeInformation ShapeInfo,
-            Direct2DEditorSession EditorSession)
-            : base(ShapeInfo.Width, ShapeInfo.Height / 2, EditorSession)
+        public MonochromePointerShape(IntPtr shapeBuffer,
+            OutputDuplicatePointerShapeInformation shapeInfo,
+            Direct2DEditorSession editorSession)
+            : base(shapeInfo.Width, shapeInfo.Height / 2, editorSession)
         {
             _andMaskBuffer = new byte[Width * Height / 8];
-            Marshal.Copy(ShapeBuffer, _andMaskBuffer, 0, _andMaskBuffer.Length);
+            Marshal.Copy(shapeBuffer, _andMaskBuffer, 0, _andMaskBuffer.Length);
 
             _xorMaskBuffer = new byte[Width * Height / 8];
-            Marshal.Copy(ShapeBuffer + _andMaskBuffer.Length, _xorMaskBuffer, 0, _xorMaskBuffer.Length);
+            Marshal.Copy(shapeBuffer + _andMaskBuffer.Length, _xorMaskBuffer, 0, _xorMaskBuffer.Length);
         }
 
         // BGRA
-        static readonly byte[] White = { 0xFF, 0xFF, 0xFF, 0xFF };
-        static readonly byte[] Black = { 0, 0, 0, 0xFF };
-        static readonly byte[] TransparentWhite = { 0xFF, 0xFF, 0xFF, 0 };
-        static readonly byte[] TransparentBlack = new byte[4];
+        private static readonly byte[] White = { 0xFF, 0xFF, 0xFF, 0xFF };
+        private static readonly byte[] Black = { 0, 0, 0, 0xFF };
+        private static readonly byte[] TransparentWhite = { 0xFF, 0xFF, 0xFF, 0 };
+        private static readonly byte[] TransparentBlack = new byte[4];
 
         protected override void OnUpdate()
         {

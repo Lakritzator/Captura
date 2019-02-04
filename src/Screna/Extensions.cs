@@ -1,7 +1,8 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
-using Captura;
+using Captura.Base.Services;
 using Captura.Native;
+using Captura.Native.Structs;
 
 namespace Screna
 {
@@ -10,41 +11,43 @@ namespace Screna
     /// </summary>
     public static class Extensions
     {
-        public static Rectangle Even(this Rectangle Rect)
+        public static Rectangle Even(this Rectangle rect)
         {
-            if (Rect.Width % 2 == 1)
-                --Rect.Width;
+            if (rect.Width % 2 == 1)
+                --rect.Width;
 
-            if (Rect.Height % 2 == 1)
-                --Rect.Height;
+            if (rect.Height % 2 == 1)
+                --rect.Height;
 
-            return Rect;
+            return rect;
         }
 
-        public static void WriteToClipboard(this string S)
+        public static void WriteToClipboard(this string text)
         {
-            if (S == null)
+            if (text == null)
+            {
                 return;
+            }
 
             var clipboard = ServiceProvider.Get<IClipboardService>();
 
-            clipboard.SetText(S);
+            clipboard.SetText(text);
         }
 
         /// <summary>
         /// Removes the Pixels on Edges matching TrimColor(default is Transparent) from the Image
         /// </summary>
-        internal static unsafe Bitmap CropEmptyEdges(this Bitmap Image, Color TrimColor = default(Color))
+        internal static unsafe Bitmap CropEmptyEdges(this Bitmap image, Color trimColor = default(Color))
         {
-            if (Image == null)
+            if (image == null)
                 return null;
 
-            int sizeX = Image.Width,
-                sizeY = Image.Height;
+            int sizeX = image.Width,
+                sizeY = image.Height;
 
             var r = new RECT(-1);
 
-            using (var b = new UnsafeBitmap(Image))
+            using (var b = new UnsafeBitmap(image))
             {
                 for (int x = 0, y = 0; ;)
                 {
@@ -52,12 +55,12 @@ namespace Screna
 
                     bool Condition()
                     {
-                        return TrimColor.A == 0
+                        return trimColor.A == 0
                                && pixel->Alpha != 0
                                ||
-                               TrimColor.R != pixel->Red
-                               && TrimColor.G != pixel->Green
-                               && TrimColor.B != pixel->Blue;
+                               trimColor.R != pixel->Red
+                               && trimColor.G != pixel->Green
+                               && trimColor.B != pixel->Blue;
                     }
 
                     if (r.Left == -1)
@@ -147,9 +150,9 @@ namespace Screna
             if (r.Left >= r.Right || r.Top >= r.Bottom)
                 return null;
 
-            var final = Image.Clone(r.ToRectangle(), Image.PixelFormat);
+            var final = image.Clone(r.ToRectangle(), image.PixelFormat);
 
-            Image.Dispose();
+            image.Dispose();
 
             return final;
         }
@@ -157,20 +160,20 @@ namespace Screna
         /// <summary>
         /// Creates a Transparent Bitmap from a combination of a Bitmap on a White Background and another on a Black Background
         /// </summary>
-        internal static unsafe Bitmap DifferentiateAlpha(Bitmap WhiteBitmap, Bitmap BlackBitmap)
+        internal static unsafe Bitmap DifferentiateAlpha(Bitmap whiteBitmap, Bitmap blackBitmap)
         {
-            if (WhiteBitmap == null || BlackBitmap == null || WhiteBitmap.Size != BlackBitmap.Size)
+            if (whiteBitmap == null || blackBitmap == null || whiteBitmap.Size != blackBitmap.Size)
                 return null;
 
-            int sizeX = WhiteBitmap.Width,
-                sizeY = WhiteBitmap.Height;
+            int sizeX = whiteBitmap.Width,
+                sizeY = whiteBitmap.Height;
 
             var final = new Bitmap(sizeX, sizeY, PixelFormat.Format32bppArgb);
 
             var empty = true;
 
-            using (var a = new UnsafeBitmap(WhiteBitmap))
-            using (var b = new UnsafeBitmap(BlackBitmap))
+            using (var a = new UnsafeBitmap(whiteBitmap))
+            using (var b = new UnsafeBitmap(blackBitmap))
             using (var f = new UnsafeBitmap(final))
             {
                 byte ToByte(int I) => (byte)(I > 255 ? 255 : (I < 0 ? 0 : I));
@@ -186,15 +189,19 @@ namespace Screna
                                             + pixelB->Green - pixelA->Green + 255
                                             + pixelB->Blue - pixelA->Blue + 255) / 3);
 
-                    if (pixelF->Alpha > 0)
+                    if (pixelF->Alpha <= 0)
                     {
-                        // Following math creates an image optimized to be displayed on a black background
-                        pixelF->Red = ToByte(255 * pixelB->Red / pixelF->Alpha);
-                        pixelF->Green = ToByte(255 * pixelB->Green / pixelF->Alpha);
-                        pixelF->Blue = ToByte(255 * pixelB->Blue / pixelF->Alpha);
+                        continue;
+                    }
 
-                        if (empty)
-                            empty = false;
+                    // Following math creates an image optimized to be displayed on a black background
+                    pixelF->Red = ToByte(255 * pixelB->Red / pixelF->Alpha);
+                    pixelF->Green = ToByte(255 * pixelB->Green / pixelF->Alpha);
+                    pixelF->Blue = ToByte(255 * pixelB->Blue / pixelF->Alpha);
+
+                    if (empty)
+                    {
+                        empty = false;
                     }
                 }
             }

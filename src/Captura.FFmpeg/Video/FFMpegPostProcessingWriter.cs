@@ -1,13 +1,16 @@
 ﻿using System.IO;
+using Captura.Base.Images;
+using Captura.Base.Video;
+using Captura.FFmpeg.ArgsBuilder;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     // ReSharper disable once InconsistentNaming
     public class FFmpegPostProcessingWriter : IVideoFileWriter
     {
-        readonly IVideoFileWriter _ffMpegWriter;
-        readonly string _tempFileName;
-        readonly FFmpegVideoWriterArgs _args;
+        private readonly IVideoFileWriter _ffMpegWriter;
+        private readonly string _tempFileName;
+        private readonly FFmpegVideoWriterArgs _args;
 
         public FFmpegPostProcessingWriter(FFmpegVideoWriterArgs Args)
         {
@@ -56,15 +59,15 @@ namespace Captura.Models
         public bool SupportsAudio { get; } = true;
         
         /// <inheritdoc />
-        public void WriteAudio(byte[] Buffer, int Length)
+        public void WriteAudio(byte[] buffer, int length)
         {
-            _ffMpegWriter.WriteAudio(Buffer, Length);
+            _ffMpegWriter.WriteAudio(buffer, length);
         }
 
         /// <inheritdoc />
-        public void WriteFrame(IBitmapFrame Frame)
+        public void WriteFrame(IBitmapFrame frame)
         {
-            _ffMpegWriter.WriteFrame(Frame);
+            _ffMpegWriter.WriteFrame(frame);
         }
     }
 }

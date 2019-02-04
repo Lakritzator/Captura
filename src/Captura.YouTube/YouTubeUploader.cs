@@ -1,12 +1,13 @@
 ﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Captura.Base.Settings;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 
-namespace Captura
+namespace Captura.YouTube
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class YouTubeUploader
@@ -16,23 +17,23 @@ namespace Captura
 
         YouTubeService _youtubeService;
 
-        public YouTubeUploader(IYouTubeApiKeys ApiKeys,
-            ProxySettings ProxySettings)
+        public YouTubeUploader(IYouTubeApiKeys apiKeys,
+            ProxySettings proxySettings)
         {
-            _apiKeys = ApiKeys;
-            _proxySettings = ProxySettings;
+            _apiKeys = apiKeys;
+            _proxySettings = proxySettings;
         }
 
-        static string GetPrivacyStatus(YouTubePrivacyStatus PrivacyStatus)
+        static string GetPrivacyStatus(YouTubePrivacyStatus privacyStatus)
         {
-            return PrivacyStatus.ToString().ToLower();
+            return privacyStatus.ToString().ToLower();
         }
 
-        public async Task<YouTubeUploadRequest> CreateUploadRequest(string FileName,
-            string Title,
-            string Description,
-            string[] Tags = null,
-            YouTubePrivacyStatus PrivacyStatus = YouTubePrivacyStatus.Unlisted)
+        public async Task<YouTubeUploadRequest> CreateUploadRequest(string fileName,
+            string title,
+            string description,
+            string[] tags = null,
+            YouTubePrivacyStatus privacyStatus = YouTubePrivacyStatus.Unlisted)
         {
             if (_youtubeService == null)
                 await Init();
@@ -41,15 +42,15 @@ namespace Captura
             {
                 Snippet = new VideoSnippet
                 {
-                    Title = Title,
-                    Description = Description,
-                    Tags = Tags ?? new string[0],
+                    Title = title,
+                    Description = description,
+                    Tags = tags ?? new string[0],
                     CategoryId = "22"
                 },
-                Status = new VideoStatus { PrivacyStatus = GetPrivacyStatus(PrivacyStatus) }
+                Status = new VideoStatus { PrivacyStatus = GetPrivacyStatus(privacyStatus) }
             };
 
-            return new YouTubeUploadRequest(FileName, _youtubeService, video);
+            return new YouTubeUploadRequest(fileName, _youtubeService, video);
         }
 
         async Task Init()

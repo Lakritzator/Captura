@@ -1,13 +1,15 @@
-﻿namespace Captura.Views
+﻿using Captura.Presentation;
+
+namespace Captura.Windows
 {
     public partial class LicensesWindow
     {
-        LicensesWindow()
+        private LicensesWindow()
         {
             InitializeComponent();
         }
 
-        static LicensesWindow _instance;
+        private static LicensesWindow _instance;
 
         public static void ShowInstance()
         {
@@ -15,7 +17,7 @@
             {
                 _instance = new LicensesWindow();
 
-                _instance.Closed += (S, E) => _instance = null;
+                _instance.Closed += (sender, e) => _instance = null;
             }
 
             _instance.ShowAndFocus();

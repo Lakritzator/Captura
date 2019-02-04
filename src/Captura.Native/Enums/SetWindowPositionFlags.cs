@@ -1,4 +1,4 @@
-﻿namespace Captura.Native
+﻿namespace Captura.Native.Enums
 {
     public enum SetWindowPositionFlags
     {

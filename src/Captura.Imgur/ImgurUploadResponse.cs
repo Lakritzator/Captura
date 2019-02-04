@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Captura.Models
+namespace Captura.Imgur
 {
-    class ImgurUploadResponse : ImgurResponse
+    internal class ImgurUploadResponse : ImgurResponse
     {
         [JsonProperty("data")]
         public ImgurData Data { get; set; }

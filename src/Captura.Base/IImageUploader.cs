@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Captura.Base.Images;
 
-namespace Captura.Models
+namespace Captura.Base
 {
     public interface IImageUploader
     {
-        Task<UploadResult> Upload(IBitmapImage Image, ImageFormats Format, Action<int> Progress);
+        Task<UploadResult> Upload(IBitmapImage image, ImageFormats format, Action<int> progress);
 
-        Task DeleteUploadedFile(string DeleteHash);
+        Task DeleteUploadedFile(string deleteHash);
 
         string UploadServiceName { get; }
     }

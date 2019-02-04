@@ -1,6 +1,7 @@
-﻿using Xunit;
+﻿using Tests.Models;
+using Xunit;
 
-namespace Captura.Tests
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class PropertyStoreTests
@@ -12,7 +13,7 @@ namespace Captura.Tests
 
             var propertyName = "Unknown";
 
-            obj.PropertyChanged += (S, E) => propertyName = E.PropertyName;
+            obj.PropertyChanged += (sender, e) => propertyName = e.PropertyName;
 
             const string newValue = "New Value";
 

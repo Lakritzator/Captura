@@ -1,10 +1,10 @@
 ﻿using System.Drawing;
 
-namespace Screna
+namespace Screna.Frames
 {
     public class OneTimeFrame : DrawingFrameBase
     {
-        public OneTimeFrame(Bitmap Bitmap) : base(Bitmap) { }
+        public OneTimeFrame(Bitmap bitmap) : base(bitmap) { }
 
         public override void Dispose()
         {

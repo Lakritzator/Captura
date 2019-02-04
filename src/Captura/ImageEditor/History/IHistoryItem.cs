@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.ImageEditor.History
 {
     public interface IHistoryItem { }
 }

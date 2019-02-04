@@ -1,8 +1,17 @@
-﻿using Captura.Models;
+﻿using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Core.ViewModels;
+using Captura.FFmpeg;
+using Captura.HotKeys;
+using Captura.ImageEditor;
+using Captura.MouseKeyHook;
+using Captura.ViewCore.ViewModels;
 using Captura.ViewModels;
+using Captura.YouTube;
+
 // ReSharper disable MemberCanBeMadeStatic.Global
 
-namespace Captura
+namespace Captura.Models
 {
     /// <summary>
     /// Used as a Static Resource to inject ViewModels into UI.

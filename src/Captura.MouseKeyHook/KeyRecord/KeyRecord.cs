@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
+using Captura.MouseKeyHook.Models;
 
-namespace Captura.Models
+namespace Captura.MouseKeyHook.KeyRecord
 {
     class KeyRecord : IKeyRecord
     {
@@ -10,16 +11,16 @@ namespace Captura.Models
 
         readonly bool _capsLock;
 
-        public KeyRecord(KeyEventArgs KeyEventArgs, KeymapViewModel Keymap)
+        public KeyRecord(KeyEventArgs keyEventArgs, KeymapViewModel keymap)
         {
-            _keymap = Keymap;
-            _eventArgs = KeyEventArgs;
+            _keymap = keymap;
+            _eventArgs = keyEventArgs;
             TimeStamp = DateTime.Now;
 
-            Key = KeyEventArgs.KeyCode;
-            Control = KeyEventArgs.Control;
-            Shift = KeyEventArgs.Shift;
-            Alt = KeyEventArgs.Alt;
+            Key = keyEventArgs.KeyCode;
+            Control = keyEventArgs.Control;
+            Shift = keyEventArgs.Shift;
+            Alt = keyEventArgs.Alt;
 
             _capsLock = Console.CapsLock;
 

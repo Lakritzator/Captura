@@ -1,19 +1,19 @@
-﻿<Window x:Class="Captura.MainWindow"
+﻿<Window x:Class="Captura.Windows.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        xmlns:local="clr-namespace:Captura"
+        xmlns:controls="clr-namespace:Captura.Controls"
         DataContext="{Binding MainViewModel, Source={StaticResource ServiceLocator}}"
         ResizeMode="CanMinimize"
         Icon="../Images/Captura.ico"
         SizeToContent="Height"
         MaxWidth="440"
         Title="Captura"
-        Left="{Binding Settings.UI.MainWindowLeft, Mode=TwoWay}"
-        Top="{Binding Settings.UI.MainWindowTop, Mode=TwoWay}"
+        Left="{Binding Settings.Ui.MainWindowLeft, Mode=TwoWay}"
+        Top="{Binding Settings.Ui.MainWindowTop, Mode=TwoWay}"
         BorderThickness="1"
         BorderBrush="{DynamicResource Accent}"
-        Topmost="{Binding Settings.UI.MainWindowTopmost}">
+        Topmost="{Binding Settings.Ui.MainWindowTopmost}">
     <WindowChrome.WindowChrome>
         <WindowChrome GlassFrameThickness="1"
                       UseAeroCaptionButtons="False"
@@ -212,27 +212,27 @@
 
         <Expander Padding="5,0,0,0"
                   Grid.Row="0"
-                  IsExpanded="{Binding Settings.UI.Expanded}">
+                  IsExpanded="{Binding Settings.Ui.Expanded}">
             <Expander.Header>
                 <DockPanel VerticalAlignment="Center">
-                    <local:ModernButton ToolTip="{Binding ScreenShot, Source={StaticResource Loc}, Mode=OneWay}"
+                    <controls:ModernButton ToolTip="{Binding ScreenShot, Source={StaticResource Loc}, Mode=OneWay}"
                                         Command="{Binding ScreenShotViewModel.ScreenShotCommand, Source={StaticResource ServiceLocator}}"
                                         IconData="{Binding Icons.Camera, Source={StaticResource ServiceLocator}}"
                                         Opacity="0.9"/>
-                    <local:ModernButton ToolTip="{Binding RecordStop, Source={StaticResource Loc}, Mode=OneWay}"
+                    <controls:ModernButton ToolTip="{Binding RecordStop, Source={StaticResource Loc}, Mode=OneWay}"
                                         Command="{Binding RecordingViewModel.RecordCommand, Source={StaticResource ServiceLocator}}"
                                         Foreground="#b71c1c"
                                         IconData="{Binding RecordingViewModel.RecorderState, Source={StaticResource ServiceLocator}, Converter={StaticResource StateToRecordButtonGeometryConverter}}"/>
-                    <local:ModernButton ToolTip="{Binding PauseResume, Source={StaticResource Loc}, Mode=OneWay}" 
+                    <controls:ModernButton ToolTip="{Binding PauseResume, Source={StaticResource Loc}, Mode=OneWay}" 
                                         Command="{Binding RecordingViewModel.PauseCommand, Source={StaticResource ServiceLocator}}"
                                         IconData="{Binding Icons.Pause, Source={StaticResource ServiceLocator}}"
                                         Opacity="0.9"
                                         RenderTransformOrigin="0.5,0.5">
-                        <local:ModernButton.RenderTransform>
+                        <controls:ModernButton.RenderTransform>
                             <RotateTransform/>
-                        </local:ModernButton.RenderTransform>
-                        <local:ModernButton.Style>
-                            <Style TargetType="local:ModernButton" BasedOn="{StaticResource {x:Type local:ModernButton}}">
+                        </controls:ModernButton.RenderTransform>
+                        <controls:ModernButton.Style>
+                            <Style TargetType="controls:ModernButton" BasedOn="{StaticResource {x:Type controls:ModernButton}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding RecordingViewModel.RecorderState, Source={StaticResource ServiceLocator}}" Value="Paused">
                                         <DataTrigger.EnterActions>
@@ -256,19 +256,19 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </local:ModernButton.Style>
-                    </local:ModernButton>
-                    <local:ModernButton ToolTip="{Binding Close, Source={StaticResource Loc}, Mode=OneWay}"
+                        </controls:ModernButton.Style>
+                    </controls:ModernButton>
+                    <controls:ModernButton ToolTip="{Binding Close, Source={StaticResource Loc}, Mode=OneWay}"
                                         Click="CloseButton_Click"
                                         Foreground="#77ef5350"
                                         IconData="{Binding Icons.Close, Source={StaticResource ServiceLocator}}"
                                         DockPanel.Dock="Right"/>
-                    <local:ModernButton ToolTip="{Binding MinTray, Source={StaticResource Loc}, Mode=OneWay}"
+                    <controls:ModernButton ToolTip="{Binding MinTray, Source={StaticResource Loc}, Mode=OneWay}"
                                         Click="HideButton_Click"
                                         IconData="{Binding Icons.DoubleDown, Source={StaticResource ServiceLocator}}"
                                         Opacity="0.7"
                                         DockPanel.Dock="Right"/>
-                    <local:ModernButton ToolTip="{Binding Minimize, Source={StaticResource Loc}, Mode=OneWay}"
+                    <controls:ModernButton ToolTip="{Binding Minimize, Source={StaticResource Loc}, Mode=OneWay}"
                                         Click="MinButton_Click"
                                         IconData="{Binding Icons.Minimize, Source={StaticResource ServiceLocator}}"
                                         Opacity="0.7"
@@ -300,11 +300,11 @@
             </Expander.Header>
             <DockPanel Margin="-5,0,0,0"
                        Height="550">
-                <local:StatusBar DockPanel.Dock="Bottom"
+                <controls:StatusBar DockPanel.Dock="Bottom"
                                  Margin="7,3"
                                  Opacity="0.9"/>
 
-                <local:OutputFolderControl DockPanel.Dock="Bottom"
+                <controls:OutputFolderControl DockPanel.Dock="Bottom"
                                            Margin="5,0,0,0"/>
 
                 <Frame Source="../Pages/MainPage.xaml"/>
@@ -313,8 +313,8 @@
         
         <Grid Grid.Row="1"
               Margin="2,0,0,5"
-              Visibility="{Binding Settings.UI.Expanded, Converter={StaticResource NegatingConverter}}">
-            <local:CollapsedBar/>
+              Visibility="{Binding Settings.Ui.Expanded, Converter={StaticResource NegatingConverter}}">
+            <controls:CollapsedBar/>
         </Grid>
     </Grid>
 </Window>

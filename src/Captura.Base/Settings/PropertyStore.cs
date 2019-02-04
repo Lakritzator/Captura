@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Captura
+namespace Captura.Base.Settings
 {
     public abstract class PropertyStore : NotifyPropertyChanged
     {
         readonly Dictionary<string, object> _dictionary = new Dictionary<string, object>();
 
-        protected T Get<T>(T Default = default(T), [CallerMemberName] string PropertyName = "")
+        protected T Get<T>(T Default = default(T), [CallerMemberName] string propertyName = "")
         {
             lock (_dictionary)
             {
-                if (_dictionary.TryGetValue(PropertyName, out var obj) && obj is T val)
+                if (_dictionary.TryGetValue(propertyName, out var obj) && obj is T val)
                 {
                     return val;
                 }
@@ -20,18 +20,18 @@ namespace Captura
             return Default;
         }
 
-        protected void Set<T>(T Value, [CallerMemberName] string PropertyName = "")
+        protected void Set<T>(T value, [CallerMemberName] string propertyName = "")
         {
             lock (_dictionary)
             {
-                if (_dictionary.ContainsKey(PropertyName))
+                if (_dictionary.ContainsKey(propertyName))
                 {
-                    _dictionary[PropertyName] = Value;
+                    _dictionary[propertyName] = value;
                 }
-                else _dictionary.Add(PropertyName, Value);
+                else _dictionary.Add(propertyName, value);
             }
 
-            OnPropertyChanged(PropertyName);
+            OnPropertyChanged(propertyName);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using Captura.ViewModels;
+using Captura.YouTube;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class YouTubeUploaderWindow
     {
@@ -9,27 +9,27 @@ namespace Captura
         {
             InitializeComponent();
 
-            Closing += async (S, E) =>
+            Closing += async (sender, e) =>
             {
                 if (DataContext is YouTubeUploaderViewModel vm)
                 {
                     if (!await vm.Cancel())
                     {
-                        E.Cancel = true;
+                        e.Cancel = true;
                     }
                 }
             };
         }
 
-        public async void Open(string FileName)
+        public async void Open(string fileName)
         {
             if (DataContext is YouTubeUploaderViewModel vm)
             {
-                await vm.Init(FileName);
+                await vm.Init(fileName);
             }
         }
 
-        void Cancel_Click(object Sender, RoutedEventArgs E)
+        private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }

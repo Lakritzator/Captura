@@ -1,23 +1,26 @@
 ﻿using System.IO;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Core.Settings.Models;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore
 {
     public class SoundsViewModelItem : NotifyPropertyChanged
     {
-        readonly SoundSettings _settings;
+        private readonly SoundSettings _settings;
 
-        public SoundsViewModelItem(SoundKind SoundKind, IDialogService DialogService, SoundSettings Settings)
+        public SoundsViewModelItem(SoundKind soundKind, IDialogService dialogService, SoundSettings settings)
         {
-            this.SoundKind = SoundKind;
-            _settings = Settings;
+            SoundKind = soundKind;
+            _settings = settings;
 
             ResetCommand = new DelegateCommand(() => FileName = null);
 
             SetCommand = new DelegateCommand(() =>
             {
-                var folder = DialogService.PickFile(Path.GetDirectoryName(FileName), "");
+                var folder = dialogService.PickFile(Path.GetDirectoryName(FileName), "");
 
                 if (folder != null)
                     FileName = folder;

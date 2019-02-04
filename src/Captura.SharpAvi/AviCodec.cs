@@ -1,11 +1,11 @@
 ﻿using SharpAvi;
 
-namespace Captura.Models
+namespace Captura.SharpAvi
 {
     /// <summary>
     /// Represents an Avi Codec.
     /// </summary>
-    class AviCodec
+    internal class AviCodec
     {
         // ReSharper disable once InconsistentNaming
         internal FourCC FourCC { get; }
@@ -16,10 +16,10 @@ namespace Captura.Models
         public string Name { get; }
 
         // ReSharper disable once InconsistentNaming
-        internal AviCodec(FourCC FourCC, string Name)
+        internal AviCodec(FourCC fourCC, string name)
         {
-            this.FourCC = FourCC;
-            this.Name = Name;
+            FourCC = fourCC;
+            Name = name;
         }
         
         /// <summary>

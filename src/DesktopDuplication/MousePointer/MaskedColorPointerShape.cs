@@ -2,19 +2,19 @@
 using System.Runtime.InteropServices;
 using SharpDX.DXGI;
 
-namespace DesktopDuplication
+namespace DesktopDuplication.MousePointer
 {
     public class MaskedColorPointerShape : MaskedPointerShape
     {
-        byte[] _maskedShapeBuffer;
+        private byte[] _maskedShapeBuffer;
 
-        public MaskedColorPointerShape(IntPtr ShapeBuffer,
-            OutputDuplicatePointerShapeInformation ShapeInfo,
-            Direct2DEditorSession EditorSession)
-            : base(ShapeInfo.Width, ShapeInfo.Height, EditorSession)
+        public MaskedColorPointerShape(IntPtr shapeBuffer,
+            OutputDuplicatePointerShapeInformation shapeInfo,
+            Direct2DEditorSession editorSession)
+            : base(shapeInfo.Width, shapeInfo.Height, editorSession)
         {
             _maskedShapeBuffer = new byte[Width * Height * 4];
-            Marshal.Copy(ShapeBuffer, _maskedShapeBuffer, 0, _maskedShapeBuffer.Length);
+            Marshal.Copy(shapeBuffer, _maskedShapeBuffer, 0, _maskedShapeBuffer.Length);
         }
 
         protected override void OnUpdate()

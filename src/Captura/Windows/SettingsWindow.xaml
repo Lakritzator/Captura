@@ -1,4 +1,4 @@
-﻿<Window x:Class="Captura.SettingsWindow"
+﻿<Window x:Class="Captura.Windows.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding Configure, Source={StaticResource Loc}, Mode=OneWay}"

@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Input.StylusPlugIns;
+using Captura.ImageEditor.DynamicRenderers;
 
-namespace Captura
+namespace Captura.ImageEditor.Controls
 {
     public class ExtendedInkTool
     {
-        public ExtendedInkTool(string ToolName,
-            InkCanvasEditingMode EditingMode,
-            Func<DynamicRenderer> DynamicRendererFunc = null,
-            Cursor Cursor = null)
+        public ExtendedInkTool(string toolName,
+            InkCanvasEditingMode editingMode,
+            Func<DynamicRenderer> dynamicRendererFunc = null,
+            Cursor cursor = null)
         {
-            this.ToolName = ToolName;
-            this.EditingMode = EditingMode;
-            this.Cursor = Cursor;
-            this.DynamicRendererFunc = DynamicRendererFunc;
+            ToolName = toolName;
+            EditingMode = editingMode;
+            Cursor = cursor;
+            DynamicRendererFunc = dynamicRendererFunc;
         }
 
         public InkCanvasEditingMode EditingMode { get; }

@@ -7,9 +7,9 @@ namespace Captura.Native
         const string DllName = "kernel32";
 
         [DllImport(DllName)]
-        public static extern ushort GlobalAddAtom(string Text);
+        public static extern ushort GlobalAddAtom(string text);
 
         [DllImport(DllName)]
-        public static extern ushort GlobalDeleteAtom(ushort Atom);
+        public static extern ushort GlobalDeleteAtom(ushort atom);
     }
 }

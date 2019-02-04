@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Captura
+namespace Captura.Controls
 {
     public class ModernToggleButton : CheckBox
     {

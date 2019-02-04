@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Captura.Base.Video;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class StreamingWriterProvider : IVideoWriterProvider

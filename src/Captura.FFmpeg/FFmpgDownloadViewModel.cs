@@ -5,9 +5,13 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Base.Settings;
+using Captura.FFmpeg.Settings;
+using Captura.Loc;
 
-namespace Captura.ViewModels
+namespace Captura.FFmpeg
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FFmpegDownloadViewModel : NotifyPropertyChanged
@@ -18,9 +22,9 @@ namespace Captura.ViewModels
 
         public ICommand OpenFolderCommand { get; }
 
-        readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        bool _isDownloading;
+        private bool _isDownloading;
 
         public bool IsDownloading
         {
@@ -33,17 +37,17 @@ namespace Captura.ViewModels
             }
         }
 
-        readonly IDialogService _dialogService;
-        readonly ProxySettings _proxySettings;
-        readonly FFmpegSettings _ffmpegSettings;
-        readonly LanguageManager _loc;
+        private readonly IDialogService _dialogService;
+        private readonly ProxySettings _proxySettings;
+        private readonly FFmpegSettings _ffmpegSettings;
+        private readonly LanguageManager _loc;
 
-        public FFmpegDownloadViewModel(IDialogService DialogService, ProxySettings ProxySettings, LanguageManager Loc, FFmpegSettings FFmpegSettings)
+        public FFmpegDownloadViewModel(IDialogService dialogService, ProxySettings proxySettings, LanguageManager loc, FFmpegSettings fFmpegSettings)
         {
-            _dialogService = DialogService;
-            _proxySettings = ProxySettings;
-            _loc = Loc;
-            _ffmpegSettings = FFmpegSettings;
+            _dialogService = dialogService;
+            _proxySettings = proxySettings;
+            _loc = loc;
+            _ffmpegSettings = fFmpegSettings;
 
             StartCommand = new DelegateCommand(OnStartExecute);
 
@@ -60,7 +64,7 @@ namespace Captura.ViewModels
             });
         }
 
-        void SetDefaultTargetFolderToLocalAppData()
+        private void SetDefaultTargetFolderToLocalAppData()
         {
             if (!string.IsNullOrWhiteSpace(_ffmpegSettings.FolderPath))
             {
@@ -79,7 +83,7 @@ namespace Captura.ViewModels
             }
         }
 
-        async void OnStartExecute()
+        private async void OnStartExecute()
         {
             IsDownloading = true;
 
@@ -95,7 +99,7 @@ namespace Captura.ViewModels
             }
         }
 
-        void OnSelectFolderExecute()
+        private void OnSelectFolderExecute()
         {
             var folder = _dialogService.PickFolder(TargetFolder, _loc.SelectFFmpegFolder);
 
@@ -103,9 +107,9 @@ namespace Captura.ViewModels
                 TargetFolder = folder;
         }
 
-        const string CancelDownload = "Cancel Download";
-        const string StartDownload = "Start Download";
-        const string Finish = "Finish";
+        private const string CancelDownload = "Cancel Download";
+        private const string StartDownload = "Start Download";
+        private const string Finish = "Finish";
 
         public Action CloseWindowAction;
 
@@ -136,13 +140,13 @@ namespace Captura.ViewModels
 
             try
             {
-                await DownloadFFmpeg.DownloadArchive(P =>
+                await DownloadFFmpeg.DownloadArchive(progress =>
                 {
-                    Progress = P;
+                    Progress = progress;
 
-                    Status = $"Downloading ({P}%)";
+                    Status = $"Downloading ({progress}%)";
 
-                    ProgressChanged?.Invoke(P);
+                    ProgressChanged?.Invoke(progress);
                 }, _proxySettings.GetWebProxy(), _cancellationTokenSource.Token);
             }
             catch (WebException webException) when(webException.Status == WebExceptionStatus.RequestCanceled)
@@ -189,7 +193,7 @@ namespace Captura.ViewModels
             return true;
         }
 
-        string _actionDescription = StartDownload;
+        private string _actionDescription = StartDownload;
 
         public string ActionDescription
         {
@@ -202,7 +206,7 @@ namespace Captura.ViewModels
             }
         }
 
-        string _targetFolder;
+        private string _targetFolder;
 
         public string TargetFolder
         {
@@ -215,7 +219,7 @@ namespace Captura.ViewModels
             }
         }
 
-        int _progress;
+        private int _progress;
 
         public int Progress
         {
@@ -228,7 +232,7 @@ namespace Captura.ViewModels
             }
         }
 
-        string _status = "Ready";
+        private string _status = "Ready";
 
         public string Status
         {

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Captura.Base;
 using Screna;
 
-namespace Captura
+namespace Captura.ViewModels
 {
     public class ExceptionViewModel : NotifyPropertyChanged
     {
@@ -18,7 +19,7 @@ namespace Captura
             });
         }
 
-        string _message = "An unhandled exception occurred. Here are the details.";
+        private string _message = "An unhandled exception occurred. Here are the details.";
 
         public string Message
         {
@@ -31,16 +32,16 @@ namespace Captura
             }
         }
 
-        public void Init(Exception Exception, string Msg)
+        public void Init(Exception exception, string msg)
         {
-            if (Msg != null)
-                Message = Msg;
+            if (msg != null)
+                Message = msg;
 
-            while (Exception != null)
+            while (exception != null)
             {
-                Exceptions.Add(Exception);
+                Exceptions.Add(exception);
 
-                Exception = Exception.InnerException;
+                exception = exception.InnerException;
             }
 
             SelectedException = Exceptions[0];
@@ -48,7 +49,7 @@ namespace Captura
 
         public ObservableCollection<Exception> Exceptions { get; } = new ObservableCollection<Exception>();
 
-        Exception _selectedException;
+        private Exception _selectedException;
 
         public Exception SelectedException
         {

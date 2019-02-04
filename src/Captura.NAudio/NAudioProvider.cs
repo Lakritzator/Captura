@@ -1,7 +1,7 @@
 ﻿using System;
-using Captura.Audio;
+using Captura.Base.Audio;
 using NAudio.Wave;
-using WaveFormat = Captura.Audio.WaveFormat;
+using WaveFormat = Captura.Base.Audio.WaveFormat.WaveFormat;
 using Wf = NAudio.Wave.WaveFormat;
 using WaveFormatEncoding = NAudio.Wave.WaveFormatEncoding;
 
@@ -11,16 +11,16 @@ namespace Captura.NAudio
     {
         readonly IWaveIn _waveIn;
 
-        protected NAudioProvider(IWaveIn WaveIn)
+        protected NAudioProvider(IWaveIn waveIn)
         {
-            _waveIn = WaveIn;
+            _waveIn = waveIn;
 
-            _waveIn.DataAvailable += (S, E) =>
+            _waveIn.DataAvailable += (sender, e) =>
             {
-                DataAvailable?.Invoke(this, new DataAvailableEventArgs(E.Buffer, E.BytesRecorded));
+                DataAvailable?.Invoke(this, new DataAvailableEventArgs(e.Buffer, e.BytesRecorded));
             };
 
-            var wf = WaveIn.WaveFormat;
+            var wf = waveIn.WaveFormat;
             NAudioWaveFormat = wf;
 
             WaveFormat = wf.Encoding == WaveFormatEncoding.IeeeFloat

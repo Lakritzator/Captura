@@ -4,41 +4,43 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using Captura.Models;
 
-namespace Captura
+namespace Captura.Presentation
 {
     public class OverlayPositionAdorner : Adorner
     {
         #region Thumbs
-        readonly Thumb _topLeft;
-        readonly Thumb _topRight;
-        readonly Thumb _bottomLeft;
-        readonly Thumb _bottomRight;
 
-        readonly Thumb _top;
-        readonly Thumb _left;
-        readonly Thumb _right;
-        readonly Thumb _bottom;
+        private readonly Thumb _topLeft;
+        private readonly Thumb _topRight;
+        private readonly Thumb _bottomLeft;
+        private readonly Thumb _bottomRight;
 
-        readonly Thumb _center;
+        private readonly Thumb _top;
+        private readonly Thumb _left;
+        private readonly Thumb _right;
+        private readonly Thumb _bottom;
+
+        private readonly Thumb _center;
         #endregion
 
-        readonly bool _canResize;
+        private readonly bool _canResize;
 
-        readonly VisualCollection _visualChildren;
+        private readonly VisualCollection _visualChildren;
 
-        public OverlayPositionAdorner(UIElement Element, bool CanResize = true) : base(Element)
+        public OverlayPositionAdorner(UIElement element, bool canResize = true) : base(element)
         {
-            _canResize = CanResize;
+            _canResize = canResize;
 
             _visualChildren = new VisualCollection(this);
 
             BuildAdornerThumb(ref _center, Cursors.Hand);
             _center.Opacity = 0;
 
-            _center.DragDelta += (S, E) => HandleDrag(HitType.Body, E);
+            _center.DragDelta += (sender, e) => HandleDrag(HitType.Body, e);
 
-            if (CanResize)
+            if (canResize)
             {
                 BuildAdornerThumb(ref _topLeft, Cursors.SizeNWSE);
                 BuildAdornerThumb(ref _topRight, Cursors.SizeNESW);
@@ -50,30 +52,30 @@ namespace Captura
                 BuildAdornerThumb(ref _right, Cursors.SizeWE);
                 BuildAdornerThumb(ref _bottom, Cursors.SizeNS);
 
-                _topLeft.DragDelta += (S, E) => HandleDrag(HitType.UpperLeft, E);
-                _topRight.DragDelta += (S, E) => HandleDrag(HitType.UpperRight, E);
-                _bottomLeft.DragDelta += (S, E) => HandleDrag(HitType.LowerLeft, E);
-                _bottomRight.DragDelta += (S, E) => HandleDrag(HitType.LowerRight, E);
+                _topLeft.DragDelta += (sender, e) => HandleDrag(HitType.UpperLeft, e);
+                _topRight.DragDelta += (sender, e) => HandleDrag(HitType.UpperRight, e);
+                _bottomLeft.DragDelta += (sender, e) => HandleDrag(HitType.LowerLeft, e);
+                _bottomRight.DragDelta += (sender, e) => HandleDrag(HitType.LowerRight, e);
 
-                _top.DragDelta += (S, E) => HandleDrag(HitType.Top, E);
-                _left.DragDelta += (S, E) => HandleDrag(HitType.Left, E);
-                _right.DragDelta += (S, E) => HandleDrag(HitType.Right, E);
-                _bottom.DragDelta += (S, E) => HandleDrag(HitType.Bottom, E);
+                _top.DragDelta += (sender, e) => HandleDrag(HitType.Top, e);
+                _left.DragDelta += (sender, e) => HandleDrag(HitType.Left, e);
+                _right.DragDelta += (sender, e) => HandleDrag(HitType.Right, e);
+                _bottom.DragDelta += (sender, e) => HandleDrag(HitType.Bottom, e);
             }
 
             Opacity = 0.01;
 
-            MouseEnter += (S, E) => Opacity = 1;
-            MouseLeave += (S, E) => Opacity = 0.01;
+            MouseEnter += (sender, e) => Opacity = 1;
+            MouseLeave += (sender, e) => Opacity = 0.01;
         }
 
-        void HandleDrag(HitType MouseHitType, DragDeltaEventArgs Args)
+        private void HandleDrag(HitType mouseHitType, DragDeltaEventArgs args)
         {
             if (!(AdornedElement is FrameworkElement fel))
                 return;
 
-            var offsetX = (int) Args.HorizontalChange;
-            var offsetY = (int) Args.VerticalChange;
+            var offsetX = (int) args.HorizontalChange;
+            var offsetY = (int) args.VerticalChange;
 
             var har = fel.HorizontalAlignment == HorizontalAlignment.Right;
             var vab = fel.VerticalAlignment == VerticalAlignment.Bottom;
@@ -83,35 +85,55 @@ namespace Captura
             var newWidth = (int) fel.ActualWidth;
             var newHeight = (int) fel.ActualHeight;
 
-            void ModifyX(bool Possitive)
+            void ModifyX(bool positive)
             {
-                if (Possitive)
+                if (positive)
+                {
                     newX += offsetX;
-                else newX -= offsetX;
+                }
+                else
+                {
+                    newX -= offsetX;
+                }
             }
 
-            void ModifyY(bool Possitive)
+            void ModifyY(bool positive)
             {
-                if (Possitive)
+                if (positive)
+                {
                     newY += offsetY;
-                else newY -= offsetY;
+                }
+                else
+                {
+                    newY -= offsetY;
+                }
             }
 
-            void ModifyWidth(bool Possitive)
+            void ModifyWidth(bool positive)
             {
-                if (Possitive)
+                if (positive)
+                {
                     newWidth += offsetX;
-                else newWidth -= offsetX;
+                }
+                else
+                {
+                    newWidth -= offsetX;
+                }
             }
 
-            void ModifyHeight(bool Possitive)
+            void ModifyHeight(bool positive)
             {
-                if (Possitive)
+                if (positive)
+                {
                     newHeight += offsetY;
-                else newHeight -= offsetY;
+                }
+                else
+                {
+                    newHeight -= offsetY;
+                }
             }
 
-            switch (MouseHitType)
+            switch (mouseHitType)
             {
                 case HitType.Body:
                     ModifyX(!har);
@@ -263,7 +285,7 @@ namespace Captura
 
                 PositionUpdated?.Invoke(new Rect(newX, newY, newWidth, newHeight));
 
-                if (MouseHitType != HitType.Body)
+                if (mouseHitType != HitType.Body)
                 {
                     fel.Width = newWidth;
                     fel.Height = newHeight;
@@ -272,27 +294,27 @@ namespace Captura
         }
 
         public event Action<Rect> PositionUpdated;
-        
-        void BuildAdornerThumb(ref Thumb CornerThumb, Cursor CustomizedCursors)
+
+        private void BuildAdornerThumb(ref Thumb cornerThumb, Cursor customizedCursors)
         {
-            if (CornerThumb != null)
+            if (cornerThumb != null)
                 return;
 
-            CornerThumb = new Thumb
+            cornerThumb = new Thumb
             {
-                Cursor = CustomizedCursors,
+                Cursor = customizedCursors,
                 Height = 10,
                 Width = 10,
                 Opacity = 0.5,
                 Background = new SolidColorBrush(Colors.Red)
             };
 
-            _visualChildren.Add(CornerThumb);
+            _visualChildren.Add(cornerThumb);
         }
 
-        protected override Size ArrangeOverride(Size FinalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            base.ArrangeOverride(FinalSize);
+            base.ArrangeOverride(finalSize);
 
             var desireWidth = AdornedElement.RenderSize.Width;
             var desireHeight = AdornedElement.RenderSize.Height;
@@ -324,11 +346,11 @@ namespace Captura
                     adornerWidth, adornerHeight));
             }
 
-            return FinalSize;
+            return finalSize;
         }
 
         protected override int VisualChildrenCount => _visualChildren.Count;
 
-        protected override Visual GetVisualChild(int Index) => _visualChildren[Index];
+        protected override Visual GetVisualChild(int index) => _visualChildren[index];
     }
 }

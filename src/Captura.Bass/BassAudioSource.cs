@@ -1,8 +1,9 @@
 ﻿using System.Linq;
-using Captura.Audio;
+using Captura.Base.Audio;
+using Captura.Base.Services;
 using ManagedBass;
 
-namespace Captura.Models
+namespace Captura.Bass
 {
     /// <summary>
     /// ManagedBass Audio Source.
@@ -13,18 +14,18 @@ namespace Captura.Models
     {
         public BassAudioSource()
         {
-            // Initialises Default Playback Device.
-            Bass.Init();
+            // Initializes Default Playback Device.
+            ManagedBass.Bass.Init();
 
             // Enable Loopback Recording.
-            Bass.Configure(Configuration.LoopbackRecording, true);
+            ManagedBass.Bass.Configure(Configuration.LoopbackRecording, true);
 
             Refresh();
         }
 
-        static bool AllExist(params string[] Paths)
+        private static bool AllExist(params string[] paths)
         {
-            return Paths.All(ServiceProvider.FileExists);
+            return paths.All(ServiceProvider.FileExists);
         }
 
         // Check if all BASS dependencies are present
@@ -39,16 +40,16 @@ namespace Captura.Models
 
         public override IAudioProvider[] GetMultipleAudioProviders()
         {
-            return AvailableRecordingSources.Where(M => M.Active)
-                .Concat(AvailableLoopbackSources.Where(M => M.Active))
+            return AvailableRecordingSources.Where(audioItem => audioItem.Active)
+                .Concat(AvailableLoopbackSources.Where(audioItem => audioItem.Active))
                 .Cast<BassItem>()
-                .Select(M => new BassAudioProvider(M))
+                .Select(bassItem => new BassAudioProvider(bassItem))
                 .ToArray<IAudioProvider>();
         }
 
         protected override void OnRefresh()
         {
-            for (var i = 0; Bass.RecordGetDeviceInfo(i, out var info); ++i)
+            for (var i = 0; ManagedBass.Bass.RecordGetDeviceInfo(i, out var info); ++i)
             {
                 if (info.IsLoopback)
                     LoopbackSources.Add(new BassItem(i, info.Name));
@@ -61,21 +62,21 @@ namespace Captura.Models
         /// </summary>
         public override void Dispose()
         {
-            for (var i = 0; Bass.RecordGetDeviceInfo(i, out var info); ++i)
+            for (var i = 0; ManagedBass.Bass.RecordGetDeviceInfo(i, out var info); ++i)
             {
                 if (info.IsInitialized)
                 {
-                    Bass.CurrentRecordingDevice = i;
-                    Bass.RecordFree();
+                    ManagedBass.Bass.CurrentRecordingDevice = i;
+                    ManagedBass.Bass.RecordFree();
                 }
             }
 
-            for (var i = 0; Bass.GetDeviceInfo(i, out var info); ++i)
+            for (var i = 0; ManagedBass.Bass.GetDeviceInfo(i, out var info); ++i)
             {
                 if (info.IsInitialized)
                 {
-                    Bass.CurrentDevice = i;
-                    Bass.Free();
+                    ManagedBass.Bass.CurrentDevice = i;
+                    ManagedBass.Bass.Free();
                 }
             }
         }

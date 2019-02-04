@@ -1,17 +1,20 @@
 ﻿using System.Windows;
 using System.Windows.Interop;
-using Captura.Webcam;
+using Captura.Models;
+using Captura.Presentation;
+using Captura.WebCam;
+using Captura.Windows;
 using Point = System.Drawing.Point;
 
-namespace Captura
+namespace Captura.Controls
 {
-    public partial class WebcamControl
+    public partial class WebCamControl
     {
-        public CaptureWebcam Capture { get; private set; }
+        public CaptureWebCam Capture { get; private set; }
 
         public Filter VideoDevice { get; set; }
 
-        public WebcamControl()
+        public WebCamControl()
         {
             InitializeComponent();
         }
@@ -28,12 +31,12 @@ namespace Captura
             // Create capture object.
             if (VideoDevice != null && PresentationSource.FromVisual(this) is HwndSource source)
             {
-                Capture = new CaptureWebcam(VideoDevice, OpenPreview, source.Handle)
+                Capture = new CaptureWebCam(VideoDevice, OpenPreview, source.Handle)
                 {
                     Scale = Dpi.X
                 };
                 
-                SizeChanged += (S, E) => OnSizeChange();
+                SizeChanged += (sender, e) => OnSizeChange();
 
                 if (IsVisible)
                     Capture.StartPreview();
@@ -42,7 +45,7 @@ namespace Captura
             }
         }
 
-        public void ShowOnMainWindow(Window MainWindow)
+        public void ShowOnMainWindow(Window mainWindow)
         {
             // To change the video device, a dispose is needed.
             if (Capture != null)
@@ -52,9 +55,9 @@ namespace Captura
             }
 
             // Create capture object.
-            if (VideoDevice != null && PresentationSource.FromVisual(MainWindow) is HwndSource source)
+            if (VideoDevice != null && PresentationSource.FromVisual(mainWindow) is HwndSource source)
             {
-                Capture = new CaptureWebcam(VideoDevice, OpenPreview, source.Handle)
+                Capture = new CaptureWebCam(VideoDevice, OpenPreview, source.Handle)
                 {
                     Scale = Dpi.X
                 };
@@ -65,21 +68,21 @@ namespace Captura
             }
         }
 
-        void OnSizeChange()
+        private void OnSizeChange()
         {
             Capture?.OnPreviewWindowResize(ActualWidth, ActualHeight, new Point(5, 40));
         }
 
-        void WebcamControl_OnIsVisibleChanged(object Sender, DependencyPropertyChangedEventArgs E)
+        private void WebCamControl_OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (IsVisible)
             {
                 Refresh();
             }
-            else ShowOnMainWindow(MainWindow.Instance);
+            else ShowOnMainWindow(Windows.MainWindow.Instance);
         }
 
-        void OpenPreview()
+        private void OpenPreview()
         {
             WebCamWindow.Instance.ShowAndFocus();
         }

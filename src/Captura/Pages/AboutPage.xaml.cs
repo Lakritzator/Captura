@@ -1,32 +1,37 @@
 ﻿using System.Windows;
-using Captura.Views;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core;
+using Captura.ImageEditor;
+using Captura.Presentation;
+using Captura.Windows;
 using Microsoft.Win32;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class AboutPage
     {
-        void ViewLicenses(object Sender, RoutedEventArgs E)
+        private void ViewLicenses(object sender, RoutedEventArgs e)
         {
             LicensesWindow.ShowInstance();
         }
 
-        void ViewCrashLogs(object Sender, RoutedEventArgs E)
+        private void ViewCrashLogs(object sender, RoutedEventArgs e)
         {
             CrashLogsWindow.ShowInstance();
         }
 
-        void OpenImageEditor(object Sender, RoutedEventArgs E)
+        private void OpenImageEditor(object sender, RoutedEventArgs e)
         {
             new ImageEditorWindow().ShowAndFocus();
         }
 
-        void OpenAudioVideoTrimmer(object Sender, RoutedEventArgs E)
+        private void OpenAudioVideoTrimmer(object sender, RoutedEventArgs e)
         {
             new TrimmerWindow().ShowAndFocus();
         }
 
-        void OpenImageCropper(object Sender, RoutedEventArgs E)
+        private void OpenImageCropper(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog
             {
@@ -37,11 +42,11 @@ namespace Captura
 
             if (ofd.ShowDialog().GetValueOrDefault())
             {
-                new CropWindow(ofd.FileName).ShowAndFocus();
+                new Windows.CropWindow(ofd.FileName).ShowAndFocus();
             }
         }
 
-        async void UploadToImgur(object Sender, RoutedEventArgs E)
+        private async void UploadToImgur(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog
             {

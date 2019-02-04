@@ -1,15 +1,18 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Images;
+using Captura.Base.Services;
+
+namespace Captura.Fakes
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FakePreviewWindow : IPreviewWindow
     {
         public void Dispose() { }
 
-        public void Init(int Width, int Height) { }
+        public void Init(int width, int height) { }
 
-        public void Display(IBitmapFrame Frame)
+        public void Display(IBitmapFrame frame)
         {
-            Frame.Dispose();
+            frame.Dispose();
         }
 
         public void Show() { }

@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:Captura">
+                    xmlns:controls="clr-namespace:Captura.Controls">
 
     <Style TargetType="controls:ModernButton">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>

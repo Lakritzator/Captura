@@ -1,4 +1,4 @@
-﻿<Window x:Class="Captura.Views.LicensesWindow"
+﻿<Window x:Class="Captura.Windows.LicensesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Licenses"

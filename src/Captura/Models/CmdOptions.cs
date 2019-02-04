@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Captura
+namespace Captura.Models
 {
     /// <summary>
     /// Command-line options for the WPF app.
@@ -14,8 +14,8 @@ namespace Captura
         [Option("tray", HelpText = "Start minimized into the system tray.")]
         public bool Tray { get; set; }
         
-        [Option("no-hotkey", HelpText = "Do not Register hotkeys.")]
-        public bool NoHotkeys { get; set; }
+        [Option("no-HotKey", HelpText = "Do not Register HotKeys.")]
+        public bool NoHotKeys { get; set; }
 
         [Option("no-persist", HelpText = "Do not save any changes in settings.")]
         public bool NoPersist { get; set; }

@@ -1,15 +1,16 @@
 ﻿using System.Linq;
 using System.Windows.Ink;
 using System.Windows.Input;
+using Captura.ImageEditor.DynamicRenderers;
 
-namespace Captura
+namespace Captura.ImageEditor.Strokes
 {
     public class ArrowStroke : Stroke
     {
-        static StylusPointCollection Points(StylusPointCollection StylusPoints)
+        private static StylusPointCollection Points(StylusPointCollection stylusPoints)
         {
-            var start = StylusPoints.First().ToPoint();
-            var end = StylusPoints.Last().ToPoint();
+            var start = stylusPoints.First().ToPoint();
+            var end = stylusPoints.Last().ToPoint();
 
             LineDynamicRenderer.Prepare(ref start, ref end);
 
@@ -18,14 +19,14 @@ namespace Captura
             return new StylusPointCollection(new[] { start, end, p1, end, p2 });
         }
 
-        static DrawingAttributes ModifyAttribs(DrawingAttributes DrawingAttributes)
+        private static DrawingAttributes ModifyAttribs(DrawingAttributes drawingAttributes)
         {
-            DrawingAttributes.FitToCurve = false;
+            drawingAttributes.FitToCurve = false;
 
-            return DrawingAttributes;
+            return drawingAttributes;
         }
 
-        public ArrowStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttributes)
-            : base(Points(StylusPoints), ModifyAttribs(DrawingAttributes)) { }
+        public ArrowStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttributes)
+            : base(Points(stylusPoints), ModifyAttribs(drawingAttributes)) { }
     }
 }

@@ -1,59 +1,63 @@
-﻿using Captura.Models;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using Captura.Base;
+using Captura.HotKeys;
+using Captura.Presentation;
 using Button = System.Windows.Controls.Button;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
-namespace Captura
+namespace Captura.Controls
 {
-    public class HotkeySelector : Button
+    public class HotKeySelector : Button
     {
-        bool _editing;
+        private bool _editing;
 
-        static readonly SolidColorBrush RedBrush = new SolidColorBrush(WpfExtensions.ParseColor("#ef5350"));
-        static readonly SolidColorBrush GreenBrush = new SolidColorBrush(WpfExtensions.ParseColor("#43a047"));
+        private static readonly SolidColorBrush RedBrush = new SolidColorBrush(WpfExtensions.ParseColor("#ef5350"));
+        private static readonly SolidColorBrush GreenBrush = new SolidColorBrush(WpfExtensions.ParseColor("#43a047"));
 
-        static readonly SolidColorBrush WhiteBrush = new SolidColorBrush(Colors.White);
+        private static readonly SolidColorBrush WhiteBrush = new SolidColorBrush(Colors.White);
 
-        public static readonly DependencyProperty HotkeyModelProperty = DependencyProperty.Register(nameof(HotkeyModel),
-            typeof(Hotkey),
-            typeof(HotkeySelector),
-            new UIPropertyMetadata(HotkeyModelChangedCallback));
+        public static readonly DependencyProperty HotKeyModelProperty = DependencyProperty.Register(nameof(HotKeyModel),
+            typeof(HotKey),
+            typeof(HotKeySelector),
+            new UIPropertyMetadata(HotKeyModelChangedCallback));
 
-        static void HotkeyModelChangedCallback(DependencyObject Sender, DependencyPropertyChangedEventArgs Args)
+        private static void HotKeyModelChangedCallback(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            if (Sender is HotkeySelector selector && Args.NewValue is Hotkey hotkey)
+            if (!(sender is HotKeySelector selector) || !(args.NewValue is HotKey hotKey))
             {
-                selector.TextColor();
-
-                hotkey.PropertyChanged += (S, E) =>
-                {
-                    if (E.PropertyName == nameof(Hotkey.IsActive))
-                        selector.TextColor();
-                };
-
-                selector.Content = hotkey.ToString();
+                return;
             }
-        }
 
-        public Hotkey HotkeyModel
-        {
-            get => (Hotkey) GetValue(HotkeyModelProperty);
-            set => SetValue(HotkeyModelProperty, value);
-        }
+            selector.TextColor();
 
-        void HotkeyEdited(Key NewKey, Modifiers NewModifiers)
-        {
-            HotkeyEdited((Keys) KeyInterop.VirtualKeyFromKey(NewKey), NewModifiers);
-        }
-
-        void TextColor()
-        {
-            if (HotkeyModel.IsActive)
+            hotKey.PropertyChanged += (o, e) =>
             {
-                Background = HotkeyModel.IsRegistered ? GreenBrush : RedBrush;
+                if (e.PropertyName == nameof(HotKey.IsActive))
+                    selector.TextColor();
+            };
+
+            selector.Content = hotKey.ToString();
+        }
+
+        public HotKey HotKeyModel
+        {
+            get => (HotKey) GetValue(HotKeyModelProperty);
+            set => SetValue(HotKeyModelProperty, value);
+        }
+
+        private void HotKeyEdited(Key newKey, Modifiers newModifiers)
+        {
+            HotKeyEdited((Keys) KeyInterop.VirtualKeyFromKey(newKey), newModifiers);
+        }
+
+        private void TextColor()
+        {
+            if (HotKeyModel.IsActive)
+            {
+                Background = HotKeyModel.IsRegistered ? GreenBrush : RedBrush;
 
                 Foreground = WhiteBrush;
             }
@@ -65,14 +69,14 @@ namespace Captura
             }
         }
 
-        void HotkeyEdited(Keys NewKey, Modifiers NewModifiers)
+        private void HotKeyEdited(Keys newKey, Modifiers newModifiers)
         {
-            HotkeyModel.Change(NewKey, NewModifiers);
+            HotKeyModel.Change(newKey, newModifiers);
 
             // Red Text on Error
             TextColor();
 
-            Content = HotkeyModel.ToString();
+            Content = HotKeyModel.ToString();
 
             _editing = false;
         }
@@ -83,67 +87,67 @@ namespace Captura
 
             _editing = !_editing;
 
-            Content = _editing ? "Press new Hotkey..." : HotkeyModel.ToString();
+            Content = _editing ? "Press new HotKey..." : HotKeyModel.ToString();
         }
 
-        protected override void OnLostFocus(RoutedEventArgs E)
+        protected override void OnLostFocus(RoutedEventArgs routedEventArgs)
         {
-            base.OnLostFocus(E);
+            base.OnLostFocus(routedEventArgs);
 
             CancelEditing();
         }
 
-        void CancelEditing()
+        private void CancelEditing()
         {
             if (!_editing)
                 return;
 
             _editing = false;
-            Content = HotkeyModel.ToString();
+            Content = HotKeyModel.ToString();
         }
 
-        static bool IsValid(KeyEventArgs E)
+        private static bool IsValid(KeyEventArgs keyEventArgs)
         {
-            return E.Key != Key.None // Some key must pe pressed
-                && !E.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Windows) // Windows Key is reserved by OS
-                && E.Key != Key.LeftCtrl && E.Key != Key.RightCtrl // Modifier Keys alone are not supported
-                && E.Key != Key.LeftAlt && E.Key != Key.RightAlt
-                && E.Key != Key.LeftShift && E.Key != Key.RightShift;
+            return keyEventArgs.Key != Key.None // Some key must pe pressed
+                && !keyEventArgs.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Windows) // Windows Key is reserved by OS
+                && keyEventArgs.Key != Key.LeftCtrl && keyEventArgs.Key != Key.RightCtrl // Modifier Keys alone are not supported
+                && keyEventArgs.Key != Key.LeftAlt && keyEventArgs.Key != Key.RightAlt
+                && keyEventArgs.Key != Key.LeftShift && keyEventArgs.Key != Key.RightShift;
         }
 
-        protected override void OnPreviewKeyDown(KeyEventArgs E)
+        protected override void OnPreviewKeyDown(KeyEventArgs keyEventArgs)
         {
             // Ignore Repeats
-            if (E.IsRepeat)
+            if (keyEventArgs.IsRepeat)
             {
-                E.Handled = true;
+                keyEventArgs.Handled = true;
                 return;
             }
 
             if (_editing)
             {
                 // Suppress event propagation
-                E.Handled = true;
+                keyEventArgs.Handled = true;
 
-                switch (E.Key)
+                switch (keyEventArgs.Key)
                 {
                     case Key.Escape:
                         CancelEditing();
                         break;
 
                     case Key.System:
-                        if (E.SystemKey == Key.LeftAlt || E.SystemKey == Key.RightAlt)
+                        if (keyEventArgs.SystemKey == Key.LeftAlt || keyEventArgs.SystemKey == Key.RightAlt)
                             Content = "Alt + ...";
-                        else HotkeyEdited(E.SystemKey, Modifiers.Alt);
+                        else HotKeyEdited(keyEventArgs.SystemKey, Modifiers.Alt);
                         break;
 
                     default:
-                        if (IsValid(E))
-                            HotkeyEdited(E.Key, (Modifiers)E.KeyboardDevice.Modifiers);
+                        if (IsValid(keyEventArgs))
+                            HotKeyEdited(keyEventArgs.Key, (Modifiers)keyEventArgs.KeyboardDevice.Modifiers);
 
                         else
                         {
-                            var modifiers = E.KeyboardDevice.Modifiers;
+                            var modifiers = keyEventArgs.KeyboardDevice.Modifiers;
 
                             Content = "";
 
@@ -162,34 +166,34 @@ namespace Captura
                 }
             }
 
-            base.OnPreviewKeyDown(E);
+            base.OnPreviewKeyDown(keyEventArgs);
         }
 
-        protected override void OnPreviewKeyUp(KeyEventArgs E)
+        protected override void OnPreviewKeyUp(KeyEventArgs keyEventArgs)
         {
             // Ignore Repeats
-            if (E.IsRepeat)
+            if (keyEventArgs.IsRepeat)
                 return;
 
             if (_editing)
             {
                 // Suppress event propagation
-                E.Handled = true;
+                keyEventArgs.Handled = true;
 
                 // PrintScreen is not recognized in KeyDown
-                switch (E.Key)
+                switch (keyEventArgs.Key)
                 {
                     case Key.Snapshot:
-                        HotkeyEdited(Keys.PrintScreen, (Modifiers)E.KeyboardDevice.Modifiers);
+                        HotKeyEdited(Keys.PrintScreen, (Modifiers)keyEventArgs.KeyboardDevice.Modifiers);
                         break;
 
-                    case Key.System when E.SystemKey == Key.Snapshot:
-                        HotkeyEdited(Keys.PrintScreen, Modifiers.Alt);
+                    case Key.System when keyEventArgs.SystemKey == Key.Snapshot:
+                        HotKeyEdited(Keys.PrintScreen, Modifiers.Alt);
                         break;
                 }
             }
 
-            base.OnPreviewKeyUp(E);
+            base.OnPreviewKeyUp(keyEventArgs);
         }
     }
 }

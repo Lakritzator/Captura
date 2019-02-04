@@ -3,17 +3,17 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class IsLessThanConverter : OneWayConverter
     {
-        public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (double.TryParse(Value?.ToString(), out var left) && double.TryParse(Parameter?.ToString(), out var right))
+            if (double.TryParse(value?.ToString(), out var left) && double.TryParse(parameter?.ToString(), out var right))
             {
                 var b =  left < right;
 
-                if (TargetType == typeof(Visibility))
+                if (targetType == typeof(Visibility))
                     return b ? Visibility.Visible : Visibility.Collapsed;
 
                 return b;

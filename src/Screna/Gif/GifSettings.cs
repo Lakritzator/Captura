@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+
+namespace Screna.Gif
 {
     public class GifSettings : PropertyStore
     {

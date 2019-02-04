@@ -1,21 +1,22 @@
-﻿using Captura.Models;
+﻿using Captura.Base.Services;
+using Captura.WebCam;
 
-namespace Captura
+namespace Captura.Fakes
 {
     public class FakesModule : IModule
     {
-        public void OnLoad(IBinder Binder)
+        public void OnLoad(IBinder binder)
         {
-            // Webcam Provider
-            Binder.Bind<IWebCamProvider, CoreWebCamProvider>();
+            // WebCam Provider
+            binder.Bind<IWebCamProvider, CoreWebCamProvider>();
 
-            Binder.Bind<IMessageProvider, FakeMessageProvider>();
-            Binder.Bind<IRegionProvider>(() => FakeRegionProvider.Instance);
-            Binder.Bind<ISystemTray, FakeSystemTray>();
-            Binder.Bind<IMainWindow, FakeWindowProvider>();
-            Binder.Bind<IPreviewWindow, FakePreviewWindow>();
-            Binder.Bind<IVideoSourcePicker>(() => FakeVideoSourcePicker.Instance);
-            Binder.Bind<IAudioPlayer, FakeAudioPlayer>();
+            binder.Bind<IMessageProvider, FakeMessageProvider>();
+            binder.Bind<IRegionProvider>(() => FakeRegionProvider.Instance);
+            binder.Bind<ISystemTray, FakeSystemTray>();
+            binder.Bind<IMainWindow, FakeWindowProvider>();
+            binder.Bind<IPreviewWindow, FakePreviewWindow>();
+            binder.Bind<IVideoSourcePicker>(() => FakeVideoSourcePicker.Instance);
+            binder.Bind<IAudioPlayer, FakeAudioPlayer>();
         }
 
         public void Dispose() { }

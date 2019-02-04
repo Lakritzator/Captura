@@ -1,6 +1,6 @@
 ﻿using System.Windows.Interop;
 
-namespace Captura
+namespace Captura.Models
 {
     /// <summary>
     /// Provides DPI scaling factor.

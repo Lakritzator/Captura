@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Windows;
+using Captura.ViewModels;
 
-namespace Captura.Views
+namespace Captura.Windows
 {
     public partial class ExceptionWindow
     {
-        public ExceptionWindow(Exception Exception, string Message = null)
+        public ExceptionWindow(Exception exception, string message = null)
         {
             InitializeComponent();
 
             if (DataContext is ExceptionViewModel vm)
             {
-                vm.Init(Exception, Message);
+                vm.Init(exception, message);
             }
         }
 
-        void Close_OnClick(object Sender, RoutedEventArgs E)
+        private void Close_OnClick(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        void OpenFFmpegLog(object Sender, RoutedEventArgs E)
+        private void OpenFFmpegLog(object sender, RoutedEventArgs e)
         {
             FFmpegLogWindow.ShowInstance();
         }

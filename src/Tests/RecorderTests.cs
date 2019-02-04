@@ -1,18 +1,19 @@
 ﻿using System;
 using Moq;
-using Screna;
+using Screna.Recorder;
+using Tests.Fixtures;
 using Xunit;
 
-namespace Captura.Tests
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class RecorderTests
     {
         readonly MoqFixture _moq;
 
-        public RecorderTests(MoqFixture Moq)
+        public RecorderTests(MoqFixture moq)
         {
-            _moq = Moq;
+            _moq = moq;
         }
 
         [Fact]
@@ -66,7 +67,7 @@ namespace Captura.Tests
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using (new VFRGifRecorder(null, imageProvider)) { }
+                using (new VfrGifRecorder(null, imageProvider)) { }
             });
         }
 
@@ -105,9 +106,9 @@ namespace Captura.Tests
             {
             }
 
-            imgProviderMock.Verify(M => M.Dispose(), Times.Once);
-            videoWriterMock.Verify(M => M.Dispose(), Times.Once);
-            audioProviderMock.Verify(M => M.Dispose(), Times.Once);
+            imgProviderMock.Verify(imageProvider => imageProvider.Dispose(), Times.Once);
+            videoWriterMock.Verify(videoFileWriter => videoFileWriter.Dispose(), Times.Once);
+            audioProviderMock.Verify(audioProvider => audioProvider.Dispose(), Times.Once);
         }
 
         [Fact]
@@ -120,8 +121,8 @@ namespace Captura.Tests
             {
             }
             
-            audioWriterMock.Verify(M => M.Dispose(), Times.Once);
-            audioProviderMock.Verify(M => M.Dispose(), Times.Once);
+            audioWriterMock.Verify(audioFileWriter => audioFileWriter.Dispose(), Times.Once);
+            audioProviderMock.Verify(audioProvider => audioProvider.Dispose(), Times.Once);
         }
 
         [Fact]

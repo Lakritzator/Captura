@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Interop;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Presentation;
+using Captura.Windows;
 using DesktopDuplication;
-using Screna;
+using Screna.Frames;
 using SharpDX.Direct3D9;
 
 namespace Captura.Models
@@ -10,41 +14,41 @@ namespace Captura.Models
     // ReSharper disable once ClassNeverInstantiated.Global
     public class PreviewWindowService : IPreviewWindow
     {
-        readonly PreviewWindow _previewWindow = new PreviewWindow();
+        private readonly PreviewWindow _previewWindow = new PreviewWindow();
 
-        D3D9PreviewAssister _d3D9PreviewAssister;
-        IntPtr _backBufferPtr;
-        Texture _texture;
+        private D3D9PreviewAssister _d3D9PreviewAssister;
+        private IntPtr _backBufferPtr;
+        private Texture _texture;
 
-        bool _visible;
+        private bool _visible;
 
         public PreviewWindowService()
         {
-            _previewWindow.IsVisibleChanged += (S, E) => _visible = _previewWindow.IsVisible;
+            _previewWindow.IsVisibleChanged += (sender, e) => _visible = _previewWindow.IsVisible;
 
             _visible = _previewWindow.IsVisible;
 
             // Prevent Closing by User
-            _previewWindow.Closing += (S, E) =>
+            _previewWindow.Closing += (sender, e) =>
             {
-                E.Cancel = true;
+                e.Cancel = true;
 
                 _previewWindow.Hide();
             };
         }
 
-        public void Init(int Width, int Height) { }
+        public void Init(int width, int height) { }
 
-        IBitmapFrame _lastFrame;
+        private IBitmapFrame _lastFrame;
 
-        public void Display(IBitmapFrame Frame)
+        public void Display(IBitmapFrame frame)
         {
-            if (Frame is RepeatFrame)
+            if (frame is RepeatFrame)
                 return;
 
             if (!_visible)
             {
-                Frame.Dispose();
+                frame.Dispose();
                 return;
             }
 
@@ -53,9 +57,9 @@ namespace Captura.Models
                 _previewWindow.DisplayImage.Image = null;
 
                 _lastFrame?.Dispose();
-                _lastFrame = Frame;
+                _lastFrame = frame;
 
-                if (Frame is MultiDisposeFrame frameWrapper)
+                if (frame is MultiDisposeFrame frameWrapper)
                 {
                     switch (frameWrapper.Frame)
                     {
@@ -84,13 +88,13 @@ namespace Captura.Models
             });
         }
 
-        void Invalidate(IntPtr BackBufferPtr, int Width, int Height)
+        private void Invalidate(IntPtr backBufferPtr, int width, int height)
         {
             _previewWindow.D3DImage.Lock();
-            _previewWindow.D3DImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, BackBufferPtr);
+            _previewWindow.D3DImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, backBufferPtr);
 
-            if (BackBufferPtr != IntPtr.Zero)
-                _previewWindow.D3DImage.AddDirtyRect(new Int32Rect(0, 0, Width, Height));
+            if (backBufferPtr != IntPtr.Zero)
+                _previewWindow.D3DImage.AddDirtyRect(new Int32Rect(0, 0, width, height));
 
             _previewWindow.D3DImage.Unlock();
         }

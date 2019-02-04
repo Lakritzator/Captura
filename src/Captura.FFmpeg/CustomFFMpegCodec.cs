@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+
+namespace Captura.FFmpeg
 {
     public class CustomFFmpegCodec : PropertyStore
     {

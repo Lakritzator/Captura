@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using Captura.Webcam;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.WebCam;
+using Captura.Windows;
 
 namespace Captura.Models
 {
@@ -9,22 +13,22 @@ namespace Captura.Models
     {
         public WebCamProvider()
         {
-            AvailableCams = new ReadOnlyObservableCollection<IWebcamItem>(_cams);
+            AvailableCams = new ReadOnlyObservableCollection<IWebCamItem>(_cams);
 
             _camControl = WebCamWindow.Instance.GetWebCamControl();
             
             Refresh();
         }
-        
-        readonly ObservableCollection<IWebcamItem> _cams = new ObservableCollection<IWebcamItem>();
 
-        public ReadOnlyObservableCollection<IWebcamItem> AvailableCams { get; }
+        private readonly ObservableCollection<IWebCamItem> _cams = new ObservableCollection<IWebCamItem>();
 
-        readonly WebcamControl _camControl;
+        public ReadOnlyObservableCollection<IWebCamItem> AvailableCams { get; }
 
-        IWebcamItem _selectedCam = WebcamItem.NoWebcam;
+        private readonly Controls.WebCamControl _camControl;
 
-        public IWebcamItem SelectedCam
+        private IWebCamItem _selectedCam = WebCamItem.NoWebCam;
+
+        public IWebCamItem SelectedCam
         {
             get => _selectedCam;
             set
@@ -36,7 +40,7 @@ namespace Captura.Models
 
                 _camControl.Capture?.StopPreview();
 
-                if (value is WebcamItem model)
+                if (value is WebCamItem model)
                 {
                     try
                     {
@@ -44,7 +48,7 @@ namespace Captura.Models
 
                         if (_camControl.IsVisible)
                             _camControl.Refresh();
-                        else _camControl.ShowOnMainWindow(MainWindow.Instance);
+                        else _camControl.ShowOnMainWindow(Windows.MainWindow.Instance);
 
                         _selectedCam = value;
 
@@ -52,7 +56,7 @@ namespace Captura.Models
                     }
                     catch (Exception e)
                     {
-                        ServiceProvider.MessageProvider.ShowException(e, "Could not Start Webcam");
+                        ServiceProvider.MessageProvider.ShowException(e, "Could not Start WebCam");
                     }
                 }
 
@@ -64,22 +68,22 @@ namespace Captura.Models
         {
             _cams.Clear();
 
-            _cams.Add(WebcamItem.NoWebcam);
+            _cams.Add(WebCamItem.NoWebCam);
 
             if (_camControl == null)
                 return;
 
             foreach (var cam in Filter.VideoInputDevices)
-                _cams.Add(new WebcamItem(cam));
+                _cams.Add(new WebCamItem(cam));
 
-            SelectedCam = WebcamItem.NoWebcam;
+            SelectedCam = WebCamItem.NoWebCam;
         }
 
-        public IDisposable Capture(IBitmapLoader BitmapLoader)
+        public IDisposable Capture(IBitmapLoader bitmapLoader)
         {
             try
             {
-                return _camControl.Dispatcher.Invoke(() => _camControl.Capture?.GetFrame(BitmapLoader));
+                return _camControl.Dispatcher.Invoke(() => _camControl.Capture?.GetFrame(bitmapLoader));
             }
             catch { return null; }
         }

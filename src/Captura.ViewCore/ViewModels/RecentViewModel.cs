@@ -1,8 +1,12 @@
-﻿using Captura.Models;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Captura.Base;
+using Captura.Base.Recent;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.Loc;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RecentViewModel : ViewModelBase
@@ -11,14 +15,14 @@ namespace Captura.ViewModels
 
         public ICommand ClearCommand { get; }
 
-        public RecentViewModel(Settings Settings,
-            LanguageManager LanguageManager,
-            IRecentList Recent)
-            : base(Settings, LanguageManager)
+        public RecentViewModel(Settings settings,
+            LanguageManager languageManager,
+            IRecentList recent)
+            : base(settings, languageManager)
         {
-            Items = Recent.Items;
+            Items = recent.Items;
 
-            ClearCommand = new DelegateCommand(Recent.Clear);
+            ClearCommand = new DelegateCommand(recent.Clear);
         }
     }
 }

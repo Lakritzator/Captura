@@ -2,13 +2,20 @@
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using Captura.Base.Services;
+using Captura.Base.Settings;
+using Captura.Core.Settings.Models;
+using Captura.FFmpeg.Settings;
+using Captura.Imgur;
+using Captura.MouseKeyHook.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using System.Linq;
-using Captura.Models;
+using Screna.Gif;
+using Screna.Overlays.Settings;
 
-namespace Captura
+namespace Captura.Core.Settings
 {
     public class Settings : PropertyStore
     {
@@ -50,11 +57,11 @@ namespace Captura
         {
             try
             {
-                var sortedProperties = JObject.FromObject(this).Properties().OrderBy(J => J.Name);
+                var sortedProperties = JObject.FromObject(this).Properties().OrderBy(jProperty => jProperty.Name);
 
-                var jobj = new JObject(sortedProperties.Cast<object>().ToArray());
+                var jObject = new JObject(sortedProperties.Cast<object>().ToArray());
 
-                File.WriteAllText(GetPath(), jobj.ToString());
+                File.WriteAllText(GetPath(), jObject.ToString());
 
                 return true;
             }
@@ -74,7 +81,7 @@ namespace Captura
 
         public ImgurSettings Imgur { get; } = new ImgurSettings();
 
-        public WebcamOverlaySettings WebcamOverlay { get; set; } = new WebcamOverlaySettings();
+        public WebCamOverlaySettings WebCamOverlay { get; set; } = new WebCamOverlaySettings();
 
         public MouseOverlaySettings MousePointerOverlay { get; set; } = new MouseOverlaySettings
         {
@@ -89,7 +96,7 @@ namespace Captura
 
         public ObservableCollection<CensorOverlaySettings> Censored { get; } = new ObservableCollection<CensorOverlaySettings>();
         
-        public VisualSettings UI { get; } = new VisualSettings();
+        public VisualSettings Ui { get; } = new VisualSettings();
 
         public ScreenShotSettings ScreenShots { get; } = new ScreenShotSettings();
 
@@ -141,16 +148,16 @@ namespace Captura
             set => Set(value);
         }
 
-        public string GetFileName(string Extension, string FileName = null)
+        public string GetFileName(string extension, string fileName = null)
         {
-            if (FileName != null)
-                return FileName;
+            if (fileName != null)
+                return fileName;
 
-            if (!Extension.StartsWith("."))
-                Extension = $".{Extension}";
+            if (!extension.StartsWith("."))
+                extension = $".{extension}";
 
             if (string.IsNullOrWhiteSpace(FilenameFormat))
-                return Path.Combine(OutPath, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}{Extension}");
+                return Path.Combine(OutPath, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}{extension}");
 
             var now = DateTime.Now;
 
@@ -174,7 +181,7 @@ namespace Captura
                 .Replace("%tt%", now.ToString("tt"))
                 .Replace("%zzz%", now.ToString("zzz"));
             
-            var path = Path.Combine(OutPath, $"{filename}{Extension}");
+            var path = Path.Combine(OutPath, $"{filename}{extension}");
 
             if (!File.Exists(path))
                 return path;
@@ -183,7 +190,7 @@ namespace Captura
 
             do
             {
-                path = Path.Combine(OutPath, $"{filename} ({i++}){Extension}");
+                path = Path.Combine(OutPath, $"{filename} ({i++}){extension}");
             }
             while (File.Exists(path));
 

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Ink;
 
-namespace Captura
+namespace Captura.ImageEditor.History
 {
     public class SelectHistory : IHistoryItem
     {

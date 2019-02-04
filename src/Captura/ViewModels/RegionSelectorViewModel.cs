@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base;
+using Captura.Models;
+
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace Captura
+namespace Captura.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RegionSelectorViewModel : NotifyPropertyChanged
     {
-        int _left = 50,
+        private int _left = 50,
             _top = 50,
             _width = 500,
             _height = 500;
 
-        const int MinWidth = 300,
+        private const int MinWidth = 300,
             MinHeight = 300,
             BorderSize = 3;
 
@@ -100,9 +103,9 @@ namespace Captura
             }
         }
 
-        public void ResizeFromTop(double VerticalChangeDip)
+        public void ResizeFromTop(double verticalChangeDip)
         {
-            var verticalChange = (int) (VerticalChangeDip * Dpi.Y);
+            var verticalChange = (int) (verticalChangeDip * Dpi.Y);
 
             var oldBottom = Top + Height;
             var top = Top + verticalChange;
@@ -128,9 +131,9 @@ namespace Captura
             }
         }
 
-        public void ResizeFromLeft(double HorizontalChangeDip)
+        public void ResizeFromLeft(double horizontalChangeDip)
         {
-            var horizontalChange = (int) (HorizontalChangeDip * Dpi.X);
+            var horizontalChange = (int) (horizontalChangeDip * Dpi.X);
 
             var oldRight = Left + Width;
             var left = Left + horizontalChange;

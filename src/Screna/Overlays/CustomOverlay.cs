@@ -1,12 +1,14 @@
-﻿namespace Captura.Models
+﻿using Screna.Overlays.Settings;
+
+namespace Screna.Overlays
 {
     public class CustomOverlay : TextOverlay
     {
-        readonly CustomOverlaySettings _overlaySettings;
+        private readonly CustomOverlaySettings _overlaySettings;
         
-        public CustomOverlay(CustomOverlaySettings OverlaySettings) : base(OverlaySettings)
+        public CustomOverlay(CustomOverlaySettings overlaySettings) : base(overlaySettings)
         {
-            _overlaySettings = OverlaySettings;
+            _overlaySettings = overlaySettings;
         }
 
         protected override string GetText() => _overlaySettings.Text;

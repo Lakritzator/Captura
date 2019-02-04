@@ -1,4 +1,7 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+using Captura.HotKeys;
+
+namespace Captura.Core.Settings.Models
 {
     public class TraySettings : PropertyStore
     {

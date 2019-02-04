@@ -1,8 +1,8 @@
-﻿<Page x:Class="Captura.Views.ProxyPage"
+﻿<Page x:Class="Captura.Pages.ProxyPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-      xmlns:captura="clr-namespace:Captura"
+      xmlns:controls="clr-namespace:Captura.Controls"
       DataContext="{Binding ProxySettingsViewModel, Source={StaticResource ServiceLocator}}">
     <Grid Margin="5,0">
         <StackPanel>
@@ -91,7 +91,7 @@
                        Margin="0,5,5,5"
                        Grid.Row="1"/>
 
-                <captura:ModernPasswordBox Password="{Binding ProxySettings.Password, Mode=TwoWay}"
+                <controls:ModernPasswordBox Password="{Binding ProxySettings.Password, Mode=TwoWay}"
                                            Grid.Row="1"
                                            Grid.Column="1"
                                            Margin="0,5"/>

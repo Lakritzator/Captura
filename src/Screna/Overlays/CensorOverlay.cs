@@ -1,71 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Settings;
+using Screna.Overlays.Settings;
 
-namespace Captura
+namespace Screna.Overlays
 {
     public class CensorOverlay : IOverlay
     {
-        readonly IEnumerable<CensorOverlaySettings> _overlaySettings;
+        private readonly IEnumerable<CensorOverlaySettings> _overlaySettings;
 
-        public CensorOverlay(IEnumerable<CensorOverlaySettings> OverlaySettings)
+        public CensorOverlay(IEnumerable<CensorOverlaySettings> overlaySettings)
         {
-            _overlaySettings = OverlaySettings;
+            _overlaySettings = overlaySettings;
         }
 
         public void Dispose() { }
 
-        static float GetLeft(CensorOverlaySettings OverlaySettings, float FullWidth)
+        private static float GetLeft(CensorOverlaySettings overlaySettings, float fullWidth)
         {
-            var x = OverlaySettings.X;
+            var x = overlaySettings.X;
 
-            switch (OverlaySettings.HorizontalAlignment)
+            switch (overlaySettings.HorizontalAlignment)
             {
                 case Alignment.Start:
                     return x;
 
                 case Alignment.End:
-                    return FullWidth - x - OverlaySettings.Width;
+                    return fullWidth - x - overlaySettings.Width;
 
                 case Alignment.Center:
-                    return FullWidth / 2 + x - OverlaySettings.Width / 2f;
+                    return fullWidth / 2 + x - overlaySettings.Width / 2f;
 
                 default:
                     return 0;
             }
         }
 
-        static float GetTop(CensorOverlaySettings OverlaySettings, float FullHeight)
+        private static float GetTop(CensorOverlaySettings overlaySettings, float fullHeight)
         {
-            var y = OverlaySettings.Y;
+            var y = overlaySettings.Y;
 
-            switch (OverlaySettings.VerticalAlignment)
+            switch (overlaySettings.VerticalAlignment)
             {
                 case Alignment.Start:
                     return y;
 
                 case Alignment.End:
-                    return FullHeight - y - OverlaySettings.Height;
+                    return fullHeight - y - overlaySettings.Height;
 
                 case Alignment.Center:
-                    return FullHeight / 2 + y - OverlaySettings.Height / 2f;
+                    return fullHeight / 2 + y - overlaySettings.Height / 2f;
 
                 default:
                     return 0;
             }
         }
 
-        public void Draw(IEditableFrame Editor, Func<Point, Point> PointTransform = null)
+        public void Draw(IEditableFrame editor, Func<Point, Point> pointTransform = null)
         {
             foreach (var overlaySetting in _overlaySettings)
             {
                 if (!overlaySetting.Display)
                     continue;
 
-                Editor.FillRectangle(Color.Black,
+                editor.FillRectangle(Color.Black,
                     new RectangleF(
-                        GetLeft(overlaySetting, Editor.Width),
-                        GetTop(overlaySetting, Editor.Height),
+                        GetLeft(overlaySetting, editor.Width),
+                        GetTop(overlaySetting, editor.Height),
                         overlaySetting.Width,
                         overlaySetting.Height));
             }

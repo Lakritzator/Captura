@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Captura.Models
+namespace Captura.Base
 {
     public interface IScreen
     {

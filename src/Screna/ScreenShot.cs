@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using Captura;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Images;
+using Screna.Frames;
+using Screna.ImageProviders;
 
 namespace Screna
 {
@@ -13,24 +15,24 @@ namespace Screna
         /// <summary>
         /// Captures the entire Desktop.
         /// </summary>
-        /// <param name="IncludeCursor">Whether to include the Mouse Cursor.</param>
+        /// <param name="includeCursor">Whether to include the Mouse Cursor.</param>
         /// <returns>The Captured Image.</returns>
-        public static IBitmapImage Capture(bool IncludeCursor = false)
+        public static IBitmapImage Capture(bool includeCursor = false)
         {
-            return Capture(WindowProvider.DesktopRectangle, IncludeCursor);
+            return Capture(WindowProvider.DesktopRectangle, includeCursor);
         }
 
         /// <summary>
         /// Capture transparent Screenshot of a Window.
         /// </summary>
-        /// <param name="Window">The <see cref="IWindow"/> to Capture.</param>
-        /// <param name="IncludeCursor">Whether to include Mouse Cursor.</param>
-        public static IBitmapImage CaptureTransparent(IWindow Window, bool IncludeCursor = false)
+        /// <param name="window">The <see cref="IWindow"/> to Capture.</param>
+        /// <param name="includeCursor">Whether to include Mouse Cursor.</param>
+        public static IBitmapImage CaptureTransparent(IWindow window, bool includeCursor = false)
         {
-            if (Window == null)
-                throw new ArgumentNullException(nameof(Window));
+            if (window == null)
+                throw new ArgumentNullException(nameof(window));
 
-            var backdrop = new WindowScreenShotBackdrop(Window);
+            var backdrop = new WindowScreenShotBackdrop(window);
 
             backdrop.ShowWhite();
 
@@ -52,10 +54,10 @@ namespace Screna
                         return null;
 
                     // Include Cursor only if within window
-                    if (IncludeCursor && r.Contains(MouseCursor.CursorPosition))
+                    if (includeCursor && r.Contains(MouseCursor.CursorPosition))
                     {
-                        using (var g = Graphics.FromImage(transparentImage))
-                            MouseCursor.Draw(g, P => new Point(P.X - r.X, P.Y - r.Y));
+                        using (var graphics = Graphics.FromImage(transparentImage))
+                            MouseCursor.Draw(graphics, point => new Point(point.X - r.X, point.Y - r.Y));
                     }
 
                     return new DrawingImage(transparentImage.CropEmptyEdges());
@@ -63,32 +65,34 @@ namespace Screna
             }
         }
 
-        static Bitmap CaptureInternal(Rectangle Region, bool IncludeCursor = false)
+        private static Bitmap CaptureInternal(Rectangle region, bool includeCursor = false)
         {
-            var bmp = new Bitmap(Region.Width, Region.Height);
+            var bitmap = new Bitmap(region.Width, region.Height);
 
-            using (var g = Graphics.FromImage(bmp))
+            using (var graphics = Graphics.FromImage(bitmap))
             {
-                g.CopyFromScreen(Region.Location, Point.Empty, Region.Size, CopyPixelOperation.SourceCopy);
+                graphics.CopyFromScreen(region.Location, Point.Empty, region.Size, CopyPixelOperation.SourceCopy);
 
-                if (IncludeCursor)
-                    MouseCursor.Draw(g, P => new Point(P.X - Region.X, P.Y - Region.Y));
+                if (includeCursor)
+                {
+                    MouseCursor.Draw(graphics, point => new Point(point.X - region.X, point.Y - region.Y));
+                }
 
-                g.Flush();
+                graphics.Flush();
             }
 
-            return bmp;
+            return bitmap;
         }
 
         /// <summary>
         /// Captures a Specific Region.
         /// </summary>
-        /// <param name="Region">A <see cref="Rectangle"/> specifying the Region to Capture.</param>
-        /// <param name="IncludeCursor">Whether to include the Mouse Cursor.</param>
+        /// <param name="region">A <see cref="Rectangle"/> specifying the Region to Capture.</param>
+        /// <param name="includeCursor">Whether to include the Mouse Cursor.</param>
         /// <returns>The Captured Image.</returns>
-        public static IBitmapImage Capture(Rectangle Region, bool IncludeCursor = false)
+        public static IBitmapImage Capture(Rectangle region, bool includeCursor = false)
         {
-            return new DrawingImage(CaptureInternal(Region, IncludeCursor));
+            return new DrawingImage(CaptureInternal(region, includeCursor));
         }
     }
 }

@@ -1,4 +1,3 @@
-using Captura.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using Ninject;
 
-namespace Captura
+namespace Captura.Base.Services
 {
     public static class ServiceProvider
     {
@@ -38,11 +37,11 @@ namespace Captura
 
         static readonly List<IModule> LoadedModules = new List<IModule>();
 
-        public static void LoadModule(IModule Module)
+        public static void LoadModule(IModule module)
         {
-            Kernel.Load(new Binder(Module));
+            Kernel.Load(new Binder(module));
 
-            LoadedModules.Add(Module);
+            LoadedModules.Add(module);
         }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace Captura
         /// </summary>
         public static void Dispose()
         {
-            LoadedModules.ForEach(M => M.Dispose());
+            LoadedModules.ForEach(module => module.Dispose());
 
             // Singleton objects will be disposed by Kernel
             Kernel.Dispose();
@@ -58,24 +57,29 @@ namespace Captura
 
         public static T Get<T>() => Kernel.Get<T>();
         
-        public static void LaunchFile(ProcessStartInfo StartInfo)
+        public static void LaunchFile(ProcessStartInfo startInfo)
         {
-            try { Process.Start(StartInfo.FileName); }
+            try { Process.Start(startInfo.FileName); }
             catch (Win32Exception e) when (e.NativeErrorCode == 2)
             {
-                MessageProvider.ShowError($"Could not find file: {StartInfo.FileName}");
+                MessageProvider.ShowError($"Could not find file: {startInfo.FileName}");
             }
             catch (Exception e)
             {
-                MessageProvider.ShowException(e, $"Could not open file: {StartInfo.FileName}");
+                MessageProvider.ShowException(e, $"Could not open file: {startInfo.FileName}");
             }
         }
 
         public static IMessageProvider MessageProvider => Get<IMessageProvider>();
         
-        public static bool FileExists(string FileName)
+        public static bool FileExists(string fileName)
         {
-            return File.Exists(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), FileName));
+            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrEmpty(location))
+            {
+                return false;
+            }
+            return File.Exists(Path.Combine(location, fileName));
         }
     }
 }

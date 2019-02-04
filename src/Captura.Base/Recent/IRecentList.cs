@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 
-namespace Captura.Models
+namespace Captura.Base.Recent
 {
     public interface IRecentList : IDisposable
     {
-        void Add(IRecentItem RecentItem);
+        void Add(IRecentItem recentItem);
 
         ReadOnlyObservableCollection<IRecentItem> Items { get; }
 

@@ -1,10 +1,10 @@
-﻿<UserControl x:Class="Captura.CollapsedBar"
+﻿<UserControl x:Class="Captura.Controls.CollapsedBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:captura="clr-namespace:Captura"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:controls="clr-namespace:Captura.Controls"
              DataContext="{Binding MainViewModel, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
     <DockPanel>
@@ -18,7 +18,7 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="Fill" Value="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType=ContentControl}}"/>
             </Style>
-            <Style TargetType="captura:ModernToggleButton" BasedOn="{StaticResource {x:Type captura:ModernToggleButton}}">
+            <Style TargetType="controls:ModernToggleButton" BasedOn="{StaticResource {x:Type controls:ModernToggleButton}}">
                 <Setter Property="LayoutTransform">
                     <Setter.Value>
                         <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
@@ -53,34 +53,34 @@
                                  DockPanel.Dock="Right"
                                  Margin="0,5,5,5">
                 <Path Style="{StaticResource VideoSourceIcon}"
-                      Data="{Binding Icons.Webcam, Source={StaticResource ServiceLocator}}"/>
+                      Data="{Binding Icons.WebCam, Source={StaticResource ServiceLocator}}"/>
 
                 <xctk:DropDownButton.DropDownContent>
-                    <Frame Source="../Pages/WebcamPage.xaml"
+                    <Frame Source="../Pages/WebCamPage.xaml"
                            Margin="10"
                            MinWidth="250"/>
                 </xctk:DropDownButton.DropDownContent>
             </xctk:DropDownButton>
 
-            <captura:ModernButton ToolTip="{Binding OpenOutFolder, Source={StaticResource Loc}, Mode=OneWay}"
+            <controls:ModernButton ToolTip="{Binding OpenOutFolder, Source={StaticResource Loc}, Mode=OneWay}"
                                   Command="{Binding OpenOutputFolderCommand}"
                                   IconData="{Binding Icons.Folder, Source={StaticResource ServiceLocator}}"
                                   DockPanel.Dock="Right"/>
 
             <StackPanel Orientation="Horizontal">
-                <captura:ModernToggleButton ToolTip="{Binding IncludeCursor, Source={StaticResource Loc}, Mode=OneWay}"
+                <controls:ModernToggleButton ToolTip="{Binding IncludeCursor, Source={StaticResource Loc}, Mode=OneWay}"
                                             IsEnabled="{Binding ViewConditions.IsEnabled.Value, Source={StaticResource ServiceLocator}}"
                                             IconData="{Binding Icons.Cursor, Source={StaticResource ServiceLocator}}"
                                             IsChecked="{Binding Settings.IncludeCursor}"/>
-                <captura:ModernToggleButton ToolTip="{Binding IncludeClicks, Source={StaticResource Loc}, Mode=OneWay}"
+                <controls:ModernToggleButton ToolTip="{Binding IncludeClicks, Source={StaticResource Loc}, Mode=OneWay}"
                                             IconData="{Binding Icons.Hand, Source={StaticResource ServiceLocator}}"
                                             IsChecked="{Binding Settings.Clicks.Display, Mode=TwoWay}"/>
-                <captura:ModernToggleButton ToolTip="{Binding IncludeKeys, Source={StaticResource Loc}, Mode=OneWay}"
+                <controls:ModernToggleButton ToolTip="{Binding IncludeKeys, Source={StaticResource Loc}, Mode=OneWay}"
                                             IconData="{Binding Icons.Keyboard, Source={StaticResource ServiceLocator}}"
                                             IsChecked="{Binding Settings.Keystrokes.Display, Mode=TwoWay}"/>
             </StackPanel>
 
-            <captura:VideoSourceKindList/>
+            <controls:VideoSourceKindList/>
         </DockPanel>
     </DockPanel>
 </UserControl>

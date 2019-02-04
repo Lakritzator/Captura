@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+
+namespace Screna.Overlays.Settings
 {
     public class CensorOverlaySettings : PositionedOverlaySettings
     {

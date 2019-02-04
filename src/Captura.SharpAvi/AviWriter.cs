@@ -1,23 +1,26 @@
 ﻿using System;
-using Captura.Audio;
+using Captura.Base.Audio;
+using Captura.Base.Images;
+using Captura.Base.Video;
 using SharpAvi.Codecs;
 using SharpAvi.Output;
 using AviInternalWriter = SharpAvi.Output.AviWriter;
 
-namespace Captura.Models
+namespace Captura.SharpAvi
 {
     /// <summary>
     /// Writes an AVI file.
     /// </summary>
-    class AviWriter : IVideoFileWriter
+    internal class AviWriter : IVideoFileWriter
     {
         #region Fields
-        AviInternalWriter _writer;
-        IAviVideoStream _videoStream;
-        IAviAudioStream _audioStream;
-        byte[] _videoBuffer;
-        readonly AviCodec _codec;
-        readonly object _syncLock = new object();
+
+        private AviInternalWriter _writer;
+        private IAviVideoStream _videoStream;
+        private IAviAudioStream _audioStream;
+        private byte[] _videoBuffer;
+        private readonly AviCodec _codec;
+        private readonly object _syncLock = new object();
         
         /// <summary>
         /// Gets whether Audio is recorded.
@@ -28,39 +31,39 @@ namespace Captura.Models
         /// <summary>
         /// Creates a new instance of <see cref="AviWriter"/>.
         /// </summary>
-        /// <param name="FileName">Output file path.</param>
-        /// <param name="Codec">The Avi Codec.</param>
-        /// <param name="ImageProvider">The image source.</param>
-        /// <param name="FrameRate">Video Frame Rate.</param>
-        /// <param name="AudioProvider">The audio source. null = no audio.</param>
-        public AviWriter(string FileName, AviCodec Codec, IImageProvider ImageProvider, int FrameRate, IAudioProvider AudioProvider = null)
+        /// <param name="fileName">Output file path.</param>
+        /// <param name="codec">The Avi Codec.</param>
+        /// <param name="imageProvider">The image source.</param>
+        /// <param name="frameRate">Video Frame Rate.</param>
+        /// <param name="audioProvider">The audio source. null = no audio.</param>
+        public AviWriter(string fileName, AviCodec codec, IImageProvider imageProvider, int frameRate, IAudioProvider audioProvider = null)
         {
-            _codec = Codec;
+            _codec = codec;
 
-            _videoBuffer = new byte[ImageProvider.Width * ImageProvider.Height * 4];
+            _videoBuffer = new byte[imageProvider.Width * imageProvider.Height * 4];
 
-            _writer = new AviInternalWriter(FileName)
+            _writer = new AviInternalWriter(fileName)
             {
-                FramesPerSecond = FrameRate,
+                FramesPerSecond = frameRate,
                 EmitIndex1 = true
             };
 
-            CreateVideoStream(ImageProvider.Width, ImageProvider.Height);
+            CreateVideoStream(imageProvider.Width, imageProvider.Height);
 
-            if (AudioProvider != null)
-                CreateAudioStream(AudioProvider);
+            if (audioProvider != null)
+                CreateAudioStream(audioProvider);
         }
         
         /// <summary>
         /// Writes an Image frame.
         /// </summary>
-        public void WriteFrame(IBitmapFrame Frame)
+        public void WriteFrame(IBitmapFrame frame)
         {
-            if (!(Frame is RepeatFrame))
+            if (!(frame is RepeatFrame))
             {
-                using (Frame)
+                using (frame)
                 {
-                    Frame.CopyTo(_videoBuffer, _videoBuffer.Length);
+                    frame.CopyTo(_videoBuffer, _videoBuffer.Length);
                 }
             }
 
@@ -68,23 +71,23 @@ namespace Captura.Models
                 _videoStream.WriteFrame(true, _videoBuffer, 0, _videoBuffer.Length);
         }
 
-        void CreateVideoStream(int Width, int Height)
+        private void CreateVideoStream(int width, int height)
         {
             // Select encoder type based on FOURCC of codec
             if (_codec == AviCodec.Uncompressed)
-                _videoStream = _writer.AddUncompressedVideoStream(Width, Height);
+                _videoStream = _writer.AddUncompressedVideoStream(width, height);
             else if (_codec == AviCodec.MotionJpeg)
             {
                 // MotionJpegVideoStream implementation allocates multiple WriteableBitmap for every thread
                 // Use SingleThreadWrapper to reduce allocation
-                var encoderFactory = new Func<IVideoEncoder>(() => new MotionJpegVideoEncoderWpf(Width, Height, _codec.Quality));
+                var encoderFactory = new Func<IVideoEncoder>(() => new MotionJpegVideoEncoderWpf(width, height, _codec.Quality));
                 var encoder = new SingleThreadedVideoEncoderWrapper(encoderFactory);
 
-                _videoStream = _writer.AddEncodingVideoStream(encoder, true, Width, Height);
+                _videoStream = _writer.AddEncodingVideoStream(encoder, true, width, height);
             }
             else
             {
-                _videoStream = _writer.AddMpeg4VideoStream(Width, Height,
+                _videoStream = _writer.AddMpeg4VideoStream(width, height,
                     (double)_writer.FramesPerSecond,
                     // It seems that all tested MPEG-4 VfW codecs ignore the quality affecting parameters passed through VfW API
                     // They only respect the settings from their own configuration dialogs, and Mpeg4VideoEncoder currently has no support for this
@@ -99,9 +102,9 @@ namespace Captura.Models
             _videoStream.Name = "Video";
         }
 
-        void CreateAudioStream(IAudioProvider AudioProvider)
+        private void CreateAudioStream(IAudioProvider audioProvider)
         {
-            _audioStream = _writer.AddEncodingAudioStream(new IAudioProviderAdapter(AudioProvider));
+            _audioStream = _writer.AddEncodingAudioStream(new AudioProviderAdapter(audioProvider));
 
             _audioStream.Name = "Audio";
         }
@@ -109,12 +112,12 @@ namespace Captura.Models
         /// <summary>
         /// Write audio block to Audio Stream.
         /// </summary>
-        /// <param name="Buffer">Buffer containing audio data.</param>
-        /// <param name="Length">Length of audio data in bytes.</param>
-        public void WriteAudio(byte[] Buffer, int Length)
+        /// <param name="buffer">Buffer containing audio data.</param>
+        /// <param name="length">Length of audio data in bytes.</param>
+        public void WriteAudio(byte[] buffer, int length)
         {
             lock (_syncLock)
-                _audioStream?.WriteBlock(Buffer, 0, Length);
+                _audioStream?.WriteBlock(buffer, 0, length);
         }
 
         /// <summary>

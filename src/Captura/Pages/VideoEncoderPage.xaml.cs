@@ -1,7 +1,8 @@
 ﻿using System.Windows;
-using Captura.ViewModels;
+using Captura.Presentation;
+using Captura.ViewCore.ViewModels;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class VideoEncoderPage
     {
@@ -15,9 +16,9 @@ namespace Captura
             }
         }
 
-        void OpenFFmpegLog(object Sender, RoutedEventArgs E)
+        private void OpenFFmpegLog(object sender, RoutedEventArgs e)
         {
-            FFmpegLogWindow.ShowInstance();
+            Windows.FFmpegLogWindow.ShowInstance();
         }
     }
 }

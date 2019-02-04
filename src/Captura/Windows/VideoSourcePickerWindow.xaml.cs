@@ -8,6 +8,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
 using Captura.Models;
 using Screna;
 using Color = System.Windows.Media.Color;
@@ -15,23 +18,23 @@ using Cursors = System.Windows.Input.Cursors;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class VideoSourcePickerWindow
     {
-        enum VideoPickerMode
+        private enum VideoPickerMode
         {
             Window,
             Screen
         }
 
-        readonly VideoPickerMode _mode;
+        private readonly VideoPickerMode _mode;
 
-        Predicate<IWindow> Predicate { get; set; }
+        private Predicate<IWindow> Predicate { get; set; }
 
-        VideoSourcePickerWindow(VideoPickerMode Mode)
+        private VideoSourcePickerWindow(VideoPickerMode mode)
         {
-            _mode = Mode;
+            _mode = mode;
             InitializeComponent();
 
             Left = SystemParameters.VirtualScreenLeft;
@@ -49,15 +52,15 @@ namespace Captura
             ShowCancelText();
         }
 
-        readonly IScreen[] _screens;
+        private readonly IScreen[] _screens;
 
-        readonly IWindow[] _windows;
+        private readonly IWindow[] _windows;
 
         public IScreen SelectedScreen { get; private set; }
 
         public IWindow SelectedWindow { get; private set; }
 
-        void UpdateBackground()
+        private void UpdateBackground()
         {
             using (var bmp = ScreenShot.Capture())
             {
@@ -71,18 +74,18 @@ namespace Captura
             }
         }
 
-        void BeginClose()
+        private void BeginClose()
         {
             var duration = new Duration(TimeSpan.FromMilliseconds(200));
 
             var opacityAnim = new DoubleAnimation(0, duration);
 
-            opacityAnim.Completed += (S, E) => Close();
+            opacityAnim.Completed += (sender, e) => Close();
 
             BeginAnimation(OpacityProperty, opacityAnim);
         }
 
-        void ShowCancelText()
+        private void ShowCancelText()
         {
             foreach (var screen in _screens)
             {
@@ -118,7 +121,7 @@ namespace Captura
             }
         }
 
-        void CloseClick(object Sender, RoutedEventArgs E)
+        private void CloseClick(object sender, RoutedEventArgs e)
         {
             SelectedScreen = null;
             SelectedWindow = null;
@@ -126,20 +129,20 @@ namespace Captura
             BeginClose();
         }
 
-        Rectangle? _lastRectangle;
+        private Rectangle? _lastRectangle;
 
-        void UpdateBorderAndCursor(Rectangle? Rect)
+        private void UpdateBorderAndCursor(Rectangle? rect)
         {
-            if (_lastRectangle == Rect)
+            if (_lastRectangle == rect)
                 return;
 
-            _lastRectangle = Rect;
+            _lastRectangle = rect;
 
             var storyboard = new Storyboard();
 
             var duration = new Duration(TimeSpan.FromMilliseconds(100));
 
-            if (Rect == null)
+            if (rect == null)
             {
                 Cursor = Cursors.Arrow;
 
@@ -155,18 +158,18 @@ namespace Captura
                 Storyboard.SetTargetProperty(opacityAnim, new PropertyPath(nameof(Opacity)));
                 storyboard.Children.Add(opacityAnim);
 
-                var rect = Rect.Value;
+                var newRect = rect.Value;
 
-                var margin = new Thickness(-Left + rect.Left / Dpi.X, -Top + rect.Top / Dpi.Y, 0, 0);
+                var margin = new Thickness(-Left + newRect.Left / Dpi.X, -Top + newRect.Top / Dpi.Y, 0, 0);
                 var marginAnim = new ThicknessAnimation(margin, duration);
                 Storyboard.SetTargetProperty(marginAnim, new PropertyPath(nameof(Margin)));
                 storyboard.Children.Add(marginAnim);
 
-                var widthAnim = new DoubleAnimation(Border.ActualWidth, rect.Width / Dpi.X, duration);
+                var widthAnim = new DoubleAnimation(Border.ActualWidth, newRect.Width / Dpi.X, duration);
                 Storyboard.SetTargetProperty(widthAnim, new PropertyPath(nameof(Width)));
                 storyboard.Children.Add(widthAnim);
 
-                var heightAnim = new DoubleAnimation(Border.ActualHeight, rect.Height / Dpi.Y, duration);
+                var heightAnim = new DoubleAnimation(Border.ActualHeight, newRect.Height / Dpi.Y, duration);
                 Storyboard.SetTargetProperty(heightAnim, new PropertyPath(nameof(Height)));
                 storyboard.Children.Add(heightAnim);
             }
@@ -174,29 +177,29 @@ namespace Captura
             Border.BeginStoryboard(storyboard);
         }
 
-        void WindowMouseMove(object Sender, MouseEventArgs E)
+        private void WindowMouseMove(object sender, MouseEventArgs e)
         {
             var point = MouseCursor.CursorPosition;
 
             switch (_mode)
             {
                 case VideoPickerMode.Screen:
-                    SelectedScreen = _screens.FirstOrDefault(M => M.Rectangle.Contains(point));
+                    SelectedScreen = _screens.FirstOrDefault(screen => screen.Rectangle.Contains(point));
 
                     UpdateBorderAndCursor(SelectedScreen?.Rectangle);
                     break;
 
                 case VideoPickerMode.Window:
                     SelectedWindow = _windows
-                        .Where(M => Predicate?.Invoke(M) ?? true)
-                        .FirstOrDefault(M => M.Rectangle.Contains(point));
+                        .Where(window => Predicate?.Invoke(window) ?? true)
+                        .FirstOrDefault(window => window.Rectangle.Contains(point));
                     
                     UpdateBorderAndCursor(SelectedWindow?.Rectangle);
                     break;
             }
         }
 
-        void WindowMouseLeftButtonDown(object Sender, MouseButtonEventArgs E)
+        private void WindowMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             switch (_mode)
             {
@@ -216,7 +219,7 @@ namespace Captura
             return picker.SelectedScreen;
         }
 
-        public static IWindow PickWindow(Predicate<IWindow> Filter)
+        public static IWindow PickWindow(Predicate<IWindow> filter)
         {
             var picker = new VideoSourcePickerWindow(VideoPickerMode.Window)
             {
@@ -224,7 +227,7 @@ namespace Captura
                 {
                     BorderThickness = new Thickness(5)
                 },
-                Predicate = Filter
+                Predicate = filter
             };
 
             picker.ShowDialog();

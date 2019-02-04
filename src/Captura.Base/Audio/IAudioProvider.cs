@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Captura.Audio
+namespace Captura.Base.Audio
 {
     /// <summary>
     /// Provides Recorded Audio.
@@ -10,7 +10,7 @@ namespace Captura.Audio
         /// <summary>
         /// Gets the Recording WaveFormat.
         /// </summary>
-        WaveFormat WaveFormat { get; }
+        WaveFormat.WaveFormat WaveFormat { get; }
 
         /// <summary>
         /// Start Recording.

@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.Windows
 {
     public partial class PreviewWindow
     {

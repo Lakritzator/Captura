@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Captura
+namespace Captura.Base
 {
     /// <summary>
     /// Carries out the process of recording Audio and/or Video.

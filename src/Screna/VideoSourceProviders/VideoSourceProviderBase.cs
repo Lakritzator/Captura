@@ -1,16 +1,19 @@
 using System;
+using Captura.Base;
+using Captura.Base.Video;
+using Captura.Loc;
 
-namespace Captura.Models
+namespace Screna.VideoSourceProviders
 {
     public abstract class VideoSourceProviderBase : NotifyPropertyChanged, IVideoSourceProvider
     {
         protected readonly LanguageManager Loc;
 
-        protected VideoSourceProviderBase(LanguageManager Loc)
+        protected VideoSourceProviderBase(LanguageManager loc)
         {
-            this.Loc = Loc;
+            Loc = loc;
 
-            Loc.LanguageChanged += L => RaisePropertyChanged(nameof(Name));
+            loc.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Name));
         }
 
         public abstract IVideoItem Source { get; }
@@ -37,8 +40,8 @@ namespace Captura.Models
             return Source.ToString();
         }
 
-        public abstract bool Deserialize(string Serialized);
+        public abstract bool Deserialize(string serialized);
 
-        public abstract bool ParseCli(string Arg);
+        public abstract bool ParseCli(string arg);
     }
 }

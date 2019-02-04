@@ -1,4 +1,4 @@
-# Captura.Webcam
+# Captura.WebCam
 Adapted from [ScreenToGif](https://github.com/NickeManarin/ScreenToGif/)
 
 Uses [DirectShow.NET](http://directshownet.sourceforge.net/)

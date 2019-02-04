@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.ArgsBuilder
 {
     public abstract class FFmpegArgs
     {

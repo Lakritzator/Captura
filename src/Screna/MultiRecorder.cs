@@ -1,28 +1,28 @@
 ﻿using System;
-using Captura;
+using Captura.Base;
 
 namespace Screna
 {
     public class MultiRecorder : IRecorder
     {
-        IRecorder[] _recorders;
+        private IRecorder[] _recorders;
 
-        public MultiRecorder(params IRecorder[] Recorders)
+        public MultiRecorder(params IRecorder[] recorders)
         {
-            if (Recorders == null || Recorders.Length < 2)
+            if (recorders == null || recorders.Length < 2)
             {
-                throw new ArgumentException("Atleast two recorders required.", nameof(Recorders));
+                throw new ArgumentException("At least two recorders required.", nameof(recorders));
             }
 
-            _recorders = Recorders;
+            _recorders = recorders;
 
-            foreach (var recorder in Recorders)
+            foreach (var recorder in recorders)
             {
                 recorder.ErrorOccurred += RaiseError;
             }
         }
 
-        void RaiseError(Exception E) => ErrorOccurred?.Invoke(E);
+        private void RaiseError(Exception exception) => ErrorOccurred?.Invoke(exception);
 
         public void Dispose()
         {

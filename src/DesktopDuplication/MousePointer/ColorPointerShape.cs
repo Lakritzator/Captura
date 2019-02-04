@@ -5,31 +5,31 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 
-namespace DesktopDuplication
+namespace DesktopDuplication.MousePointer
 {
     public class ColorPointerShape : IPointerShape
     {
-        Bitmap _bmp;
+        private Bitmap _bitmap;
 
-        public ColorPointerShape(IntPtr ShapeBuffer,
-            OutputDuplicatePointerShapeInformation ShapeInfo,
-            RenderTarget RenderTarget)
+        public ColorPointerShape(IntPtr shapeBuffer,
+            OutputDuplicatePointerShapeInformation shapeInfo,
+            RenderTarget renderTarget)
         {
-            _bmp = new Bitmap(RenderTarget,
-                new Size2(ShapeInfo.Width, ShapeInfo.Height),
-                new DataPointer(ShapeBuffer, ShapeInfo.Height * ShapeInfo.Pitch),
-                ShapeInfo.Pitch,
+            _bitmap = new Bitmap(renderTarget,
+                new Size2(shapeInfo.Width, shapeInfo.Height),
+                new DataPointer(shapeBuffer, shapeInfo.Height * shapeInfo.Pitch),
+                shapeInfo.Pitch,
                 new BitmapProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied)));
         }
 
-        public void Update(Texture2D DesktopTexture, OutputDuplicatePointerPosition PointerPosition) { }
+        public void Update(Texture2D desktopTexture, OutputDuplicatePointerPosition pointerPosition) { }
 
-        public Bitmap GetBitmap() => _bmp;
+        public Bitmap GetBitmap() => _bitmap;
 
         public void Dispose()
         {
-            _bmp.Dispose();
-            _bmp = null;
+            _bitmap.Dispose();
+            _bitmap = null;
         }
     }
 }

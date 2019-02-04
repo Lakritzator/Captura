@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Timers;
+using Captura.Base;
 using Screna;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class TimerModel : NotifyPropertyChanged
     {
-        readonly Settings _settings;
+        readonly Settings.Settings _settings;
 
         Timer _timer;
         readonly Timing _timing = new Timing();
@@ -54,12 +55,12 @@ namespace Captura.ViewModels
             }
         }
 
-        public TimerModel(Settings Settings)
+        public TimerModel(Settings.Settings settings)
         {
-            _settings = Settings;
+            _settings = settings;
         }
 
-        void TimerOnElapsed(object Sender, ElapsedEventArgs Args)
+        void TimerOnElapsed(object sender, ElapsedEventArgs args)
         {
             if (Countdown > 0)
             {

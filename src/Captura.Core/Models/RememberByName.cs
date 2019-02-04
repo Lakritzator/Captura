@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Captura.ViewModels;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Core.ViewModels;
 
-namespace Captura.Models
+namespace Captura.Core.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RememberByName
     {
-        readonly Settings _settings;
+        readonly Settings.Settings _settings;
         readonly VideoSourcesViewModel _videoSourcesViewModel;
         readonly VideoWritersViewModel _videoWritersViewModel;
         readonly AudioSource _audioSource;
@@ -15,21 +18,21 @@ namespace Captura.Models
         readonly ScreenShotModel _screenShotModel;
         readonly IEnumerable<IVideoSourceProvider> _videoSourceProviders;
 
-        public RememberByName(Settings Settings,
-            VideoSourcesViewModel VideoSourcesViewModel,
-            VideoWritersViewModel VideoWritersViewModel,
-            AudioSource AudioSource,
-            IWebCamProvider WebCamProvider,
-            ScreenShotModel ScreenShotModel,
-            IEnumerable<IVideoSourceProvider> VideoSourceProviders)
+        public RememberByName(Settings.Settings settings,
+            VideoSourcesViewModel videoSourcesViewModel,
+            VideoWritersViewModel videoWritersViewModel,
+            AudioSource audioSource,
+            IWebCamProvider webCamProvider,
+            ScreenShotModel screenShotModel,
+            IEnumerable<IVideoSourceProvider> videoSourceProviders)
         {
-            _settings = Settings;
-            _videoSourcesViewModel = VideoSourcesViewModel;
-            _videoWritersViewModel = VideoWritersViewModel;
-            _audioSource = AudioSource;
-            _webCamProvider = WebCamProvider;
-            _screenShotModel = ScreenShotModel;
-            _videoSourceProviders = VideoSourceProviders;
+            _settings = settings;
+            _videoSourcesViewModel = videoSourcesViewModel;
+            _videoWritersViewModel = videoWritersViewModel;
+            _audioSource = audioSource;
+            _webCamProvider = webCamProvider;
+            _screenShotModel = screenShotModel;
+            _videoSourceProviders = videoSourceProviders;
         }
 
         public void Remember()
@@ -44,23 +47,23 @@ namespace Captura.Models
 
             // Remember Audio Sources
             _settings.Audio.Microphones = _audioSource.AvailableRecordingSources
-                .Where(M => M.Active)
-                .Select(M => M.Name)
+                .Where(audioItem => audioItem.Active)
+                .Select(audioItem => audioItem.Name)
                 .ToArray();
 
             _settings.Audio.Speakers = _audioSource.AvailableLoopbackSources
-                .Where(M => M.Active)
-                .Select(M => M.Name)
+                .Where(audioItem => audioItem.Active)
+                .Select(audioItem => audioItem.Name)
                 .ToArray();
 
             // Remember ScreenShot Target
             _settings.ScreenShots.SaveTargets = _screenShotModel.AvailableImageWriters
-                .Where(M => M.Active)
-                .Select(M => M.Display)
+                .Where(imageWriterItem => imageWriterItem.Active)
+                .Select(imageWriterItem => imageWriterItem.Display)
                 .ToArray();
 
-            // Remember Webcam
-            _settings.Video.Webcam = _webCamProvider.SelectedCam.Name;
+            // Remember WebCam
+            _settings.Video.WebCam = _webCamProvider.SelectedCam.Name;
         }
 
         void RestoreVideoSource()
@@ -68,7 +71,7 @@ namespace Captura.Models
             if (string.IsNullOrEmpty(_settings.Video.SourceKind))
                 return;
 
-            var provider = _videoSourceProviders.FirstOrDefault(M => M.Name == _settings.Video.SourceKind);
+            var provider = _videoSourceProviders.FirstOrDefault(videoSourceProvider => videoSourceProvider.Name == _settings.Video.SourceKind);
 
             if (provider == null)
                 return;
@@ -84,14 +87,14 @@ namespace Captura.Models
             if (string.IsNullOrEmpty(_settings.Video.WriterKind))
                 return;
 
-            var kind = _videoWritersViewModel.VideoWriterProviders.FirstOrDefault(W => W.Name == _settings.Video.WriterKind);
+            var kind = _videoWritersViewModel.VideoWriterProviders.FirstOrDefault(videoWriterProvider => videoWriterProvider.Name == _settings.Video.WriterKind);
 
             if (kind == null)
                 return;
 
             _videoWritersViewModel.SelectedVideoWriterKind = kind;
 
-            var codec = _videoWritersViewModel.AvailableVideoWriters.FirstOrDefault(C => C.ToString() == _settings.Video.Writer);
+            var codec = _videoWritersViewModel.AvailableVideoWriters.FirstOrDefault(videoWriterItem => videoWriterItem.ToString() == _settings.Video.Writer);
 
             if (codec != null)
                 _videoWritersViewModel.SelectedVideoWriter = codec;
@@ -130,7 +133,7 @@ namespace Captura.Models
                 }
 
                 // Activate First if none
-                if (!_screenShotModel.AvailableImageWriters.Any(M => M.Active))
+                if (!_screenShotModel.AvailableImageWriters.Any(imageWriterItem => imageWriterItem.Active))
                 {
                     _screenShotModel.AvailableImageWriters[0].Active = true;
                 }

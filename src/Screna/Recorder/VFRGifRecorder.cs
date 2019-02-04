@@ -1,38 +1,41 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Captura;
+using Captura.Base;
+using Captura.Base.Images;
+using Screna.Gif;
 
-namespace Screna
+namespace Screna.Recorder
 {
     /// <summary>
     /// An <see cref="IRecorder"/> which records to a Gif using Delay for each frame instead of Frame Rate.
     /// </summary>
-    public class VFRGifRecorder : IRecorder
+    public class VfrGifRecorder : IRecorder
     {
         #region Fields
-        readonly GifWriter _videoEncoder;
-        readonly IImageProvider _imageProvider;
 
-        readonly Task _recordTask;
+        private readonly GifWriter _videoEncoder;
+        private readonly IImageProvider _imageProvider;
 
-        readonly ManualResetEvent _stopCapturing = new ManualResetEvent(false),
+        private readonly Task _recordTask;
+
+        private readonly ManualResetEvent _stopCapturing = new ManualResetEvent(false),
             _continueCapturing = new ManualResetEvent(false);
 
-        readonly Timing _timing = new Timing();
+        private readonly Timing _timing = new Timing();
         #endregion
 
         /// <summary>
-        /// Creates a new instance of <see cref="VFRGifRecorder"/>.
+        /// Creates a new instance of <see cref="VfrGifRecorder"/>.
         /// </summary>
-        /// <param name="Encoder">The <see cref="GifWriter"/> to write into.</param>
-        /// <param name="ImageProvider">The <see cref="IImageProvider"/> providing the individual frames.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="Encoder"/> or <paramref name="ImageProvider"/> is null.</exception>
-        public VFRGifRecorder(GifWriter Encoder, IImageProvider ImageProvider)
+        /// <param name="encoder">The <see cref="GifWriter"/> to write into.</param>
+        /// <param name="imageProvider">The <see cref="IImageProvider"/> providing the individual frames.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="encoder"/> or <paramref name="imageProvider"/> is null.</exception>
+        public VfrGifRecorder(GifWriter encoder, IImageProvider imageProvider)
         {
             // Init Fields
-            _imageProvider = ImageProvider ?? throw new ArgumentNullException(nameof(ImageProvider));
-            _videoEncoder = Encoder ?? throw new ArgumentNullException(nameof(Encoder));
+            _imageProvider = imageProvider ?? throw new ArgumentNullException(nameof(imageProvider));
+            _videoEncoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
             
             // Not Actually Started, Waits for _continueCapturing to be Set
             _recordTask = Task.Factory.StartNew(Record);
@@ -48,14 +51,14 @@ namespace Screna
             _continueCapturing.Set();
         }
 
-        void Dispose(bool ErrorOccurred)
+        private void Dispose(bool errorOccurred)
         {
             // Resume if Paused
             _continueCapturing.Set();
             
             _stopCapturing.Set();
 
-            if (!ErrorOccurred)
+            if (!errorOccurred)
                 _recordTask.Wait();
 
             _continueCapturing.Dispose();
@@ -86,7 +89,7 @@ namespace Screna
             _timing.Pause();
         }
 
-        void Record()
+        private void Record()
         {
             try
             {

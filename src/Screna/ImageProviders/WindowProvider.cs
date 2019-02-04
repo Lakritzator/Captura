@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Captura;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Images;
 using Captura.Native;
+using Captura.Native.Structs;
+using Screna.Frames;
 
-namespace Screna
+namespace Screna.ImageProviders
 {
     /// <summary>
     /// Captures the specified window.
@@ -17,39 +19,39 @@ namespace Screna
         /// </summary>
         public static Rectangle DesktopRectangle => SystemInformation.VirtualScreen;
 
-        readonly IWindow _window;
-        readonly Func<Point, Point> _transform;
-        readonly bool _includeCursor;
+        private readonly IWindow _window;
+        private readonly Func<Point, Point> _transform;
+        private readonly bool _includeCursor;
 
-        readonly IntPtr _hdcSrc, _hdcDest, _hBitmap;
+        private readonly IntPtr _hdcSrc, _hdcDest, _hBitmap;
 
-        static Func<Point, Point> GetTransformer(IWindow Window)
+        private static Func<Point, Point> GetTransformer(IWindow window)
         {
-            var initialSize = Window.Rectangle.Even().Size;
+            var initialSize = window.Rectangle.Even().Size;
 
-            return P =>
+            return point =>
             {
-                var rect = Window.Rectangle;
+                var rect = window.Rectangle;
                 
                 var ratio = Math.Min((float)initialSize.Width / rect.Width, (float)initialSize.Height / rect.Height);
 
-                return new Point((int)((P.X - rect.X) * ratio), (int)((P.Y - rect.Y) * ratio));
+                return new Point((int)((point.X - rect.X) * ratio), (int)((point.Y - rect.Y) * ratio));
             };
         }
         
         /// <summary>
         /// Creates a new instance of <see cref="WindowProvider"/>.
         /// </summary>
-        public WindowProvider(IWindow Window, bool IncludeCursor, out Func<Point, Point> Transform)
+        public WindowProvider(IWindow window, bool includeCursor, out Func<Point, Point> transform)
         {
-            _window = Window ?? throw new ArgumentNullException(nameof(Window));
-            _includeCursor = IncludeCursor;
+            _window = window ?? throw new ArgumentNullException(nameof(window));
+            _includeCursor = includeCursor;
 
-            var size = Window.Rectangle.Even().Size;
+            var size = window.Rectangle.Even().Size;
             Width = size.Width;
             Height = size.Height;
 
-            Transform = _transform = GetTransformer(Window);
+            transform = _transform = GetTransformer(window);
 
             _hdcSrc = User32.GetDC(IntPtr.Zero);
 
@@ -59,7 +61,7 @@ namespace Screna
             Gdi32.SelectObject(_hdcDest, _hBitmap);
         }
 
-        void OnCapture()
+        private void OnCapture()
         {
             if (!_window.IsAlive)
             {
@@ -72,9 +74,9 @@ namespace Screna
             var resizeWidth = (int) (rect.Width * ratio);
             var resizeHeight = (int) (rect.Height * ratio);
 
-            void ClearRect(RECT Rect)
+            void ClearRect(RECT rectToClear)
             {
-                User32.FillRect(_hdcDest, ref Rect, IntPtr.Zero);
+                User32.FillRect(_hdcDest, ref rectToClear, IntPtr.Zero);
             }
 
             if (Width != resizeWidth)

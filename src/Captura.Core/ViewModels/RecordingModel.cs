@@ -5,13 +5,33 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Captura.Audio;
-using Captura.Models;
-using Captura.Webcam;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Images;
+using Captura.Base.Notification;
+using Captura.Base.Recent;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Core.Models;
+using Captura.Core.Models.Notifications;
+using Captura.Core.Models.Recents;
+using Captura.FFmpeg;
+using Captura.FFmpeg.Audio;
+using Captura.FFmpeg.Video;
+using Captura.Loc;
+using Captura.MouseKeyHook;
+using Captura.WebCam;
+using DesktopDuplication;
 using Microsoft.Win32;
 using Screna;
+using Screna.Gif;
+using Screna.ImageProviders;
+using Screna.Overlays;
+using Screna.Recorder;
+using Screna.VideoItems;
+using Screna.VideoSourceProviders;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RecordingModel : ViewModelBase, IDisposable
@@ -25,7 +45,7 @@ namespace Captura.ViewModels
 
         readonly ISystemTray _systemTray;
         readonly IRegionProvider _regionProvider;
-        readonly WebcamOverlay _webcamOverlay;
+        readonly WebCamOverlay _webcamOverlay;
         readonly IMainWindow _mainWindow;
         readonly IPreviewWindow _previewWindow;
         readonly IWebCamProvider _webCamProvider;
@@ -40,43 +60,43 @@ namespace Captura.ViewModels
         readonly IRecentList _recentList;
         #endregion
 
-        public RecordingModel(Settings Settings,
-            LanguageManager LanguageManager,
-            ISystemTray SystemTray,
-            IRegionProvider RegionProvider,
-            WebcamOverlay WebcamOverlay,
-            IMainWindow MainWindow,
-            IPreviewWindow PreviewWindow,
-            VideoSourcesViewModel VideoSourcesViewModel,
-            VideoWritersViewModel VideoWritersViewModel,
-            AudioSource AudioSource,
-            IWebCamProvider WebCamProvider,
-            KeymapViewModel Keymap,
-            IAudioPlayer AudioPlayer,
-            IRecentList RecentList,
-            TimerModel TimerModel) : base(Settings, LanguageManager)
+        public RecordingModel(Settings.Settings settings,
+            LanguageManager languageManager,
+            ISystemTray systemTray,
+            IRegionProvider regionProvider,
+            WebCamOverlay webcamOverlay,
+            IMainWindow mainWindow,
+            IPreviewWindow previewWindow,
+            VideoSourcesViewModel videoSourcesViewModel,
+            VideoWritersViewModel videoWritersViewModel,
+            AudioSource audioSource,
+            IWebCamProvider webCamProvider,
+            KeymapViewModel keymap,
+            IAudioPlayer audioPlayer,
+            IRecentList recentList,
+            TimerModel timerModel) : base(settings, languageManager)
         {
-            _systemTray = SystemTray;
-            _regionProvider = RegionProvider;
-            _webcamOverlay = WebcamOverlay;
-            _mainWindow = MainWindow;
-            _previewWindow = PreviewWindow;
-            _videoSourcesViewModel = VideoSourcesViewModel;
-            _videoWritersViewModel = VideoWritersViewModel;
-            _audioSource = AudioSource;
-            _webCamProvider = WebCamProvider;
-            _keymap = Keymap;
-            _audioPlayer = AudioPlayer;
-            _recentList = RecentList;
-            _timerModel = TimerModel;
+            _systemTray = systemTray;
+            _regionProvider = regionProvider;
+            _webcamOverlay = webcamOverlay;
+            _mainWindow = mainWindow;
+            _previewWindow = previewWindow;
+            _videoSourcesViewModel = videoSourcesViewModel;
+            _videoWritersViewModel = videoWritersViewModel;
+            _audioSource = audioSource;
+            _webCamProvider = webCamProvider;
+            _keymap = keymap;
+            _audioPlayer = audioPlayer;
+            _recentList = recentList;
+            _timerModel = timerModel;
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
 
-            TimerModel.CountdownElapsed += InternalStartRecording;
-            TimerModel.DurationElapsed += async () =>
+            timerModel.CountdownElapsed += InternalStartRecording;
+            timerModel.DurationElapsed += async () =>
             {
                 if (_syncContext != null)
-                    _syncContext.Post(async State => await StopRecording(), null);
+                    _syncContext.Post(async state => await StopRecording(), null);
                 else await StopRecording();
             };
         }
@@ -113,9 +133,9 @@ namespace Captura.ViewModels
             }
         }
 
-        void SystemEvents_PowerModeChanged(object Sender, PowerModeChangedEventArgs E)
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
-            if (E.Mode == PowerModes.Suspend && RecorderState == RecorderState.Recording)
+            if (e.Mode == PowerModes.Suspend && RecorderState == RecorderState.Recording)
             {
                 OnPauseExecute();
             }
@@ -156,7 +176,7 @@ namespace Captura.ViewModels
             }
         }
 
-        public bool StartRecording(string FileName = null)
+        public bool StartRecording(string fileName = null)
         {
             Settings.EnsureOutPath();
 
@@ -167,7 +187,7 @@ namespace Captura.ViewModels
             if (_videoSourcesViewModel.SelectedVideoSourceKind?.Source is NoVideoItem x)
                 extension = x.Extension;
 
-            _currentFileName = Settings.GetFileName(extension, FileName);
+            _currentFileName = Settings.GetFileName(extension, fileName);
 
             if (_videoWritersViewModel.SelectedVideoWriterKind is FFmpegWriterProvider ||
                 _videoWritersViewModel.SelectedVideoWriterKind is StreamingWriterProvider ||
@@ -199,7 +219,7 @@ namespace Captura.ViewModels
             {
                 imgProvider = GetImageProvider();
             }
-            catch (NotSupportedException e) when (_videoSourcesViewModel.SelectedVideoSourceKind is DeskDuplSourceProvider)
+            catch (NotSupportedException e) when (_videoSourcesViewModel.SelectedVideoSourceKind is DesktopDuplicationSourceProvider)
             {
                 var yes = ServiceProvider.MessageProvider.ShowYesNo($"{e.Message}\n\nDo you want to turn off Desktop Duplication.", Loc.ErrorOccurred);
 
@@ -258,11 +278,11 @@ namespace Captura.ViewModels
             switch (videoEncoder)
             {
                 case GifWriter gif when Settings.Gif.VariableFrameRate:
-                    _recorder = new VFRGifRecorder(gif, imgProvider);
+                    _recorder = new VfrGifRecorder(gif, imgProvider);
                     break;
 
                 case WithPreviewWriter previewWriter when previewWriter.OriginalWriter is GifWriter gif && Settings.Gif.VariableFrameRate:
-                    _recorder = new VFRGifRecorder(gif, imgProvider);
+                    _recorder = new VfrGifRecorder(gif, imgProvider);
                     break;
 
                 default:
@@ -272,11 +292,10 @@ namespace Captura.ViewModels
                     }
                     else if (_videoSourcesViewModel.SelectedVideoSourceKind?.Source is NoVideoItem audioWriter)
                     {
-                        IRecorder GetAudioRecorder(IAudioProvider AudioProvider, string AudioFileName = null)
+                        IRecorder GetAudioRecorder(IAudioProvider audioProviderToGet, string audioFileName = null)
                         {
                             return new Recorder(
-                                audioWriter.GetAudioFileWriter(AudioFileName ?? _currentFileName, AudioProvider?.WaveFormat,
-                                    Settings.Audio.Quality), AudioProvider);
+                                audioWriter.GetAudioFileWriter(audioFileName ?? _currentFileName, audioProviderToGet?.WaveFormat, Settings.Audio.Quality), audioProviderToGet);
                         }
 
                         if (!Settings.Audio.SeparateFilePerSource)
@@ -285,10 +304,10 @@ namespace Captura.ViewModels
                         }
                         else
                         {
-                            string GetAudioFileName(int Index)
+                            string GetAudioFileName(int index)
                             {
                                 return Path.ChangeExtension(_currentFileName,
-                                    $".{Index}{Path.GetExtension(_currentFileName)}");
+                                    $".{index}{Path.GetExtension(_currentFileName)}");
                             }
 
                             var audioProviders = _audioSource.GetMultipleAudioProviders();
@@ -296,7 +315,7 @@ namespace Captura.ViewModels
                             if (audioProviders.Length > 0)
                             {
                                 var recorders = audioProviders
-                                    .Select((M, Index) => GetAudioRecorder(M, GetAudioFileName(Index)))
+                                    .Select((audioProviderToGet, index) => GetAudioRecorder(audioProviderToGet, GetAudioFileName(index)))
                                     .ToArray();
 
                                 _recorder = new MultiRecorder(recorders);
@@ -316,9 +335,9 @@ namespace Captura.ViewModels
             }
 
             // Separate file for webcam
-            if (_isVideo && _webCamProvider.SelectedCam != WebcamItem.NoWebcam && Settings.WebcamOverlay.SeparateFile)
+            if (_isVideo && _webCamProvider.SelectedCam != WebCamItem.NoWebCam && Settings.WebCamOverlay.SeparateFile)
             {
-                SeparateFileForWebcam();
+                SeparateFileForWebCam();
             }
 
             // Separate file for every audio source
@@ -332,7 +351,7 @@ namespace Captura.ViewModels
 
             _systemTray.HideNotification();
 
-            if (Settings.UI.MinimizeOnStart)
+            if (Settings.Ui.MinimizeOnStart)
                 _mainWindow.IsMinimized = true;
 
             RecorderState = RecorderState.Recording;
@@ -349,15 +368,15 @@ namespace Captura.ViewModels
             return true;
         }
 
-        void SeparateFileForWebcam()
+        void SeparateFileForWebCam()
         {
-            var webcamImgProvider = new WebcamImageProvider(_webCamProvider);
+            var webCamImgProvider = new WebCamImageProvider(_webCamProvider);
 
             var webcamFileName = Path.ChangeExtension(_currentFileName, $".webcam{Path.GetExtension(_currentFileName)}");
 
-            var webcamVideoWriter = GetVideoFileWriter(webcamImgProvider, null, webcamFileName);
+            var webcamVideoWriter = GetVideoFileWriter(webCamImgProvider, null, webcamFileName);
 
-            var webcamRecorder = new Recorder(webcamVideoWriter, webcamImgProvider, Settings.Video.FrameRate);
+            var webcamRecorder = new Recorder(webcamVideoWriter, webCamImgProvider, Settings.Video.FrameRate);
 
             _recorder = new MultiRecorder(_recorder, webcamRecorder);
         }
@@ -366,16 +385,16 @@ namespace Captura.ViewModels
         {
             var audioWriter = WaveItem.Instance;
 
-            IRecorder GetAudioRecorder(IAudioProvider AudioProvider, string AudioFileName = null)
+            IRecorder GetAudioRecorder(IAudioProvider audioProvider, string audioFileName = null)
             {
                 return new Recorder(
-                    audioWriter.GetAudioFileWriter(AudioFileName ?? _currentFileName, AudioProvider?.WaveFormat,
-                        Settings.Audio.Quality), AudioProvider);
+                    audioWriter.GetAudioFileWriter(audioFileName ?? _currentFileName, audioProvider?.WaveFormat,
+                        Settings.Audio.Quality), audioProvider);
             }
 
-            string GetAudioFileName(int Index)
+            string GetAudioFileName(int index)
             {
-                return Path.ChangeExtension(_currentFileName, $".{Index}.wav");
+                return Path.ChangeExtension(_currentFileName, $".{index}.wav");
             }
 
             var audioProviders = _audioSource.GetMultipleAudioProviders();
@@ -383,7 +402,7 @@ namespace Captura.ViewModels
             if (audioProviders.Length > 0)
             {
                 var recorders = audioProviders
-                    .Select((M, Index) => GetAudioRecorder(M, GetAudioFileName(Index)))
+                    .Select((audioProvider, index) => GetAudioRecorder(audioProvider, GetAudioFileName(index)))
                     .Concat(new[] {_recorder})
                     .ToArray();
 
@@ -396,16 +415,16 @@ namespace Captura.ViewModels
             _recorder.Start();
         }
 
-        void OnErrorOccured(Exception E)
+        void OnErrorOccured(Exception exception)
         {
             void Do()
             {
-                var cancelled = E is WindowClosedException;
+                var cancelled = exception is WindowClosedException;
 
                 AfterRecording();
 
                 if (!cancelled)
-                    ServiceProvider.MessageProvider.ShowException(E, E.Message);
+                    ServiceProvider.MessageProvider.ShowException(exception, exception.Message);
 
                 if (cancelled)
                 {
@@ -414,7 +433,7 @@ namespace Captura.ViewModels
             }
 
             if (_syncContext != null)
-                _syncContext.Post(S => Do(), null);
+                _syncContext.Post(state => Do(), null);
             else Do();
         }
 
@@ -429,36 +448,36 @@ namespace Captura.ViewModels
 
             _timerModel.Stop();
 
-            if (Settings.UI.MinimizeOnStart)
+            if (Settings.Ui.MinimizeOnStart)
                 _mainWindow.IsMinimized = false;
 
             if (_videoSourcesViewModel.SelectedVideoSourceKind is RegionSourceProvider)
                 _regionProvider.Release();
         }
 
-        IVideoFileWriter GetVideoFileWriterWithPreview(IImageProvider ImgProvider, IAudioProvider AudioProvider)
+        IVideoFileWriter GetVideoFileWriterWithPreview(IImageProvider imgProvider, IAudioProvider audioProvider)
         {
             if (_videoSourcesViewModel.SelectedVideoSourceKind is NoVideoSourceProvider)
                 return null;
 
-            _previewWindow.Init(ImgProvider.Width, ImgProvider.Height);
+            _previewWindow.Init(imgProvider.Width, imgProvider.Height);
 
-            return new WithPreviewWriter(GetVideoFileWriter(ImgProvider, AudioProvider), _previewWindow);
+            return new WithPreviewWriter(GetVideoFileWriter(imgProvider, audioProvider), _previewWindow);
         }
 
-        IVideoFileWriter GetVideoFileWriter(IImageProvider ImgProvider, IAudioProvider AudioProvider, string FileName = null)
+        IVideoFileWriter GetVideoFileWriter(IImageProvider imgProvider, IAudioProvider audioProvider, string fileName = null)
         {
             if (_videoSourcesViewModel.SelectedVideoSourceKind is NoVideoSourceProvider)
                 return null;
 
             return _videoWritersViewModel.SelectedVideoWriter.GetVideoFileWriter(new VideoWriterArgs
             {
-                FileName = FileName ?? _currentFileName,
+                FileName = fileName ?? _currentFileName,
                 FrameRate = Settings.Video.FrameRate,
                 VideoQuality = Settings.Video.Quality,
-                ImageProvider = ImgProvider,
+                ImageProvider = imgProvider,
                 AudioQuality = Settings.Audio.Quality,
-                AudioProvider = AudioProvider
+                AudioProvider = audioProvider
             });
         }
 
@@ -466,14 +485,14 @@ namespace Captura.ViewModels
         {
             yield return new CensorOverlay(Settings.Censored);
 
-            if (!Settings.WebcamOverlay.SeparateFile)
+            if (!Settings.WebCamOverlay.SeparateFile)
             {
                 yield return _webcamOverlay;
             }
 
             yield return new MousePointerOverlay(Settings.MousePointerOverlay);
 
-            yield return new MouseKeyHook(Settings.Clicks,
+            yield return new MouseKeyHook.MouseKeyHook(Settings.Clicks,
                 Settings.Keystrokes,
                 _keymap,
                 _currentFileName,
@@ -488,7 +507,7 @@ namespace Captura.ViewModels
             }
 
             // Image Overlays
-            foreach (var overlay in Settings.ImageOverlays.Where(M => M.Display))
+            foreach (var overlay in Settings.ImageOverlays.Where(customImageOverlaySettings => customImageOverlaySettings.Display))
             {
                 IOverlay imgOverlay = null;
 
@@ -508,7 +527,7 @@ namespace Captura.ViewModels
 
         IImageProvider GetImageProvider()
         {
-            Func<Point, Point> transform = P => P;
+            Func<Point, Point> transform = point => point;
 
             var imageProvider = _videoSourcesViewModel
                 .SelectedVideoSourceKind
@@ -529,7 +548,7 @@ namespace Captura.ViewModels
             {
                 lock (_stopRecTaskLock)
                 {
-                    return _stopRecTasks.Count(M => !M.IsCompleted);
+                    return _stopRecTasks.Count(task => !task.IsCompleted);
                 }
             }
         }
@@ -605,14 +624,14 @@ namespace Captura.ViewModels
             }
         }
 
-        void AfterSave(FileRecentItem SavingRecentItem, FileSaveNotification Notification)
+        void AfterSave(FileRecentItem savingRecentItem, FileSaveNotification notification)
         {
-            SavingRecentItem.Saved();
+            savingRecentItem.Saved();
         
             if (Settings.CopyOutPathToClipboard)
-                SavingRecentItem.FileName.WriteToClipboard();
+                savingRecentItem.FileName.WriteToClipboard();
 
-            Notification.Saved();
+            notification.Saved();
         }
 
         public bool CanExit()

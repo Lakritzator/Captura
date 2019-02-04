@@ -4,12 +4,14 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Captura;
-using Captura.Models;
+using Captura.Base;
 using Captura.Native;
-using User32 = Captura.User32;
+using Captura.Native.Structs;
+using Captura.Windows.Native;
+using Captura.Windows.Native.Enums;
+using User32 = Captura.Windows.Native.User32;
 
-namespace Screna
+namespace Captura.Windows
 {
     /// <summary>
     /// Minimal representation of a Window.
@@ -19,13 +21,13 @@ namespace Screna
         /// <summary>
         /// Creates a new instance of <see cref="Window"/>.
         /// </summary>
-        /// <param name="Handle">The Window Handle.</param>
-        public Window(IntPtr Handle)
+        /// <param name="handle">The Window Handle.</param>
+        public Window(IntPtr handle)
         {
-            if (!User32.IsWindow(Handle))
-                throw new ArgumentException("Not a Window.", nameof(Handle));
+            if (!User32.IsWindow(handle))
+                throw new ArgumentException("Not a Window.", nameof(handle));
 
-            this.Handle = Handle;
+            Handle = handle;
         }
 
         public bool IsAlive => User32.IsWindow(Handle);
@@ -93,9 +95,9 @@ namespace Screna
         {
             var list = new List<Window>();
 
-            User32.EnumWindows((Handle, Param) =>
+            User32.EnumWindows((handle, param) =>
             {
-                var wh = new Window(Handle);
+                var wh = new Window(handle);
 
                 list.Add(wh);
 
@@ -110,7 +112,7 @@ namespace Screna
         /// </summary>
         public static IEnumerable<Window> EnumerateVisible()
         {
-            foreach (var window in Enumerate().Where(W => W.IsVisible && !string.IsNullOrWhiteSpace(W.Title)))
+            foreach (var window in Enumerate().Where(window => window.IsVisible && !string.IsNullOrWhiteSpace(window.Title)))
             {
                 var hWnd = window.Handle;
 
@@ -149,8 +151,8 @@ namespace Screna
         /// <returns>
         /// true if the specified object  is equal to the current object; otherwise, false.
         /// </returns>
-        /// <param name="Obj">The object to compare with the current object. </param>
-        public override bool Equals(object Obj) => Obj is Window w && w.Handle == Handle;
+        /// <param name="obj">The object to compare with the current object. </param>
+        public override bool Equals(object obj) => obj is Window w && w.Handle == Handle;
         
         /// <summary>
         /// Serves as the default hash function. 
@@ -163,11 +165,11 @@ namespace Screna
         /// <summary>
         /// Checks whether two <see cref="Window"/> instances are equal.
         /// </summary>
-        public static bool operator ==(Window W1, Window W2) => W1?.Handle == W2?.Handle;
+        public static bool operator ==(Window window1, Window window2) => window1?.Handle == window2?.Handle;
 
         /// <summary>
         /// Checks whether two <see cref="Window"/> instances are not equal.
         /// </summary>
-        public static bool operator !=(Window W1, Window W2) => !(W1 == W2);
+        public static bool operator !=(Window window1, Window window2) => !(window1 == window2);
     }
 }

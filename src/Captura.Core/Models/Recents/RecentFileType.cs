@@ -1,4 +1,4 @@
-﻿namespace Captura.Models
+﻿namespace Captura.Core.Models.Recents
 {
     public enum RecentFileType
     {

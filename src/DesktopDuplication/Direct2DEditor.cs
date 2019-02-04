@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using Captura;
+using Captura.Base.Images;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
@@ -19,18 +19,18 @@ namespace DesktopDuplication
 {
     public class Direct2DEditor : IEditableFrame
     {
-        readonly Direct2DEditorSession _editorSession;
+        private readonly Direct2DEditorSession _editorSession;
 
-        public Direct2DEditor(Direct2DEditorSession EditorSession)
+        public Direct2DEditor(Direct2DEditorSession editorSession)
         {
-            _editorSession = EditorSession;
+            _editorSession = editorSession;
 
-            var desc = EditorSession.StagingTexture.Description;
+            var desc = editorSession.StagingTexture.Description;
 
             Width = desc.Width;
             Height = desc.Height;
 
-            EditorSession.BeginDraw();
+            editorSession.BeginDraw();
         }
 
         public void Dispose() { }
@@ -38,136 +38,138 @@ namespace DesktopDuplication
         public float Width { get; }
         public float Height { get; }
 
-        public IDisposable CreateBitmapBgr32(Size Size, IntPtr MemoryData, int Stride)
+        public IDisposable CreateBitmapBgr32(Size size, IntPtr memoryData, int stride)
         {
             return new Bitmap(_editorSession.RenderTarget,
-                new Size2(Size.Width, Size.Height),
-                new DataPointer(MemoryData, Size.Height * Stride),
-                Stride,
+                new Size2(size.Width, size.Height),
+                new DataPointer(memoryData, size.Height * stride),
+                stride,
                 new BitmapProperties(new SharpDX.Direct2D1.PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Ignore)));
         }
 
-        public IDisposable LoadBitmap(string FileName, out Size Size)
+        public IDisposable LoadBitmap(string fileName, out Size size)
         {
-            using (var decoder = new BitmapDecoder(_editorSession.ImagingFactory, FileName, 0))
+            using (var decoder = new BitmapDecoder(_editorSession.ImagingFactory, fileName, 0))
             using (var bmpSource = decoder.GetFrame(0))
             using (var convertedBmp = new FormatConverter(_editorSession.ImagingFactory))
             {
                 convertedBmp.Initialize(bmpSource, PixelFormat.Format32bppPBGRA);
 
-                Size = new Size(bmpSource.Size.Width, bmpSource.Size.Height);
+                size = new Size(bmpSource.Size.Width, bmpSource.Size.Height);
 
                 return Bitmap.FromWicBitmap(_editorSession.RenderTarget, convertedBmp);
             }
         }
 
-        public void DrawImage(object Image, Rectangle? Region, int Opacity = 100)
+        public void DrawImage(object image, Rectangle? region, int opacity = 100)
         {
-            if (Image is Bitmap bmp)
+            if (!(image is Bitmap bmp))
             {
-                var rect = Region ?? new RectangleF(0, 0, bmp.Size.Width, bmp.Size.Height);
-                var rawRect = new RawRectangleF(rect.Left,
-                    rect.Top,
-                    rect.Right,
-                    rect.Bottom);
-
-                _editorSession.RenderTarget.DrawBitmap(bmp, rawRect, Opacity, BitmapInterpolationMode.Linear);
+                return;
             }
+
+            var rect = region ?? new RectangleF(0, 0, bmp.Size.Width, bmp.Size.Height);
+            var rawRect = new RawRectangleF(rect.Left,
+                rect.Top,
+                rect.Right,
+                rect.Bottom);
+
+            _editorSession.RenderTarget.DrawBitmap(bmp, rawRect, opacity, BitmapInterpolationMode.Linear);
         }
 
-        SolidColorBrush Convert(Color Color)
+        SolidColorBrush Convert(Color color)
         {
-            var color = new RawColor4(Color.R / 255f, Color.G / 255f, Color.B / 255f, Color.A / 255f);
+            var solidColor = new RawColor4(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
 
-            return _editorSession.GetSolidColorBrush(color);
+            return _editorSession.GetSolidColorBrush(solidColor);
         }
 
-        RawRectangleF Convert(RectangleF Rectangle)
+        RawRectangleF Convert(RectangleF rectangle)
         {
-            return new RawRectangleF(Rectangle.Left,
-                Rectangle.Top,
-                Rectangle.Right,
-                Rectangle.Bottom);
+            return new RawRectangleF(rectangle.Left,
+                rectangle.Top,
+                rectangle.Right,
+                rectangle.Bottom);
         }
 
-        RoundedRectangle Convert(RectangleF Rectangle, int CornerRadius)
+        RoundedRectangle Convert(RectangleF rectangle, int cornerRadius)
         {
             return new RoundedRectangle
             {
-                Rect = Convert(Rectangle),
-                RadiusX = CornerRadius,
-                RadiusY = CornerRadius
+                Rect = Convert(rectangle),
+                RadiusX = cornerRadius,
+                RadiusY = cornerRadius
             };
         }
 
-        Ellipse ToEllipse(RectangleF Rectangle)
+        Ellipse ToEllipse(RectangleF rectangle)
         {
-            var center = new RawVector2(Rectangle.Left + Rectangle.Width / 2f,
-                Rectangle.Top + Rectangle.Height / 2f);
+            var center = new RawVector2(rectangle.Left + rectangle.Width / 2f,
+                rectangle.Top + rectangle.Height / 2f);
 
             return new Ellipse(center,
-                Rectangle.Width / 2f,
-                Rectangle.Height / 2f);
+                rectangle.Width / 2f,
+                rectangle.Height / 2f);
         }
 
-        public void FillRectangle(Color Color, RectangleF Rectangle)
+        public void FillRectangle(Color color, RectangleF rectangle)
         {
-            _editorSession.RenderTarget.FillRectangle(Convert(Rectangle), Convert(Color));
+            _editorSession.RenderTarget.FillRectangle(Convert(rectangle), Convert(color));
         }
 
-        public void FillRectangle(Color Color, RectangleF Rectangle, int CornerRadius)
+        public void FillRectangle(Color color, RectangleF rectangle, int cornerRadius)
         {
-            _editorSession.RenderTarget.FillRoundedRectangle(Convert(Rectangle, CornerRadius), Convert(Color));
+            _editorSession.RenderTarget.FillRoundedRectangle(Convert(rectangle, cornerRadius), Convert(color));
         }
 
-        public void DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle)
+        public void DrawRectangle(Color color, float strokeWidth, RectangleF rectangle)
         {
-            _editorSession.RenderTarget.DrawRectangle(Convert(Rectangle), Convert(Color), StrokeWidth);
+            _editorSession.RenderTarget.DrawRectangle(Convert(rectangle), Convert(color), strokeWidth);
         }
 
-        public void DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle, int CornerRadius)
+        public void DrawRectangle(Color color, float strokeWidth, RectangleF rectangle, int cornerRadius)
         {
-            _editorSession.RenderTarget.DrawRoundedRectangle(Convert(Rectangle, CornerRadius), Convert(Color), StrokeWidth);
+            _editorSession.RenderTarget.DrawRoundedRectangle(Convert(rectangle, cornerRadius), Convert(color), strokeWidth);
         }
 
-        public void FillEllipse(Color Color, RectangleF Rectangle)
+        public void FillEllipse(Color color, RectangleF rectangle)
         {
-            _editorSession.RenderTarget.FillEllipse(ToEllipse(Rectangle), Convert(Color));
+            _editorSession.RenderTarget.FillEllipse(ToEllipse(rectangle), Convert(color));
         }
 
-        public void DrawEllipse(Color Color, float StrokeWidth, RectangleF Rectangle)
+        public void DrawEllipse(Color color, float strokeWidth, RectangleF rectangle)
         {
-            _editorSession.RenderTarget.DrawEllipse(ToEllipse(Rectangle), Convert(Color), StrokeWidth);
+            _editorSession.RenderTarget.DrawEllipse(ToEllipse(rectangle), Convert(color), strokeWidth);
         }
 
-        TextFormat GetTextFormat(int FontSize)
+        TextFormat GetTextFormat(int fontSize)
         {
-            return new TextFormat(_editorSession.WriteFactory, "Arial", FontSize);
+            return new TextFormat(_editorSession.WriteFactory, "Arial", fontSize);
         }
 
-        TextLayout GetTextLayout(string Text, TextFormat Format)
+        TextLayout GetTextLayout(string text, TextFormat format)
         {
-            return new TextLayout(_editorSession.WriteFactory, Text, Format, Width, Height);
+            return new TextLayout(_editorSession.WriteFactory, text, format, Width, Height);
         }
 
-        public SizeF MeasureString(string Text, int FontSize)
+        public SizeF MeasureString(string text, int fontSize)
         {
-            using (var format = GetTextFormat(FontSize))
-            using (var layout = GetTextLayout(Text, format))
+            using (var format = GetTextFormat(fontSize))
+            using (var layout = GetTextLayout(text, format))
             {
                 return new SizeF(layout.Metrics.Width, layout.Metrics.Height);
             }
         }
 
-        public void DrawString(string Text, int FontSize, Color Color, RectangleF LayoutRectangle)
+        public void DrawString(string text, int fontSize, Color color, RectangleF layoutRectangle)
         {
-            using (var format = GetTextFormat(FontSize))
-            using (var layout = GetTextLayout(Text, format))
+            using (var format = GetTextFormat(fontSize))
+            using (var layout = GetTextLayout(text, format))
             {
                 _editorSession.RenderTarget.DrawTextLayout(
-                    new RawVector2(LayoutRectangle.X, LayoutRectangle.Y),
+                    new RawVector2(layoutRectangle.X, layoutRectangle.Y),
                     layout,
-                    Convert(Color));
+                    Convert(color));
             }
         }
 

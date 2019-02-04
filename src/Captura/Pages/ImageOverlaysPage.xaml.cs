@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.Pages
 {
     public partial class ImageOverlaysPage
     {

@@ -1,30 +1,31 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Core.Models.UpdateCheckers;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class UpdateCheckerViewModel : NotifyPropertyChanged
     {
-        readonly IUpdateChecker _updateChecker;
+        private readonly IUpdateChecker _updateChecker;
 
-        public UpdateCheckerViewModel(IUpdateChecker UpdateChecker)
+        public UpdateCheckerViewModel(IUpdateChecker updateChecker)
         {
-            _updateChecker = UpdateChecker;
-            BuildName = UpdateChecker.BuildName;
+            _updateChecker = updateChecker;
+            BuildName = updateChecker.BuildName;
 
             Check();
 
             CheckCommand = new DelegateCommand(Check);
 
-            GoToDownload = new DelegateCommand(UpdateChecker.GoToDownloadsPage);
+            GoToDownload = new DelegateCommand(updateChecker.GoToDownloadsPage);
         }
 
         public string BuildName { get; }
 
-        void Check()
+        private void Check()
         {
             if (Checking)
                 return;
@@ -59,7 +60,7 @@ namespace Captura.ViewModels
             });
         }
 
-        bool _checking, _available, _checkFailed;
+        private bool _checking, _available, _checkFailed;
 
         public bool Checking
         {
@@ -94,7 +95,7 @@ namespace Captura.ViewModels
             }
         }
 
-        string _newVersion;
+        private string _newVersion;
 
         public string NewVersion
         {

@@ -1,13 +1,13 @@
 using System;
 using System.Globalization;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class GetTypeConverter : OneWayConverter
     {
-        public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Value?.GetType();
+            return value?.GetType();
         }
     }
 }

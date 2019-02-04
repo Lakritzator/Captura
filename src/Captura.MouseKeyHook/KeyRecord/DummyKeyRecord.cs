@@ -1,12 +1,12 @@
 using System;
 
-namespace Captura.Models
+namespace Captura.MouseKeyHook.KeyRecord
 {
     class DummyKeyRecord : IKeyRecord
     {
-        public DummyKeyRecord(string Display)
+        public DummyKeyRecord(string display)
         {
-            this.Display = Display;
+            Display = display;
 
             TimeStamp = DateTime.Now;
         }

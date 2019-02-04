@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using DirectShowLib;
 
-namespace Captura.Webcam
+namespace Captura.WebCam
 {
     /// <summary>
     ///  Represents a DirectShow filter (e.g. video capture device, compression codec).
@@ -18,28 +18,28 @@ namespace Captura.Webcam
         public string MonikerString { get; }
 
         /// <summary> Create a new filter from its moniker </summary>
-        public Filter(IMoniker Moniker)
+        public Filter(IMoniker moniker)
         {
-            Name = GetName(Moniker);
-            MonikerString = GetMonikerString(Moniker);
+            Name = GetName(moniker);
+            MonikerString = GetMonikerString(moniker);
         }
 
         /// <summary> Retrieve the a moniker's display name (i.e. it's unique string) </summary>
-        static string GetMonikerString(IMoniker Moniker)
+        private static string GetMonikerString(IMoniker moniker)
         {
-            Moniker.GetDisplayName(null, null, out var s);
+            moniker.GetDisplayName(null, null, out var s);
             return s;
         }
 
         /// <summary> Retrieve the human-readable name of the filter </summary>
-        static string GetName(IMoniker Moniker)
+        private static string GetName(IMoniker moniker)
         {
             object bagObj = null;
 
             try
             {
                 var bagId = typeof(IPropertyBag).GUID;
-                Moniker.BindToStorage(null, null, ref bagId, out bagObj);
+                moniker.BindToStorage(null, null, ref bagId, out bagObj);
                 var bag = (IPropertyBag)bagObj;
                 var hr = bag.Read("FriendlyName", out var val, null);
 
@@ -66,12 +66,12 @@ namespace Captura.Webcam
         /// <summary>
         ///  Compares the current instance with another object of the same type.
         /// </summary>
-        public int CompareTo(object Obj)
+        public int CompareTo(object obj)
         {
-            if (Obj == null)
+            if (obj == null)
                 return 1;
 
-            var f = (Filter)Obj;
+            var f = (Filter)obj;
 
             return string.Compare(Name, f.Name, StringComparison.Ordinal);
         }

@@ -1,12 +1,14 @@
-﻿namespace Captura
+﻿using Captura.Base;
+
+namespace Captura.Loc
 {
     public class TextLocalizer : NotifyPropertyChanged
     {
-        public TextLocalizer(string LocalizationKey)
+        public TextLocalizer(string localizationKey)
         {
-            this.LocalizationKey = LocalizationKey;
+            LocalizationKey = localizationKey;
 
-            LanguageManager.Instance.LanguageChanged += L => RaisePropertyChanged(nameof(Display));
+            LanguageManager.Instance.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Display));
         }
         
         string _key;

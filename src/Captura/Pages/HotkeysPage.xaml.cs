@@ -1,8 +1,8 @@
-﻿namespace Captura.Views
+﻿namespace Captura.Pages
 {
-    public partial class HotkeysPage
+    public partial class HotKeysPage
     {
-        public HotkeysPage()
+        public HotKeysPage()
         {
             InitializeComponent();
         }

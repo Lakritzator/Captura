@@ -5,13 +5,20 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Captura.Base.Services;
+using Captura.Core;
+using Captura.Core.Settings;
+using Captura.Core.Settings.Models;
+using Captura.ImageEditor.Controls;
+using Captura.ImageEditor.History;
+using Captura.Presentation;
 using FirstFloor.ModernUI.Windows.Controls;
 
-namespace Captura
+namespace Captura.ImageEditor
 {
     public partial class ImageEditorWindow
     {
-        readonly ImageEditorSettings _settings;
+        private readonly ImageEditorSettings _settings;
 
         public ImageEditorWindow()
         {
@@ -19,30 +26,30 @@ namespace Captura
 
             if (DataContext is ImageEditorViewModel vm)
             {
-                vm.PropertyChanged += (S, E) =>
+                vm.PropertyChanged += (sender, e) =>
                 {
-                    if (E.PropertyName == nameof(vm.TransformedBitmap))
+                    if (e.PropertyName == nameof(vm.TransformedBitmap))
                         UpdateInkCanvas();
                 };
 
                 vm.InkCanvas = InkCanvas;
 
-                InkCanvas.Strokes.StrokesChanged += (S, E) =>
+                InkCanvas.Strokes.StrokesChanged += (sender, e) =>
                 {
                     var item = new StrokeHistory();
                     
-                    item.Added.AddRange(E.Added);
-                    item.Removed.AddRange(E.Removed);
+                    item.Added.AddRange(e.Added);
+                    item.Removed.AddRange(e.Removed);
 
                     vm.AddInkHistory(item);
                 };
 
-                void SelectionMovingOrResizing(object Sender, InkCanvasSelectionEditingEventArgs Args)
+                void SelectionMovingOrResizing(object sender, InkCanvasSelectionEditingEventArgs args)
                 {
                     vm.AddSelectHistory(new SelectHistory
                     {
-                        NewRect = Args.NewRectangle,
-                        OldRect = Args.OldRectangle,
+                        NewRect = args.NewRectangle,
+                        OldRect = args.OldRectangle,
                         Selection = InkCanvas.GetSelectedStrokes()
                     });
                 }
@@ -53,7 +60,7 @@ namespace Captura
                 vm.Window = this;
             }
 
-            Image.SizeChanged += (S, E) => UpdateInkCanvas();
+            Image.SizeChanged += (sender, e) => UpdateInkCanvas();
 
             ModesBox.SelectedIndex = 0;
 
@@ -65,30 +72,30 @@ namespace Captura
             InkCanvas.DefaultDrawingAttributes.FitToCurve = true;
         }
 
-        public void Open(string FilePath)
+        public void Open(string filePath)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
-                vm.OpenFile(FilePath);
+                vm.OpenFile(filePath);
             }
         }
 
-        public void Open(BitmapSource Bmp)
+        public void Open(BitmapSource bmp)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
-                vm.Open(Bmp);
+                vm.Open(bmp);
             }
         }
 
-        void Exit(object Sender, RoutedEventArgs E)
+        private void Exit(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        void SizeBox_OnValueChanged(object Sender, RoutedPropertyChangedEventArgs<object> E)
+        private void SizeBox_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (InkCanvas != null && E.NewValue is int i)
+            if (InkCanvas != null && e.NewValue is int i)
             {
                 InkCanvas.DefaultDrawingAttributes.Height = InkCanvas.DefaultDrawingAttributes.Width = i;
 
@@ -96,7 +103,7 @@ namespace Captura
             }
         }
 
-        void ModesBox_OnSelectionChanged(object Sender, SelectionChangedEventArgs E)
+        private void ModesBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ModesBox.SelectedValue is ExtendedInkTool tool)
             {
@@ -104,11 +111,11 @@ namespace Captura
             }
         }
 
-        void ColorPicker_OnSelectedColorChanged(object Sender, RoutedPropertyChangedEventArgs<Color?> E)
+        private void ColorPicker_OnSelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (E.NewValue != null && InkCanvas != null)
+            if (e.NewValue != null && InkCanvas != null)
             {
-                var color = E.NewValue.Value;
+                var color = e.NewValue.Value;
 
                 InkCanvas.DefaultDrawingAttributes.Color = color;
 
@@ -116,7 +123,7 @@ namespace Captura
             }
         }
 
-        void UpdateInkCanvas()
+        private void UpdateInkCanvas()
         {
             if (DataContext is ImageEditorViewModel vm && vm.TransformedBitmap != null && Image.ActualWidth > 0)
             {
@@ -145,7 +152,7 @@ namespace Captura
             }
         }
 
-        void InkCanvas_OnMouseUp(object Sender, MouseButtonEventArgs E)
+        private void InkCanvas_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
@@ -153,7 +160,7 @@ namespace Captura
             }
         }
 
-        void ImageEditorWindow_OnClosing(object Sender, CancelEventArgs E)
+        private void ImageEditorWindow_OnClosing(object sender, CancelEventArgs e)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
@@ -168,22 +175,22 @@ namespace Captura
                     {
                         case MessageBoxResult.Yes when !vm.SaveToFile():
                         case MessageBoxResult.Cancel:
-                            E.Cancel = true;
+                            e.Cancel = true;
                             break;
                     }
                 }
             }
         }
 
-        void NewWindow(object Sender, RoutedEventArgs E)
+        private void NewWindow(object sender, RoutedEventArgs e)
         {
             new ImageEditorWindow().ShowAndFocus();
         }
 
         // Return false to cancel
-        bool ConfirmSaveBeforeNew(ImageEditorViewModel ViewModel)
+        private bool ConfirmSaveBeforeNew(ImageEditorViewModel viewModel)
         {
-            if (ViewModel.UnsavedChanges)
+            if (viewModel.UnsavedChanges)
             {
                 var result = ModernDialog.ShowMessage("Do you want to save your changes?",
                     "Unsaved Changes",
@@ -193,7 +200,7 @@ namespace Captura
                 switch (result)
                 {
                     case MessageBoxResult.Yes:
-                        ViewModel.SaveCommand.ExecuteIfCan();
+                        viewModel.SaveCommand.ExecuteIfCan();
                         break;
 
                     case MessageBoxResult.Cancel:
@@ -204,7 +211,7 @@ namespace Captura
             return true;
         }
 
-        void NewBlank(object Sender, ExecutedRoutedEventArgs E)
+        private void NewBlank(object sender, ExecutedRoutedEventArgs e)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
@@ -215,7 +222,7 @@ namespace Captura
             }
         }
 
-        void Open(object Sender, ExecutedRoutedEventArgs E)
+        private void Open(object sender, ExecutedRoutedEventArgs e)
         {
             if (DataContext is ImageEditorViewModel vm)
             {
@@ -226,7 +233,7 @@ namespace Captura
             }
         }
 
-        void OpenFromClipboard(object Sender, RoutedEventArgs E)
+        private void OpenFromClipboard(object sender, RoutedEventArgs e)
         {
             if (DataContext is ImageEditorViewModel vm)
             {

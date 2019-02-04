@@ -1,6 +1,8 @@
-﻿using Captura.ViewModels;
+﻿using Captura.Base.Services;
+using Captura.Presentation;
+using Captura.ViewCore.ViewModels;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class AudioPage
     {

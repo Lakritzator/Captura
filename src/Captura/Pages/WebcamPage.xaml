@@ -1,4 +1,4 @@
-﻿<Page x:Class="Captura.WebcamPage"
+﻿<Page x:Class="Captura.Pages.WebCamPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       DataContext="{Binding MainViewModel, Source={StaticResource ServiceLocator}}">
@@ -9,7 +9,7 @@
                    FontWeight="Bold"/>
 
             <DockPanel Margin="0,5">
-                <Path Data="{Binding Icons.Webcam, Source={StaticResource ServiceLocator}}"
+                <Path Data="{Binding Icons.WebCam, Source={StaticResource ServiceLocator}}"
                       Width="15"
                       Height="15"
                       Margin="0,0,7,0"
@@ -26,12 +26,12 @@
 
                 <ComboBox ItemsSource="{Binding WebCamProvider.AvailableCams, Source={StaticResource ServiceLocator}}"
                           SelectedItem="{Binding WebCamProvider.SelectedCam, Mode=TwoWay, Source={StaticResource ServiceLocator}}"
-                          IsEnabled="{Binding ViewConditions.CanChangeWebcam.Value, Source={StaticResource ServiceLocator}}"
+                          IsEnabled="{Binding ViewConditions.CanChangeWebCam.Value, Source={StaticResource ServiceLocator}}"
                           DisplayMemberPath="Name"
-                          Name="WebcamComboBox"/>
+                          Name="WebCamComboBox"/>
             </DockPanel>
 
-            <CheckBox IsChecked="{Binding Settings.WebcamOverlay.SeparateFile}"
+            <CheckBox IsChecked="{Binding Settings.WebCamOverlay.SeparateFile}"
                       Content="{Binding WebCamSeparateFile, Source={StaticResource Loc}, Mode=OneWay}"
                       IsEnabled="{Binding ViewConditions.IsEnabled.Value, Source={StaticResource ServiceLocator}}"
                       Margin="0,5"/>

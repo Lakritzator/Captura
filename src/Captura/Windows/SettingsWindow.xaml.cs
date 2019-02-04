@@ -1,13 +1,15 @@
-﻿namespace Captura
+﻿using Captura.Presentation;
+
+namespace Captura.Windows
 {
     public partial class SettingsWindow
     {
-        SettingsWindow()
+        private SettingsWindow()
         {
             InitializeComponent();
         }
 
-        static SettingsWindow _instance;
+        private static SettingsWindow _instance;
 
         public static void ShowInstance()
         {
@@ -15,7 +17,7 @@
             {
                 _instance = new SettingsWindow();
 
-                _instance.Closed += (S, E) => _instance = null;
+                _instance.Closed += (sender, e) => _instance = null;
             }
 
             _instance.ShowAndFocus();

@@ -1,8 +1,8 @@
 ﻿using CommandLine;
 
-namespace Captura
+namespace Captura.CmdOptions
 {
-    abstract class CommonCmdOptions
+    internal abstract class CommonCmdOptions
     {
         [Option("cursor", HelpText = "Include Cursor in Recording (default = false).")]
         public bool Cursor { get; set; }

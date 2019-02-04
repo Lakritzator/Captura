@@ -1,7 +1,9 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Audio;
+
+namespace Captura.Base.Services
 {
     public interface IAudioPlayer
     {
-        void Play(SoundKind SoundKind);
+        void Play(SoundKind soundKind);
     }
 }

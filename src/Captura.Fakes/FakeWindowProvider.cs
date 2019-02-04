@@ -1,4 +1,6 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Services;
+
+namespace Captura.Fakes
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     class FakeWindowProvider : IMainWindow
@@ -15,12 +17,12 @@
             set { }
         }
 
-        public void EditImage(string FileName) { }
+        public void EditImage(string fileName) { }
 
-        public void CropImage(string FileName) { }
+        public void CropImage(string fileName) { }
 
-        public void TrimMedia(string FileName) { }
+        public void TrimMedia(string fileName) { }
 
-        public void UploadToYouTube(string FileName) { }
+        public void UploadToYouTube(string fileName) { }
     }
 }

@@ -1,17 +1,18 @@
 ﻿using System.Windows;
+using Captura.Presentation;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class FFmpegLogWindow
     {
-        FFmpegLogWindow()
+        private FFmpegLogWindow()
         {
             InitializeComponent();
         }
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => Close();
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
-        static FFmpegLogWindow _instance;
+        private static FFmpegLogWindow _instance;
 
         public static void ShowInstance()
         {
@@ -19,7 +20,7 @@ namespace Captura
             {
                 _instance = new FFmpegLogWindow();
 
-                _instance.Closed += (S, E) => _instance = null;
+                _instance.Closed += (sender, e) => _instance = null;
             }
 
             _instance.ShowAndFocus();

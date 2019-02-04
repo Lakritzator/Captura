@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace Captura.Models
+namespace Captura.Base.Recent
 {
     public interface IRecentItem
     {

@@ -3,10 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Captura.Base;
+using Captura.MouseKeyHook.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Captura.Models
+namespace Captura.MouseKeyHook
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class KeymapViewModel : NotifyPropertyChanged
@@ -17,10 +19,10 @@ namespace Captura.Models
 
         public class KeymapItem
         {
-            public KeymapItem(string FileName, string Name)
+            public KeymapItem(string fileName, string name)
             {
-                this.FileName = FileName;
-                this.Name = Name;
+                FileName = fileName;
+                Name = name;
             }
 
             public string FileName { get; }
@@ -30,21 +32,22 @@ namespace Captura.Models
 
         public KeymapViewModel()
         {
-            var keymapDir = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "keymaps");
+            var location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var keymapDir = string.IsNullOrEmpty(location) ? null : Path.Combine(location, "keymaps");
 
             if (Directory.Exists(keymapDir))
             {
                 var files = Directory.EnumerateFiles(keymapDir, "*.json");
 
                 _keymaps.AddRange(files
-                    .Where(M => !M.Contains("schema"))
-                    .Select(M =>
+                    .Where(s => !s.Contains("schema"))
+                    .Select(fileName =>
                     {
-                        var content = File.ReadAllText(M);
+                        var content = File.ReadAllText(fileName);
 
                         var name = JObject.Parse(content)["Name"];
 
-                        return new KeymapItem(M, name.ToString());
+                        return new KeymapItem(fileName, name.ToString());
                     }));
             }
 
@@ -90,33 +93,33 @@ namespace Captura.Models
             }
         }
 
-        void Init(Keymap Keymap)
+        void Init(Keymap keymap)
         {
-            _keymap = Keymap;
+            _keymap = keymap;
 
             Control = Find(Keys.Control, ModifierStates.Empty) ?? nameof(Control);
             Shift = Find(Keys.Shift, ModifierStates.Empty) ?? nameof(Shift);
             Alt = Find(Keys.Alt, ModifierStates.Empty) ?? nameof(Alt);
         }
 
-        void Parse(string Content)
+        void Parse(string content)
         {
             var keymap = new Keymap();
 
-            JsonConvert.PopulateObject(Content, keymap);
+            JsonConvert.PopulateObject(content, keymap);
             
             Init(keymap);
         }
 
-        public string Find(Keys Key, ModifierStates Modifiers)
+        public string Find(Keys key, ModifierStates modifiers)
         {
             return _keymap.Mappings
-                .Where(M => M.On.Any(S => S.Control == Modifiers.Control
-                              && S.Alt == Modifiers.Alt
-                              && S.Shift == Modifiers.Shift
-                              && S.CapsLock == Modifiers.CapsLock))
-                .SelectMany(M => M.Keys)
-                .FirstOrDefault(M => M.Key == Key).Value;
+                .Where(mappingGroup => mappingGroup.On.Any(modifierStates => modifierStates.Control == modifiers.Control
+                              && modifierStates.Alt == modifiers.Alt
+                              && modifierStates.Shift == modifiers.Shift
+                              && modifierStates.CapsLock == modifiers.CapsLock))
+                .SelectMany(mappingGroup => mappingGroup.Keys)
+                .FirstOrDefault(keyValuePair => keyValuePair.Key == key).Value;
         }
 
         public string Control { get; private set; } = nameof(Control);

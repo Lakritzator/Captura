@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Captura.Models
+namespace Captura.Imgur
 {
-    class ImgurRefreshTokenResponse
+    internal class ImgurRefreshTokenResponse
     {
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }

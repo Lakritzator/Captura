@@ -3,29 +3,29 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class NegatingConverter : IValueConverter
     {
-        static object DoConvert(object Value)
+        private static object DoConvert(object value)
         {
-            if (Value is bool b)
+            if (value is bool b)
                 return !b;
 
             return Binding.DoNothing;
         }
 
-        public object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch (Value)
+            switch (value)
             {
-                case bool b when TargetType == typeof(Visibility):
+                case bool b when targetType == typeof(Visibility):
                     return b ? Visibility.Collapsed : Visibility.Visible;
 
                 case bool b:
                     return !b;
 
-                case Visibility visibility when TargetType == typeof(Visibility):
+                case Visibility visibility when targetType == typeof(Visibility):
                     return visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
                 case Visibility visibility:
@@ -36,9 +36,9 @@ namespace Captura
             }
         }
 
-        public object ConvertBack(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DoConvert(Value);
+            return DoConvert(value);
         }
     }
 }

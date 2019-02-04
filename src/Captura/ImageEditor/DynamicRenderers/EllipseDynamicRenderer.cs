@@ -4,63 +4,63 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Input.StylusPlugIns;
 using System.Windows.Media;
-using Captura.ImageEditor;
+using Captura.ImageEditor.Strokes;
 
-namespace Captura
+namespace Captura.ImageEditor.DynamicRenderers
 {
     public class EllipseDynamicRenderer : DynamicRenderer, IDynamicRenderer
     {
-        bool _isManipulating;
+        private bool _isManipulating;
 
-        Point _firstPoint;
+        private Point _firstPoint;
 
         public EllipseDynamicRenderer()
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
         }
 
-        protected override void OnStylusDown(RawStylusInput RawStylusInput)
+        protected override void OnStylusDown(RawStylusInput rawStylusInput)
         {
-            _firstPoint = RawStylusInput.GetStylusPoints().First().ToPoint();
-            base.OnStylusDown(RawStylusInput);
+            _firstPoint = rawStylusInput.GetStylusPoints().First().ToPoint();
+            base.OnStylusDown(rawStylusInput);
         }
 
-        public static void Draw(DrawingContext DrawingContext, Point Start, Point End, Pen Pen)
+        public static void Draw(DrawingContext drawingContext, Point start, Point end, Pen pen)
         {
-            RectangleDynamicRenderer.Prepare(ref Start, ref End, out var w, out var h);
+            RectangleDynamicRenderer.Prepare(ref start, ref end, out var w, out var h);
 
-            var center = new Point(Start.X + w / 2, Start.Y + h / 2);
+            var center = new Point(start.X + w / 2, start.Y + h / 2);
 
-            DrawingContext.DrawEllipse(null, Pen, center, w / 2, h / 2);
+            drawingContext.DrawEllipse(null, pen, center, w / 2, h / 2);
         }
 
-        protected override void OnDraw(DrawingContext DrawingContext, StylusPointCollection StylusPoints, Geometry Geometry, Brush FillBrush)
+        protected override void OnDraw(DrawingContext drawingContext, StylusPointCollection stylusPoints, Geometry geometry, Brush fillBrush)
         {
             if (!_isManipulating)
             {
                 _isManipulating = true;
 
                 var currentStylus = Stylus.CurrentStylusDevice;
-                Reset(currentStylus, StylusPoints);
+                Reset(currentStylus, stylusPoints);
             }
 
             _isManipulating = false;
 
-            Draw(DrawingContext,
+            Draw(drawingContext,
                 _firstPoint,
-                StylusPoints.First().ToPoint(),
-                new Pen(FillBrush, 2));
+                stylusPoints.First().ToPoint(),
+                new Pen(fillBrush, 2));
         }
 
-        protected override void OnStylusUp(RawStylusInput RawStylusInput)
+        protected override void OnStylusUp(RawStylusInput rawStylusInput)
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            base.OnStylusUp(RawStylusInput);
+            base.OnStylusUp(rawStylusInput);
         }
 
-        public Stroke GetStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttribs)
+        public Stroke GetStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttribs)
         {
-            return new EllipseStroke(StylusPoints, DrawingAttribs);
+            return new EllipseStroke(stylusPoints, drawingAttribs);
         }
     }
 }

@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.FFmpeg.Audio;
+using Captura.FFmpeg.Settings;
+
 // ReSharper disable MemberCanBeProtected.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 // ReSharper disable ArrangeRedundantParentheses
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     public class FFmpegItem : IVideoWriterItem
     {
@@ -54,7 +59,7 @@ namespace Captura.Models
             FFmpegAudioItem.Aac,
             "Encode to Mp4: HEVC (H.265) with AAC audio using Intel QuickSync hardware encoding.\nRequires the processor to be Skylake generation or later");
 
-        const string NVencSupport = "If this doesn't work, please check on NVIDIA's website whether your graphic card supports NVenc.";
+        private const string NVencSupport = "If this doesn't work, please check on NVIDIA's website whether your graphic card supports NVenc.";
 
         // MP4 (H.264 NVENC, AAC)
         public static FFmpegItem H264_NVENC { get; } = new FFmpegItem(
@@ -87,8 +92,8 @@ namespace Captura.Models
         };
 
         public string Description { get; }
-        
-        FFmpegItem(string Name, Func<string> Extension, FFmpegVideoArgsProvider VideoArgsProvider, FFmpegAudioArgsProvider AudioArgsProvider, string Description = "")
+
+        private FFmpegItem(string Name, Func<string> Extension, FFmpegVideoArgsProvider VideoArgsProvider, FFmpegAudioArgsProvider AudioArgsProvider, string Description = "")
             : this(Name, Extension, Description)
         {
             _videoArgsProvider = VideoArgsProvider;
@@ -119,13 +124,13 @@ namespace Captura.Models
             }
         }
 
-        readonly Func<string> _extension;
+        private readonly Func<string> _extension;
 
         public string Extension => _extension?.Invoke();
 
-        readonly string _name;
-        readonly FFmpegVideoArgsProvider _videoArgsProvider;
-        readonly FFmpegAudioArgsProvider _audioArgsProvider;
+        private readonly string _name;
+        private readonly FFmpegVideoArgsProvider _videoArgsProvider;
+        private readonly FFmpegAudioArgsProvider _audioArgsProvider;
         public override string ToString() => _name;
 
         public virtual IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args)

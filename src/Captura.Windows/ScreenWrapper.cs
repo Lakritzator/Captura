@@ -2,23 +2,23 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Captura.Models;
+using Captura.Base;
 
-namespace Captura
+namespace Captura.Windows
 {
     class ScreenWrapper : IScreen
     {
         readonly Screen _screen;
 
-        ScreenWrapper(Screen Screen)
+        ScreenWrapper(Screen screen)
         {
-            _screen = Screen;
+            _screen = screen;
         }
 
         public Rectangle Rectangle => _screen.Bounds;
 
         public string DeviceName => _screen.DeviceName;
 
-        public static IEnumerable<IScreen> Enumerate() => Screen.AllScreens.Select(M => new ScreenWrapper(M));
+        public static IEnumerable<IScreen> Enumerate() => Screen.AllScreens.Select(screen => new ScreenWrapper(screen));
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace Captura.Models
+namespace Captura.Base.Images
 {
     public interface IImageWriterItem
     {
-        Task Save(IBitmapImage Image, ImageFormats Format, string FileName);
+        Task Save(IBitmapImage image, ImageFormats format, string fileName);
 
         string Display { get; }
 

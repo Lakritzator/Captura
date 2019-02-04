@@ -3,28 +3,29 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Captura.Presentation;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class CropWindow
     {
-        BitmapSource _croppedImage;
-        readonly string _fileName;
+        private BitmapSource _croppedImage;
+        private readonly string _fileName;
 
-        public CropWindow(string FileName)
+        public CropWindow(string fileName)
         {
             InitializeComponent();
 
-            _fileName = FileName;
+            _fileName = fileName;
 
-            using (var stream = File.OpenRead(FileName))
+            using (var stream = File.OpenRead(fileName))
             {
                 var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
 
                 Image.Source = decoder.Frames[0];
             }
 
-            Loaded += (S, E) =>
+            Loaded += (s, e) =>
             {
                 var rcInterior = new Rect(
                     Image.ActualWidth * 0.2,
@@ -49,7 +50,7 @@ namespace Captura
 
                 RefreshCropImage();
 
-                croppingAdorner.CropChanged += (Sender, Args) => RefreshCropImage();
+                croppingAdorner.CropChanged += (sender, args) => RefreshCropImage();
 
                 croppingAdorner.Checked += Save;
 
@@ -58,8 +59,8 @@ namespace Captura
                 croppingAdorner.Fill = new SolidColorBrush(clr);
             };
         }
-        
-        void Save()
+
+        private void Save()
         {
             if (_croppedImage == null)
                 return;

@@ -1,25 +1,27 @@
 using System.Drawing;
 using System.Text.RegularExpressions;
-using Screna;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Loc;
 
-namespace Captura.Models
+namespace Screna.VideoSourceProviders
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RegionSourceProvider : VideoSourceProviderBase
     {
-        readonly IRegionProvider _regionProvider;
-        static readonly RectangleConverter RectangleConverter = new RectangleConverter();
+        private readonly IRegionProvider _regionProvider;
+        private static readonly RectangleConverter RectangleConverter = new RectangleConverter();
 
-        public RegionSourceProvider(LanguageManager Loc,
-            IRegionProvider RegionProvider,
-            IIconSet Icons) : base(Loc)
+        public RegionSourceProvider(LanguageManager loc,
+            IRegionProvider regionProvider,
+            IIconSet icons) : base(loc)
         {
-            _regionProvider = RegionProvider;
+            _regionProvider = regionProvider;
 
-            Source = RegionProvider.VideoSource;
-            Icon = Icons.Region;
+            Source = regionProvider.VideoSource;
+            Icon = icons.Region;
 
-            RegionProvider.SelectorHidden += RequestUnselect;
+            regionProvider.SelectorHidden += RequestUnselect;
         }
 
         public override IVideoItem Source { get; }
@@ -48,9 +50,9 @@ namespace Captura.Models
             return RectangleConverter.ConvertToInvariantString(rect);
         }
 
-        public override bool Deserialize(string Serialized)
+        public override bool Deserialize(string serialized)
         {
-            if (!(RectangleConverter.ConvertFromInvariantString(Serialized) is Rectangle rect))
+            if (!(RectangleConverter.ConvertFromInvariantString(serialized) is Rectangle rect))
                 return false;
 
             _regionProvider.SelectedRegion = rect;
@@ -60,14 +62,14 @@ namespace Captura.Models
             return true;
         }
 
-        public override bool ParseCli(string Arg)
+        public override bool ParseCli(string arg)
         {
-            if (!Regex.IsMatch(Arg, @"^\d+,\d+,\d+,\d+$"))
+            if (!Regex.IsMatch(arg, @"^\d+,\d+,\d+,\d+$"))
                 return false;
 
             var rectConverter = new RectangleConverter();
 
-            if (!(rectConverter.ConvertFromInvariantString(Arg) is Rectangle rect))
+            if (!(rectConverter.ConvertFromInvariantString(arg) is Rectangle rect))
                 return false;
 
             _regionProvider.SelectedRegion = rect.Even();

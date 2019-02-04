@@ -1,22 +1,24 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using Captura.ViewModels;
+using Captura.Core;
+using Captura.FFmpeg;
+using Captura.ViewCore.ViewModels;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class FFmpegPage
     {
-        void OpenFFmpegLog(object Sender, RoutedEventArgs E)
+        private void OpenFFmpegLog(object sender, RoutedEventArgs e)
         {
-            FFmpegLogWindow.ShowInstance();
+            Windows.FFmpegLogWindow.ShowInstance();
         }
-        
-        void FFmpegDownload(object Sender, RoutedEventArgs E)
+
+        private void FFmpegDownload(object sender, RoutedEventArgs e)
         {
             FFmpegService.FFmpegDownloader?.Invoke();
         }
 
-        void SelectFFmpegFolder(object Sender, MouseButtonEventArgs E)
+        private void SelectFFmpegFolder(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {

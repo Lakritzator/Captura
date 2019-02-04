@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Captura
+namespace Captura.Base.Settings
 {
     public enum ProxyType
     {

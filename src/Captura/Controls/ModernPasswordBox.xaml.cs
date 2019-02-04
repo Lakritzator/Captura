@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class ModernPasswordBox
     {
@@ -8,16 +8,16 @@ namespace Captura
         {
             InitializeComponent();
 
-            PswBox.PasswordChanged += (S, E) => Password = PswBox.Password;
+            PswBox.PasswordChanged += (sender, e) => Password = PswBox.Password;
         }
 
         public static readonly DependencyProperty PasswordProperty = DependencyProperty.Register(
             nameof(Password),
             typeof(string),
             typeof(ModernPasswordBox),
-            new UIPropertyMetadata((S, E) =>
+            new UIPropertyMetadata((dependencyObject, e) =>
             {
-                if (S is ModernPasswordBox modernPswBox && E.NewValue is string psw)
+                if (dependencyObject is ModernPasswordBox modernPswBox && e.NewValue is string psw)
                 {
                     if (modernPswBox.PswBox.Password != psw)
                         modernPswBox.PswBox.Password = psw;

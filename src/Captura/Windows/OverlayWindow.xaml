@@ -1,10 +1,10 @@
-﻿<Window x:Class="Captura.OverlayWindow"
+﻿<Window x:Class="Captura.Windows.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Captura"
         xmlns:mui="http://firstfloorsoftware.com/ModernUI"
+        xmlns:controls="clr-namespace:Captura.Controls"
         mc:Ignorable="d"
         Title="{Binding Overlays, Source={StaticResource Loc}, Mode=OneWay}"
         Height="500"
@@ -33,13 +33,13 @@
             <TabItem Header="{Binding WebCam, Source={StaticResource Loc}, Mode=OneWay}"
                      DataContext="{Binding AboutViewModel, Source={StaticResource ServiceLocator}}">
                 <StackPanel Margin="5"
-                            DataContext="{Binding Settings.WebcamOverlay}">
-                    <local:ImageOverlaySettingsControl/>
+                            DataContext="{Binding Settings.WebCamOverlay}">
+                    <controls:ImageOverlaySettingsControl/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Elapsed"
                      DataContext="{Binding AboutViewModel, Source={StaticResource ServiceLocator}}">
-                <local:TextOverlaySettingsControl Margin="5"
+                <controls:TextOverlaySettingsControl Margin="5"
                                                   DataContext="{Binding Settings.Elapsed}"
                                                   DockPanel.Dock="Bottom"/>
             </TabItem>

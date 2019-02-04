@@ -1,18 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Captura.Base.Video;
+using Captura.FFmpeg.Settings;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Video
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FFmpegWriterProvider : IVideoWriterProvider
     {
         public string Name => "FFmpeg";
 
-        readonly FFmpegSettings _settings;
+        private readonly FFmpegSettings _settings;
 
-        public FFmpegWriterProvider(FFmpegSettings Settings)
+        public FFmpegWriterProvider(FFmpegSettings settings)
         {
-            _settings = Settings;
+            _settings = settings;
         }
 
         public IEnumerator<IVideoWriterItem> GetEnumerator()

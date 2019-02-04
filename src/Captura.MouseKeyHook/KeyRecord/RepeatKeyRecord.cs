@@ -1,12 +1,12 @@
 using System;
 
-namespace Captura.Models
+namespace Captura.MouseKeyHook.KeyRecord
 {
     class RepeatKeyRecord : IKeyRecord
     {
-        public RepeatKeyRecord(KeyRecord Repeated)
+        public RepeatKeyRecord(KeyRecord repeated)
         {
-            this.Repeated = Repeated;
+            Repeated = repeated;
 
             Increment();
         }

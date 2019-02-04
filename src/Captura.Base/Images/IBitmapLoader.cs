@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Captura
+namespace Captura.Base.Images
 {
     public interface IBitmapLoader : IDisposable
     {
-        IDisposable CreateBitmapBgr32(Size Size, IntPtr MemoryData, int Stride);
+        IDisposable CreateBitmapBgr32(Size size, IntPtr memoryData, int stride);
 
-        IDisposable LoadBitmap(string FileName, out Size Size);
+        IDisposable LoadBitmap(string fileName, out Size size);
     }
 }

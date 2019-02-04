@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+
+namespace Captura.Core.Settings.Models
 {
     public class VisualSettings : PropertyStore
     {

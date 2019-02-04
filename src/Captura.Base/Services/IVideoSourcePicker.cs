@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Captura.Models
+namespace Captura.Base.Services
 {
     public interface IVideoSourcePicker
     {
-        IWindow PickWindow(Predicate<IWindow> Filter = null);
+        IWindow PickWindow(Predicate<IWindow> filter = null);
 
         IScreen PickScreen();
 

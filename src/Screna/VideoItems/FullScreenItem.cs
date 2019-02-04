@@ -1,8 +1,11 @@
 ﻿using System;
-using Screna;
 using System.Drawing;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Video;
+using Screna.ImageProviders;
 
-namespace Captura.Models
+namespace Screna.VideoItems
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FullScreenItem : NotifyPropertyChanged, IVideoItem
@@ -11,13 +14,13 @@ namespace Captura.Models
 
         public string Name => null;
 
-        public IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform)
+        public IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform)
         {
 			var region = WindowProvider.DesktopRectangle;
 
-			Transform = P => new Point(P.X - region.X, P.Y - region.Y);
+			transform = point => new Point(point.X - region.X, point.Y - region.Y);
 
-            return new RegionProvider(region, IncludeCursor);
+            return new RegionProvider(region, includeCursor);
 		}
     }
 }

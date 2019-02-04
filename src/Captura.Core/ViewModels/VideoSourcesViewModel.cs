@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Threading;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Video;
+using Captura.Core.Models;
+using Screna.VideoSourceProviders;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class VideoSourcesViewModel : NotifyPropertyChanged
@@ -14,13 +17,13 @@ namespace Captura.ViewModels
 
         public IEnumerable<IVideoSourceProvider> VideoSources { get; }
 
-        public VideoSourcesViewModel(FullScreenSourceProvider FullScreenProvider,
-            NoVideoSourceProvider NoVideoSourceProvider,
-            IEnumerable<IVideoSourceProvider> SourceProviders)
+        public VideoSourcesViewModel(FullScreenSourceProvider fullScreenProvider,
+            NoVideoSourceProvider noVideoSourceProvider,
+            IEnumerable<IVideoSourceProvider> sourceProviders)
         {
-            this.NoVideoSourceProvider = NoVideoSourceProvider;
-            _fullScreenProvider = FullScreenProvider;
-            VideoSources = SourceProviders;
+            NoVideoSourceProvider = noVideoSourceProvider;
+            _fullScreenProvider = fullScreenProvider;
+            VideoSources = sourceProviders;
 
             SetDefaultSource();
         }
@@ -30,14 +33,14 @@ namespace Captura.ViewModels
             SelectedVideoSourceKind = _fullScreenProvider;
         }
 
-        void ChangeSource(IVideoSourceProvider NewSourceProvider, bool CallOnSelect)
+        void ChangeSource(IVideoSourceProvider newSourceProvider, bool callOnSelect)
         {
             try
             {
-                if (NewSourceProvider == null || _videoSourceKind == NewSourceProvider)
+                if (newSourceProvider == null || _videoSourceKind == newSourceProvider)
                     return;
 
-                if (CallOnSelect && !NewSourceProvider.OnSelect())
+                if (callOnSelect && !newSourceProvider.OnSelect())
                 {
                     return;
                 }
@@ -49,7 +52,7 @@ namespace Captura.ViewModels
                     _videoSourceKind.UnselectRequested -= SetDefaultSource;
                 }
 
-                _videoSourceKind = NewSourceProvider;
+                _videoSourceKind = newSourceProvider;
 
                 _videoSourceKind.UnselectRequested += SetDefaultSource;
             }
@@ -64,7 +67,7 @@ namespace Captura.ViewModels
 
                 if (_syncContext != null)
                 {
-                    _syncContext.Post(S => PropChange(), null);
+                    _syncContext.Post(state => PropChange(), null);
                 }
                 else PropChange();
             }
@@ -78,9 +81,9 @@ namespace Captura.ViewModels
             set => ChangeSource(value, true);
         }
 
-        public void RestoreSourceKind(IVideoSourceProvider SourceProvider)
+        public void RestoreSourceKind(IVideoSourceProvider sourceProvider)
         {
-            ChangeSource(SourceProvider, false);
+            ChangeSource(sourceProvider, false);
         }
     }
 }

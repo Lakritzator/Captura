@@ -1,7 +1,11 @@
 ﻿using System;
 using System.IO;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Core;
+using Captura.Fakes;
 
-namespace Captura.Tests
+namespace Tests.Fixtures
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class TestManagerFixture : IDisposable
@@ -15,7 +19,7 @@ namespace Captura.Tests
 
         public void Dispose() { }
 
-        static string GetPath(string FolderName, string FileName)
+        static string GetPath(string folderName, string fileName)
         {
             var path = typeof(IOverlay).Assembly.CodeBase
                 .Split(new [] {"///"}, StringSplitOptions.None)[1];
@@ -29,7 +33,7 @@ namespace Captura.Tests
             for (var i = 0; i < 5; ++i)
                 path = Path.GetDirectoryName(path);
 
-            return Path.Combine(path, $"{FolderName}/bin/{config}/{FileName}");
+            return Path.Combine(path, $"{folderName}/bin/{config}/{fileName}");
         }
 
         public static string GetCliPath()

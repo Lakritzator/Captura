@@ -1,4 +1,4 @@
-﻿namespace Captura.Models
+﻿namespace Captura.Base.Services
 {
     public interface IMainWindow
     {
@@ -6,12 +6,12 @@
 
         bool IsMinimized { get; set; }
 
-        void EditImage(string FileName);
+        void EditImage(string fileName);
 
-        void CropImage(string FileName);
+        void CropImage(string fileName);
 
-        void TrimMedia(string FileName);
+        void TrimMedia(string fileName);
 
-        void UploadToYouTube(string FileName);
+        void UploadToYouTube(string fileName);
     }
 }

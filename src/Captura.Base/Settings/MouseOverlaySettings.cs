@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Captura
+namespace Captura.Base.Settings
 {
     public class MouseOverlaySettings : PropertyStore
     {

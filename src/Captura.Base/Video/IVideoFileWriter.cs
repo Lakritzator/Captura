@@ -1,6 +1,7 @@
 ﻿using System;
+using Captura.Base.Images;
 
-namespace Captura
+namespace Captura.Base.Video
 {
     /// <summary>
     /// Creates a video from individual frames and writes them to a file.
@@ -10,8 +11,8 @@ namespace Captura
         /// <summary>
         /// Writes an Image frame.
         /// </summary>
-        /// <param name="Image">The Image frame to write.</param>
-        void WriteFrame(IBitmapFrame Image);
+        /// <param name="image">The Image frame to write.</param>
+        void WriteFrame(IBitmapFrame image);
         
         /// <summary>
         /// Gets whether audio is supported.
@@ -21,8 +22,8 @@ namespace Captura
         /// <summary>
         /// Write audio block to Audio Stream.
         /// </summary>
-        /// <param name="Buffer">Buffer containing audio data.</param>
-        /// <param name="Length">Length of audio data in bytes.</param>
-        void WriteAudio(byte[] Buffer, int Length);
+        /// <param name="buffer">Buffer containing audio data.</param>
+        /// <param name="length">Length of audio data in bytes.</param>
+        void WriteAudio(byte[] buffer, int length);
     }
 }

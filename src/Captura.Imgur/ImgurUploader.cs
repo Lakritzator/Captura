@@ -4,33 +4,36 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Settings;
 using Newtonsoft.Json;
 
-namespace Captura.Models
+namespace Captura.Imgur
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ImgurUploader : IImageUploader
     {
-        readonly ImgurSettings _settings;
-        readonly ProxySettings _proxySettings;
-        readonly IImgurApiKeys _apiKeys;
+        private readonly ImgurSettings _settings;
+        private readonly ProxySettings _proxySettings;
+        private readonly IImgurApiKeys _apiKeys;
 
-        public ImgurUploader(ImgurSettings Settings,
-            ProxySettings ProxySettings,
-            IImgurApiKeys ApiKeys)
+        public ImgurUploader(ImgurSettings settings,
+            ProxySettings proxySettings,
+            IImgurApiKeys apiKeys)
         {
-            _settings = Settings;
-            _proxySettings = ProxySettings;
-            _apiKeys = ApiKeys;
+            _settings = settings;
+            _proxySettings = proxySettings;
+            _apiKeys = apiKeys;
         }
 
-        public async Task<UploadResult> Upload(IBitmapImage Image, ImageFormats Format, Action<int> Progress)
+        public async Task<UploadResult> Upload(IBitmapImage image, ImageFormats format, Action<int> progress)
         {
             using (var w = new WebClient { Proxy = _proxySettings.GetWebProxy() })
             {
-                if (Progress != null)
+                if (progress != null)
                 {
-                    w.UploadProgressChanged += (S, E) => Progress(E.ProgressPercentage);
+                    w.UploadProgressChanged += (sender, e) => progress(e.ProgressPercentage);
                 }
 
                 w.Headers.Add("Authorization", await GetAuthorizationHeader());
@@ -39,7 +42,7 @@ namespace Captura.Models
 
                 using (var ms = new MemoryStream())
                 {
-                    Image.Save(ms, Format);
+                    image.Save(ms, format);
 
                     values = new NameValueCollection
                     {
@@ -62,7 +65,7 @@ namespace Captura.Models
             }
         }
 
-        async Task<string> GetAuthorizationHeader()
+        private async Task<string> GetAuthorizationHeader()
         {
             if (_settings.Anonymous)
             {
@@ -85,7 +88,7 @@ namespace Captura.Models
             return $"Bearer {_settings.AccessToken}";
         }
 
-        async Task<bool> RefreshToken()
+        private async Task<bool> RefreshToken()
         {
             var args = new NameValueCollection
             {
@@ -109,18 +112,18 @@ namespace Captura.Models
             }
         }
 
-        static async Task<T> UploadValuesAsync<T>(WebClient WebClient, string Url, NameValueCollection Values)
+        private static async Task<T> UploadValuesAsync<T>(WebClient webClient, string url, NameValueCollection values)
         {
             // Task.Run done to prevent UI thread from freezing when upload fails.
-            var response = await Task.Run(async () => await WebClient.UploadValuesTaskAsync(Url, Values));
+            var response = await Task.Run(async () => await webClient.UploadValuesTaskAsync(url, values));
 
             return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(response));
         }
 
-        public async Task DeleteUploadedFile(string DeleteHash)
+        public async Task DeleteUploadedFile(string deleteHash)
         {
             // DeleteHash is now complete Url
-            var request = WebRequest.Create(DeleteHash);
+            var request = WebRequest.Create(deleteHash);
 
             request.Proxy = _proxySettings.GetWebProxy();
             request.Headers.Add("Authorization", await GetAuthorizationHeader());

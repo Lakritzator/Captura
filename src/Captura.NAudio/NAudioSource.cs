@@ -1,6 +1,5 @@
 ﻿using System.Linq;
-using Captura.Audio;
-using Captura.Models;
+using Captura.Base.Audio;
 using NAudio.CoreAudioApi;
 
 namespace Captura.NAudio
@@ -42,14 +41,14 @@ namespace Captura.NAudio
 
         public override IAudioProvider GetMixedAudioProvider()
         {
-            var rec = AvailableRecordingSources.Where(M => M.Active)
+            var rec = AvailableRecordingSources.Where(audioItem => audioItem.Active)
                 .Cast<NAudioItem>()
-                .Select(M => new WasapiCaptureProvider(M.Device))
+                .Select(nAudioItem => new WasapiCaptureProvider(nAudioItem.Device))
                 .Cast<NAudioProvider>();
 
-            var loop = AvailableLoopbackSources.Where(M => M.Active)
+            var loop = AvailableLoopbackSources.Where(audioItem => audioItem.Active)
                 .Cast<NAudioItem>()
-                .Select(M => new WasapiLoopbackCaptureProvider(M.Device))
+                .Select(nAudioItem => new WasapiLoopbackCaptureProvider(nAudioItem.Device))
                 .Cast<NAudioProvider>();
 
             return new MixedAudioProvider(rec.Concat(loop));
@@ -57,14 +56,14 @@ namespace Captura.NAudio
 
         public override IAudioProvider[] GetMultipleAudioProviders()
         {
-            var rec = AvailableRecordingSources.Where(M => M.Active)
+            var rec = AvailableRecordingSources.Where(audioItem => audioItem.Active)
                 .Cast<NAudioItem>()
-                .Select(M => new WasapiCaptureProvider(M.Device))
+                .Select(nAudioItem => new WasapiCaptureProvider(nAudioItem.Device))
                 .Cast<IAudioProvider>();
 
-            var loop = AvailableLoopbackSources.Where(M => M.Active)
+            var loop = AvailableLoopbackSources.Where(audioItem => audioItem.Active)
                 .Cast<NAudioItem>()
-                .Select(M => new WasapiLoopbackCaptureProvider(M.Device))
+                .Select(nAudioItem => new WasapiLoopbackCaptureProvider(nAudioItem.Device))
                 .Cast<IAudioProvider>();
 
             return rec.Concat(loop).ToArray();

@@ -1,6 +1,8 @@
-﻿namespace Captura
+﻿using Screna.Overlays.Settings;
+
+namespace Captura.Core.Settings.Models
 {
-    public class WebcamOverlaySettings : ImageOverlaySettings
+    public class WebCamOverlaySettings : ImageOverlaySettings
     {
         public bool SeparateFile
         {

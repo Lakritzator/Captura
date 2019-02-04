@@ -1,6 +1,6 @@
-﻿using Captura.Models;
+﻿using Captura.Base.Settings;
 
-namespace Captura
+namespace Captura.MouseKeyHook.Models
 {
     public class KeystrokesSettings : TextOverlaySettings
     {

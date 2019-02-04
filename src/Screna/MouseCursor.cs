@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using Captura;
+using Captura.Base.Images;
 using Captura.Native;
+using Captura.Native.Structs;
 
 namespace Screna
 {
@@ -12,7 +13,7 @@ namespace Screna
     /// </summary>
     public static class MouseCursor
     {
-        const int CursorShowing = 1;
+        private const int CursorShowing = 1;
                 
         /// <summary>
         /// Gets the Current Mouse Cursor Position.
@@ -28,45 +29,45 @@ namespace Screna
         }
 
         // hCursor -> (Icon, Hotspot)
-        static readonly Dictionary<IntPtr, Tuple<Bitmap, Point>> Cursors = new Dictionary<IntPtr, Tuple<Bitmap, Point>>();
+        private static readonly Dictionary<IntPtr, Tuple<Bitmap, Point>> Cursors = new Dictionary<IntPtr, Tuple<Bitmap, Point>>();
         
         /// <summary>
         /// Draws this overlay.
         /// </summary>
-        /// <param name="G">A <see cref="Graphics"/> object to draw upon.</param>
-        /// <param name="Transform">Point Transform Function.</param>
-        public static void Draw(Graphics G, Func<Point, Point> Transform = null)
+        /// <param name="graphics">A <see cref="Graphics"/> object to draw upon.</param>
+        /// <param name="transform">Point Transform Function.</param>
+        public static void Draw(Graphics graphics, Func<Point, Point> transform = null)
         {
-            GetIcon(Transform, out var icon, out var location);
+            GetIcon(transform, out var icon, out var location);
 
             if (icon == null)
                 return;
 
             try
             {
-                G.DrawImage(icon, new Rectangle(location, icon.Size));
+                graphics.DrawImage(icon, new Rectangle(location, icon.Size));
             }
             catch (ArgumentException) { }
         }
 
-        public static void Draw(IEditableFrame G, Func<Point, Point> Transform = null)
+        public static void Draw(IEditableFrame editableFrame, Func<Point, Point> transform = null)
         {
-            GetIcon(Transform, out var icon, out var location);
+            GetIcon(transform, out var icon, out var location);
 
             if (icon == null)
                 return;
 
             try
             {
-                G.DrawImage(icon, new Rectangle(location, icon.Size));
+                editableFrame.DrawImage(icon, new Rectangle(location, icon.Size));
             }
             catch (ArgumentException) { }
         }
 
-        static void GetIcon(Func<Point, Point> Transform, out Bitmap Icon, out Point Location)
+        private static void GetIcon(Func<Point, Point> transform, out Bitmap icon, out Point location)
         {
-            Icon = null;
-            Location = Point.Empty;
+            icon = null;
+            location = Point.Empty;
 
             // ReSharper disable once RedundantAssignment
             // ReSharper disable once InlineOutVariableDeclaration
@@ -84,7 +85,7 @@ namespace Screna
             {
                 var tuple = Cursors[cursorInfo.hCursor];
 
-                Icon = tuple.Item1;
+                icon = tuple.Item1;
                 hotspot = tuple.Item2;
             }
             else
@@ -97,10 +98,10 @@ namespace Screna
                 if (!User32.GetIconInfo(hIcon, out var icInfo))
                     return;
 
-                Icon = System.Drawing.Icon.FromHandle(hIcon).ToBitmap();
+                icon = Icon.FromHandle(hIcon).ToBitmap();
                 hotspot = new Point(icInfo.xHotspot, icInfo.yHotspot);
 
-                Cursors.Add(cursorInfo.hCursor, Tuple.Create(Icon, hotspot));
+                Cursors.Add(cursorInfo.hCursor, Tuple.Create(icon, hotspot));
 
                 User32.DestroyIcon(hIcon);
 
@@ -108,11 +109,11 @@ namespace Screna
                 Gdi32.DeleteObject(icInfo.hbmMask);
             }
 
-            Location = new Point(cursorInfo.ptScreenPos.X - hotspot.X,
+            location = new Point(cursorInfo.ptScreenPos.X - hotspot.X,
                 cursorInfo.ptScreenPos.Y - hotspot.Y);
 
-            if (Transform != null)
-                Location = Transform(Location);
+            if (transform != null)
+                location = transform(location);
         }
     }
 }

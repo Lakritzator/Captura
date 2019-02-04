@@ -1,22 +1,24 @@
 ﻿using System.Windows.Forms;
+using Captura.Base;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace Captura.Models
+namespace Captura.HotKeys
 {
-    public class HotkeyModel
+    public class HotKeyModel
     {
-        public HotkeyModel(ServiceName ServiceName, Keys Key, Modifiers Modifiers, bool IsActive)
+        public HotKeyModel(ServiceName serviceName, Keys key, Modifiers modifiers, bool isActive)
         {
-            this.ServiceName = ServiceName;
-            this.Key = Key;
-            this.Modifiers = Modifiers;
-            this.IsActive = IsActive;
+            ServiceName = serviceName;
+            Key = key;
+            Modifiers = modifiers;
+            IsActive = isActive;
         }
 
         // Default constructor required by Settings
         // ReSharper disable once UnusedMember.Global
-        public HotkeyModel() { }
+        public HotKeyModel() { }
 
         public bool IsActive { get; set; }
 

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Captura.Native;
+using Captura.Native.Structs;
+using Captura.Windows.Native.Enums;
 
-namespace Captura
+namespace Captura.Windows.Native
 {
     static class User32
     {

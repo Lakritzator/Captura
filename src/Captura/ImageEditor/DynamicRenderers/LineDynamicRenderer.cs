@@ -5,85 +5,86 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Input.StylusPlugIns;
 using System.Windows.Media;
+using Captura.ImageEditor.Strokes;
 
-namespace Captura
+namespace Captura.ImageEditor.DynamicRenderers
 {
     public class LineDynamicRenderer : DynamicRenderer, IDynamicRenderer
     {
-        bool _isManipulating;
+        private bool _isManipulating;
 
-        Point _firstPoint;
+        private Point _firstPoint;
 
         public LineDynamicRenderer()
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
         }
 
-        protected override void OnStylusDown(RawStylusInput RawStylusInput)
+        protected override void OnStylusDown(RawStylusInput rawStylusInput)
         {
-            _firstPoint = RawStylusInput.GetStylusPoints().First().ToPoint();
-            base.OnStylusDown(RawStylusInput);
+            _firstPoint = rawStylusInput.GetStylusPoints().First().ToPoint();
+            base.OnStylusDown(rawStylusInput);
         }
 
-        public static void Prepare(ref Point Start, ref Point End)
+        public static void Prepare(ref Point start, ref Point end)
         {
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                var sdx = End.X - Start.X;
-                var sdy = End.Y - Start.Y;
+                var sdx = end.X - start.X;
+                var sdy = end.Y - start.Y;
 
                 var dx = Math.Abs(sdx);
                 var dy = Math.Abs(sdy);
 
                 if (dx < dy / 2)
                 {
-                    End.X = Start.X;
+                    end.X = start.X;
                 }
                 else if (dy < dx / 2)
                 {
-                    End.Y = Start.Y;
+                    end.Y = start.Y;
                 }
                 else
                 {
                     var d = Math.Min(dx, dy);
 
-                    End.X = Start.X + Math.Sign(sdx) * d;
-                    End.Y = Start.Y + Math.Sign(sdy) * d;
+                    end.X = start.X + Math.Sign(sdx) * d;
+                    end.Y = start.Y + Math.Sign(sdy) * d;
                 }
             }
         }
 
-        static void Draw(DrawingContext DrawingContext, Point Start, Point End, Pen Pen)
+        private static void Draw(DrawingContext drawingContext, Point start, Point end, Pen pen)
         {
-            Prepare(ref Start, ref End);
+            Prepare(ref start, ref end);
 
-            DrawingContext.DrawLine(Pen, Start, End);
+            drawingContext.DrawLine(pen, start, end);
         }
 
-        protected override void OnDraw(DrawingContext DrawingContext, StylusPointCollection StylusPoints, Geometry Geometry, Brush FillBrush)
+        protected override void OnDraw(DrawingContext drawingContext, StylusPointCollection stylusPoints, Geometry geometry, Brush fillBrush)
         {
             if (!_isManipulating)
             {
                 _isManipulating = true;
 
                 var currentStylus = Stylus.CurrentStylusDevice;
-                Reset(currentStylus, StylusPoints);
+                Reset(currentStylus, stylusPoints);
             }
 
             _isManipulating = false;
 
-            Draw(DrawingContext, _firstPoint, StylusPoints.First().ToPoint(), new Pen(FillBrush, 2));
+            Draw(drawingContext, _firstPoint, stylusPoints.First().ToPoint(), new Pen(fillBrush, 2));
         }
 
-        protected override void OnStylusUp(RawStylusInput RawStylusInput)
+        protected override void OnStylusUp(RawStylusInput rawStylusInput)
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            base.OnStylusUp(RawStylusInput);
+            base.OnStylusUp(rawStylusInput);
         }
 
-        public Stroke GetStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttribs)
+        public Stroke GetStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttribs)
         {
-            return new LineStroke(StylusPoints, DrawingAttribs);
+            return new LineStroke(stylusPoints, drawingAttribs);
         }
     }
 }

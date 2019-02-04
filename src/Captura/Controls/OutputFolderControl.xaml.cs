@@ -1,7 +1,8 @@
 ﻿using System.Windows.Input;
-using Captura.ViewModels;
+using Captura.Core;
+using Captura.ViewCore.ViewModels;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class OutputFolderControl
     {
@@ -10,7 +11,7 @@ namespace Captura
             InitializeComponent();
         }
 
-        void SelectTargetFolder(object Sender, MouseButtonEventArgs E)
+        private void SelectTargetFolder(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is MainViewModel vm)
             {

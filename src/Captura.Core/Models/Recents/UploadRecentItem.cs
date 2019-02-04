@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
+using Captura.Base;
+using Captura.Base.Recent;
+using Captura.Base.Services;
+using Captura.Loc;
 using Screna;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Recents
 {
     public class UploadRecentItem : IRecentItem
     {
@@ -12,24 +16,24 @@ namespace Captura.Models
         public string Link { get; }
         public IImageUploader UploaderService { get; }
 
-        public UploadRecentItem(string Link, string DeleteHash, IImageUploader UploaderService)
+        public UploadRecentItem(string link, string deleteHash, IImageUploader uploaderService)
         {
-            this.DeleteHash = DeleteHash;
-            this.UploaderService = UploaderService;
+            DeleteHash = deleteHash;
+            UploaderService = uploaderService;
 
-            ClickCommand = new DelegateCommand(() => ServiceProvider.LaunchFile(new ProcessStartInfo(Link)));
+            ClickCommand = new DelegateCommand(() => ServiceProvider.LaunchFile(new ProcessStartInfo(link)));
 
             RemoveCommand = new DelegateCommand(() => RemoveRequested?.Invoke());
 
             var icons = ServiceProvider.Get<IIconSet>();
             var loc = ServiceProvider.Get<LanguageManager>();
 
-            Display = this.Link = Link;
+            Display = Link = link;
             Icon = icons.Link;
 
             Actions = new[]
             {
-                new RecentAction(loc.CopyPath, icons.Clipboard, () => this.Link.WriteToClipboard()),
+                new RecentAction(loc.CopyPath, icons.Clipboard, () => Link.WriteToClipboard()),
                 new RecentAction(loc.Delete, icons.Delete, OnDelete)
             };
         }

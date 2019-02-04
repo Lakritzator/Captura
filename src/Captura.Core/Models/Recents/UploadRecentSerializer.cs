@@ -1,25 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Captura.Base;
+using Captura.Base.Recent;
 using Newtonsoft.Json.Linq;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Recents
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class UploadRecentSerializer : IRecentItemSerializer
     {
         readonly IEnumerable<IImageUploader> _imgUploaders;
 
-        public UploadRecentSerializer(IEnumerable<IImageUploader> ImgUploaders)
+        public UploadRecentSerializer(IEnumerable<IImageUploader> imgUploaders)
         {
-            _imgUploaders = ImgUploaders;
+            _imgUploaders = imgUploaders;
         }
 
-        public bool CanSerialize(IRecentItem Item) => Item is UploadRecentItem;
+        public bool CanSerialize(IRecentItem item) => item is UploadRecentItem;
 
-        public bool CanDeserialize(JObject Item)
+        public bool CanDeserialize(JObject item)
         {
-            return Item.ContainsKey(nameof(UploadRecentModel.Type))
-                   && Item[nameof(UploadRecentModel.Type)].ToString() == UploadRecentModel.IdValue;
+            return item.ContainsKey(nameof(UploadRecentModel.Type))
+                   && item[nameof(UploadRecentModel.Type)].ToString() == UploadRecentModel.IdValue;
         }
 
         class UploadRecentModel
@@ -35,28 +37,28 @@ namespace Captura.Models
             public string UploaderService { get; set; }
         }
 
-        public JObject Serialize(IRecentItem Item)
+        public JObject Serialize(IRecentItem item)
         {
-            if (Item is UploadRecentItem item)
+            if (item is UploadRecentItem uploadRecentItem)
             {
                 return JObject.FromObject(new UploadRecentModel
                 {
-                    Link = item.Link,
-                    DeleteHash = item.DeleteHash,
-                    UploaderService = item.UploaderService.UploadServiceName
+                    Link = uploadRecentItem.Link,
+                    DeleteHash = uploadRecentItem.DeleteHash,
+                    UploaderService = uploadRecentItem.UploaderService.UploadServiceName
                 });
             }
 
             return null;
         }
 
-        public IRecentItem Deserialize(JObject Item)
+        public IRecentItem Deserialize(JObject item)
         {
             try
             {
-                var model = Item.ToObject<UploadRecentModel>();
+                var model = item.ToObject<UploadRecentModel>();
 
-                var uploader = _imgUploaders.FirstOrDefault(M => M.UploadServiceName == model.UploaderService);
+                var uploader = _imgUploaders.FirstOrDefault(imageUploader => imageUploader.UploadServiceName == model.UploaderService);
 
                 return uploader != null
                     ? new UploadRecentItem(model.Link, model.DeleteHash, uploader)

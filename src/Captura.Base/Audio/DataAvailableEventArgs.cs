@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Captura
+namespace Captura.Base.Audio
 {
     /// <summary>
     /// Data Available Event Args.
@@ -20,10 +20,10 @@ namespace Captura
         /// <summary>
         /// Creates a new instance of <see cref="DataAvailableEventArgs"/>.
         /// </summary>
-        public DataAvailableEventArgs(byte[] Buffer, int Length)
+        public DataAvailableEventArgs(byte[] buffer, int length)
         {
-            this.Buffer = Buffer;
-            this.Length = Length;
+            Buffer = buffer;
+            Length = length;
         }
     }
 }

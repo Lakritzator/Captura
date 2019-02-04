@@ -5,16 +5,16 @@ namespace DesktopDuplication
 {
     public class AcquireResult
     {
-        public AcquireResult(Result Result)
+        public AcquireResult(Result result)
         {
-            this.Result = Result;
+            Result = result;
         }
 
-        public AcquireResult(Result Result, OutputDuplicateFrameInformation FrameInfo, Resource DesktopResource)
+        public AcquireResult(Result result, OutputDuplicateFrameInformation frameInfo, Resource desktopResource)
         {
-            this.Result = Result;
-            this.FrameInfo = FrameInfo;
-            this.DesktopResource = DesktopResource;
+            Result = result;
+            FrameInfo = frameInfo;
+            DesktopResource = desktopResource;
         }
 
         public Result Result { get; }

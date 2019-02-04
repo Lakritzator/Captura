@@ -4,11 +4,18 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core.Models;
+using Captura.Core.Models.ImageWriterItems;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.Loc;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ScreenShotViewModel : ViewModelBase
@@ -17,37 +24,37 @@ namespace Captura.ViewModels
         public ClipboardWriter ClipboardWriter { get; }
         public ImageUploadWriter ImgurWriter { get; }
 
-        public ScreenShotViewModel(LanguageManager Loc,
-            Settings Settings,
-            DiskWriter DiskWriter,
-            ClipboardWriter ClipboardWriter,
-            ImageUploadWriter ImgurWriter,
-            ScreenShotModel ScreenShotModel,
-            VideoSourcesViewModel VideoSourcesViewModel,
-            IPlatformServices PlatformServices) : base(Settings, Loc)
+        public ScreenShotViewModel(LanguageManager loc,
+            Settings settings,
+            DiskWriter diskWriter,
+            ClipboardWriter clipboardWriter,
+            ImageUploadWriter imgurWriter,
+            ScreenShotModel screenShotModel,
+            VideoSourcesViewModel videoSourcesViewModel,
+            IPlatformServices platformServices) : base(settings, loc)
         {
-            this.DiskWriter = DiskWriter;
-            this.ClipboardWriter = ClipboardWriter;
-            this.ImgurWriter = ImgurWriter;
+            DiskWriter = diskWriter;
+            ClipboardWriter = clipboardWriter;
+            ImgurWriter = imgurWriter;
 
-            ScreenShotCommand = VideoSourcesViewModel
-                .ObserveProperty(M => M.SelectedVideoSourceKind)
-                .Select(M => !(M is NoVideoSourceProvider))
+            ScreenShotCommand = videoSourcesViewModel
+                .ObserveProperty(sourcesViewModel => sourcesViewModel.SelectedVideoSourceKind)
+                .Select(videoSourceProvider => !(videoSourceProvider is NoVideoSourceProvider))
                 .ToReactiveCommand()
-                .WithSubscribe(() => ScreenShotModel.CaptureScreenShot());
+                .WithSubscribe(() => screenShotModel.CaptureScreenShot());
 
-            async Task ScreenShotWindow(IWindow Window)
+            async Task ScreenShotWindow(IWindow window)
             {
-                var img = ScreenShotModel.ScreenShotWindow(Window);
+                var img = screenShotModel.ScreenShotWindow(window);
 
-                await ScreenShotModel.SaveScreenShot(img);
+                await screenShotModel.SaveScreenShot(img);
             }
 
-            ScreenShotActiveCommand = new DelegateCommand(async () => await ScreenShotWindow(PlatformServices.ForegroundWindow));
-            ScreenShotDesktopCommand = new DelegateCommand(async () => await ScreenShotWindow(PlatformServices.DesktopWindow));
-            ScreenshotRegionCommand = new DelegateCommand(async () => await ScreenShotModel.ScreenshotRegion());
-            ScreenshotWindowCommand = new DelegateCommand(async () => await ScreenShotModel.ScreenshotWindow());
-            ScreenshotScreenCommand = new DelegateCommand(async () => await ScreenShotModel.ScreenshotScreen());
+            ScreenShotActiveCommand = new DelegateCommand(async () => await ScreenShotWindow(platformServices.ForegroundWindow));
+            ScreenShotDesktopCommand = new DelegateCommand(async () => await ScreenShotWindow(platformServices.DesktopWindow));
+            ScreenshotRegionCommand = new DelegateCommand(async () => await screenShotModel.ScreenshotRegion());
+            ScreenshotWindowCommand = new DelegateCommand(async () => await screenShotModel.ScreenshotWindow());
+            ScreenshotScreenCommand = new DelegateCommand(async () => await screenShotModel.ScreenshotScreen());
         }
 
         public ICommand ScreenShotCommand { get; }

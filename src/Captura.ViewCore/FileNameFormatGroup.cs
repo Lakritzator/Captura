@@ -1,11 +1,11 @@
-﻿namespace Captura.Models
+﻿namespace Captura.ViewCore
 {
     public class FileNameFormatGroup
     {
-        public FileNameFormatGroup(string Name, FileNameFormatItem[] Formats)
+        public FileNameFormatGroup(string name, FileNameFormatItem[] formats)
         {
-            this.Name = Name;
-            this.Formats = Formats;
+            Name = name;
+            Formats = formats;
         }
 
         public string Name { get; }

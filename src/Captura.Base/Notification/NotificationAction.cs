@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Captura
+namespace Captura.Base.Notification
 {
     public class NotificationAction
     {

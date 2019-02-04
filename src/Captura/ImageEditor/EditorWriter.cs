@@ -1,17 +1,19 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Captura.Base;
+using Captura.Base.Images;
 
-namespace Captura.Models
+namespace Captura.ImageEditor
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class EditorWriter : NotifyPropertyChanged, IImageWriterItem
     {
-        public Task Save(IBitmapImage Image, ImageFormats Format, string FileName)
+        public Task Save(IBitmapImage image, ImageFormats format, string fileName)
         {
             using (var stream = new MemoryStream())
             {
-                Image.Save(stream, ImageFormats.Png);
+                image.Save(stream, ImageFormats.Png);
 
                 var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
 
@@ -27,7 +29,7 @@ namespace Captura.Models
 
         public string Display => "Editor";
 
-        bool _active;
+        private bool _active;
 
         public bool Active
         {

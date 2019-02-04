@@ -1,8 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using Captura.ViewModels;
+using Captura.Core;
+using Captura.ViewCore;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class SoundsPage
     {
@@ -11,9 +12,9 @@ namespace Captura
             InitializeComponent();
         }
 
-        void SetFile(object Sender, MouseButtonEventArgs E)
+        private void SetFile(object sender, MouseButtonEventArgs e)
         {
-            if (Sender is FrameworkElement element && element.DataContext is SoundsViewModelItem vm)
+            if (sender is FrameworkElement element && element.DataContext is SoundsViewModelItem vm)
             {
                 vm.SetCommand.ExecuteIfCan();
             }

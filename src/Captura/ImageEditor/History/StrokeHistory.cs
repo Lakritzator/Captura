@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Ink;
 
-namespace Captura
+namespace Captura.ImageEditor.History
 {
     public class StrokeHistory : IHistoryItem
     {

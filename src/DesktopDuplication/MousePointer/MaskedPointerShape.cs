@@ -6,28 +6,28 @@ using SharpDX.DXGI;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 
-namespace DesktopDuplication
+namespace DesktopDuplication.MousePointer
 {
     public abstract class MaskedPointerShape : IPointerShape
     {
-        Direct2DEditorSession _editorSession;
-        Texture2D _copyTex;
-        Bitmap _bmp;
+        private Direct2DEditorSession _editorSession;
+        private Texture2D _copyTex;
+        private Bitmap _bitmap;
         protected byte[] ShapeBuffer, DesktopBuffer;
 
         protected int Width { get; }
         protected int Height { get; }
 
-        public MaskedPointerShape(int Width, int Height, Direct2DEditorSession EditorSession)
+        public MaskedPointerShape(int width, int height, Direct2DEditorSession editorSession)
         {
-            this.Width = Width;
-            this.Height = Height;
-            _editorSession = EditorSession;
+            Width = width;
+            Height = height;
+            _editorSession = editorSession;
 
             var copyTexDesc = new Texture2DDescription
             {
-                Width = this.Width,
-                Height = this.Height,
+                Width = Width,
+                Height = Height,
                 MipLevels = 1,
                 ArraySize = 1,
                 Format = Format.B8G8R8A8_UNorm,
@@ -43,26 +43,26 @@ namespace DesktopDuplication
 
             _copyTex = new Texture2D(_editorSession.Device, copyTexDesc);
 
-            ShapeBuffer = new byte[Width * Height * 4];
-            DesktopBuffer = new byte[Width * Height * 4];
+            ShapeBuffer = new byte[width * height * 4];
+            DesktopBuffer = new byte[width * height * 4];
         }
 
-        public Bitmap GetBitmap() => _bmp;
+        public Bitmap GetBitmap() => _bitmap;
 
-        public void Update(Texture2D DesktopTexture, OutputDuplicatePointerPosition PointerPosition)
+        public void Update(Texture2D desktopTexture, OutputDuplicatePointerPosition pointerPosition)
         {
-            _bmp?.Dispose();
+            _bitmap?.Dispose();
 
             var region = new ResourceRegion(
-                PointerPosition.Position.X,
-                PointerPosition.Position.Y,
+                pointerPosition.Position.X,
+                pointerPosition.Position.Y,
                 0,
-                PointerPosition.Position.X + Width,
-                PointerPosition.Position.Y + Height,
+                pointerPosition.Position.X + Width,
+                pointerPosition.Position.Y + Height,
                 1);
 
             _editorSession.Device.ImmediateContext.CopySubresourceRegion(
-                DesktopTexture,
+                desktopTexture,
                 0,
                 region,
                 _copyTex,
@@ -91,7 +91,7 @@ namespace DesktopDuplication
             {
                 var pitch = Width * 4;
 
-                _bmp = new Bitmap(_editorSession.RenderTarget,
+                _bitmap = new Bitmap(_editorSession.RenderTarget,
                     new Size2(Width, Height),
                     new DataPointer(gcPin.AddrOfPinnedObject(), Height * pitch),
                     pitch,
@@ -108,8 +108,8 @@ namespace DesktopDuplication
 
         public void Dispose()
         {
-            _bmp?.Dispose();
-            _bmp = null;
+            _bitmap?.Dispose();
+            _bitmap = null;
 
             _copyTex?.Dispose();
             _copyTex = null;

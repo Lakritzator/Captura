@@ -3,11 +3,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Services;
 using Google.Apis.Upload;
 using Screna;
 
-namespace Captura.ViewModels
+namespace Captura.YouTube
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class YouTubeUploaderViewModel : NotifyPropertyChanged
@@ -23,11 +24,11 @@ namespace Captura.ViewModels
         bool _beganUploading;
         YouTubeUploadRequest _uploadRequest;
 
-        public YouTubeUploaderViewModel(YouTubeUploader Uploader,
-            IMessageProvider MessageProvider)
+        public YouTubeUploaderViewModel(YouTubeUploader uploader,
+            IMessageProvider messageProvider)
         {
-            _uploader = Uploader;
-            _messageProvider = MessageProvider;
+            _uploader = uploader;
+            _messageProvider = messageProvider;
             _cancellationTokenSource = new CancellationTokenSource();
 
             UploadCommand = new DelegateCommand(() => _uploadTask = OnUpload(), false);
@@ -64,9 +65,9 @@ namespace Captura.ViewModels
             }
         }
 
-        public async Task Init(string FilePath)
+        public async Task Init(string filePath)
         {
-            FileName = FilePath;
+            FileName = filePath;
             Title = Path.GetFileName(FileName);
 
             var fileSize = new FileInfo(FileName).Length;
@@ -74,16 +75,16 @@ namespace Captura.ViewModels
             _uploadRequest = await _uploader.CreateUploadRequest(FileName,
                 Title,
                 Description,
-                PrivacyStatus: PrivacyStatus);
+                privacyStatus: PrivacyStatus);
 
-            _uploadRequest.Uploaded += L =>
+            _uploadRequest.Uploaded += link =>
             {
-                Link = L;
+                Link = link;
 
                 CancelBtnText = "Finish";
             };
 
-            _uploadRequest.BytesSent += B => Progress = (int)(B * 100 / fileSize);
+            _uploadRequest.BytesSent += l => Progress = (int)(l * 100 / fileSize);
         }
 
         async Task OnUpload()

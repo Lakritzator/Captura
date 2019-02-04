@@ -1,20 +1,23 @@
-﻿using System.Windows;
-using System.Windows.Input;
-using System.IO;
+﻿using System;
 using System.Diagnostics;
-using System;
+using System.IO;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Captura.Base.Services;
+using Captura.ImageEditor;
+using Captura.Models;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class ScreenShotBalloon : IRemoveRequester
     {
-        readonly string _filePath;
+        private readonly string _filePath;
 
-        public ScreenShotBalloon(string FilePath)
+        public ScreenShotBalloon(string filePath)
         {
-            _filePath = FilePath;
-            DataContext = Path.GetFileName(FilePath);
+            _filePath = filePath;
+            DataContext = Path.GetFileName(filePath);
 
             InitializeComponent();
 
@@ -22,28 +25,28 @@ namespace Captura
             var image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
-            image.UriSource = new Uri(FilePath);
+            image.UriSource = new Uri(filePath);
             image.EndInit();
             Img.Source = image;
         }
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => OnClose();
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => OnClose();
 
-        void OnClose()
+        private void OnClose()
         {
             RemoveRequested?.Invoke();
         }
 
         public event Action RemoveRequested;
-        
-        void Image_MouseUp(object Sender, MouseButtonEventArgs E)
+
+        private void Image_MouseUp(object sender, MouseButtonEventArgs e)
         {
             ServiceProvider.LaunchFile(new ProcessStartInfo(_filePath));
 
             OnClose();
         }
 
-        void EditButton_OnClick(object Sender, RoutedEventArgs E)
+        private void EditButton_OnClick(object sender, RoutedEventArgs e)
         {
             var win = new ImageEditorWindow();
             win.Open(_filePath);

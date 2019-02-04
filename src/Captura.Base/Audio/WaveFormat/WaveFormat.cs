@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Captura.Audio
+namespace Captura.Base.Audio.WaveFormat
 {
     /// <summary>
     /// Represents a Wave file format
@@ -17,44 +17,44 @@ namespace Captura.Audio
         /// Creates a new 16 bit wave format with the specified sample
         /// rate and channel count
         /// </summary>
-        /// <param name="SampleRate">Sample Rate</param>
-        /// <param name="Channels">Number of channels</param>
-        public WaveFormat(int SampleRate, int Channels) : this(SampleRate, 16, Channels) { }
+        /// <param name="sampleRate">Sample Rate</param>
+        /// <param name="channels">Number of channels</param>
+        public WaveFormat(int sampleRate, int channels) : this(sampleRate, 16, channels) { }
 
         /// <summary>
         /// Creates a new PCM format with the specified sample rate, bit depth and channels
         /// </summary>
-        public WaveFormat(int SampleRate, int BitsPerSample, int Channels)
+        public WaveFormat(int sampleRate, int bitsPerSample, int channels)
         {
-            if (Channels < 1)
-                throw new ArgumentOutOfRangeException(nameof(Channels), "Channels must be 1 or greater");
+            if (channels < 1)
+                throw new ArgumentOutOfRangeException(nameof(channels), "Channels must be 1 or greater");
 
             // minimum 16 bytes, sometimes 18 for PCM
             Encoding = WaveFormatEncoding.Pcm;
-            this.Channels = (short)Channels;
-            this.SampleRate = SampleRate;
-            this.BitsPerSample = (short)BitsPerSample;
+            Channels = (short)channels;
+            SampleRate = sampleRate;
+            BitsPerSample = (short)bitsPerSample;
             ExtraSize = 0;
 
-            BlockAlign = (short)(Channels * (BitsPerSample / 8));
-            AverageBytesPerSecond = this.SampleRate * BlockAlign;
+            BlockAlign = (short)(channels * (bitsPerSample / 8));
+            AverageBytesPerSecond = SampleRate * BlockAlign;
         }
 
         /// <summary>
         /// Creates a new 32 bit IEEE floating point wave format
         /// </summary>
-        /// <param name="SampleRate">sample rate</param>
-        /// <param name="Channels">number of channels</param>
-        public static WaveFormat CreateIeeeFloatWaveFormat(int SampleRate, int Channels)
+        /// <param name="sampleRate">sample rate</param>
+        /// <param name="channels">number of channels</param>
+        public static WaveFormat CreateIeeeFloatWaveFormat(int sampleRate, int channels)
         {
             return new WaveFormat
             {
                 Encoding = WaveFormatEncoding.Float,
-                Channels = (short)Channels,
+                Channels = (short)channels,
                 BitsPerSample = 32,
-                SampleRate = SampleRate,
-                BlockAlign = (short)(4 * Channels),
-                AverageBytesPerSecond = SampleRate * 4 * Channels,
+                SampleRate = sampleRate,
+                BlockAlign = (short)(4 * channels),
+                AverageBytesPerSecond = sampleRate * 4 * channels,
                 ExtraSize = 0
             };
         }
@@ -67,16 +67,16 @@ namespace Captura.Audio
         /// <summary>
         /// Writes this WaveFormat object to a stream
         /// </summary>
-        /// <param name="Writer">the output stream</param>
-        public virtual void Serialize(BinaryWriter Writer)
+        /// <param name="writer">the output stream</param>
+        public virtual void Serialize(BinaryWriter writer)
         {
-            Writer.Write((short)Encoding);
-            Writer.Write((short)Channels);
-            Writer.Write(SampleRate);
-            Writer.Write(AverageBytesPerSecond);
-            Writer.Write((short)BlockAlign);
-            Writer.Write((short)BitsPerSample);
-            Writer.Write((short)ExtraSize);
+            writer.Write((short)Encoding);
+            writer.Write((short)Channels);
+            writer.Write(SampleRate);
+            writer.Write(AverageBytesPerSecond);
+            writer.Write((short)BlockAlign);
+            writer.Write((short)BitsPerSample);
+            writer.Write((short)ExtraSize);
         }
 
         /// <summary>

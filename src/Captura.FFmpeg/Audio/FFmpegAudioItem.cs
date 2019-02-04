@@ -1,54 +1,56 @@
 ﻿using System.Collections.Generic;
-using Captura.Audio;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Audio.WaveFormat;
 
-namespace Captura.Models
+namespace Captura.FFmpeg.Audio
 {
     public class FFmpegAudioItem : NoVideoItem
     {
         public FFmpegAudioArgsProvider AudioArgsProvider { get; }
 
-        const string Experimental = "-strict -2";
+        private const string Experimental = "-strict -2";
 
         // The (FFmpeg) appended to the name is expected in Custom Codecs
-        FFmpegAudioItem(string Name, string Extension, FFmpegAudioArgsProvider AudioArgsProvider)
-            : base($"{Name} (FFmpeg)", Extension)
+        private FFmpegAudioItem(string name, string extension, FFmpegAudioArgsProvider audioArgsProvider)
+            : base($"{name} (FFmpeg)", extension)
         {
-            this.AudioArgsProvider = AudioArgsProvider;
+            AudioArgsProvider = audioArgsProvider;
         }
 
-        public override IAudioFileWriter GetAudioFileWriter(string FileName, WaveFormat Wf, int AudioQuality)
+        public override IAudioFileWriter GetAudioFileWriter(string fileName, WaveFormat wf, int audioQuality)
         {
-            return new FFmpegAudioWriter(FileName, AudioQuality, AudioArgsProvider, Wf.SampleRate, Wf.Channels);
+            return new FFmpegAudioWriter(fileName, audioQuality, AudioArgsProvider, wf.SampleRate, wf.Channels);
         }
 
-        public static FFmpegAudioArgsProvider Aac { get; } = Quality =>
+        public static FFmpegAudioArgsProvider Aac { get; } = quality =>
         {
             // bitrate: 32k to 512k (steps of 32k)
-            var b = 32 * (1 + (15 * (Quality - 1)) / 99);
+            var b = 32 * (1 + (15 * (quality - 1)) / 99);
 
             return $"-c:a aac {Experimental} -b:a {b}k";
         };
 
-        public static FFmpegAudioArgsProvider Mp3 { get; } = Quality =>
+        public static FFmpegAudioArgsProvider Mp3 { get; } = quality =>
         {
             // quality: 9 (lowest) to 0 (highest)
-            var qscale = (100 - Quality) / 11;
+            var qscale = (100 - quality) / 11;
 
             return $"-c:a libmp3lame -qscale:a {qscale}";
         };
 
-        public static FFmpegAudioArgsProvider Vorbis { get; } = Quality =>
+        public static FFmpegAudioArgsProvider Vorbis { get; } = quality =>
         {
             // quality: 0 (lowest) to 10 (highest)
-            var qscale = (10 * (Quality - 1)) / 99;
+            var qscale = (10 * (quality - 1)) / 99;
 
             return $"-c:a libvorbis -qscale:a {qscale}";
         };
 
-        public static FFmpegAudioArgsProvider Opus { get; } = Quality =>
+        public static FFmpegAudioArgsProvider Opus { get; } = quality =>
         {
             // quality: 0 (lowest) to 10 (highest)
-            var qscale = (10 * (Quality - 1)) / 99;
+            var qscale = (10 * (quality - 1)) / 99;
 
             return $"-c:a libopus -compression_level {qscale}";
         };

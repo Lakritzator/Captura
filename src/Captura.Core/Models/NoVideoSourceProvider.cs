@@ -1,18 +1,24 @@
 using System.Linq;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.FFmpeg.Audio;
+using Captura.Loc;
+using Screna.VideoItems;
+using Screna.VideoSourceProviders;
 
-namespace Captura.Models
+namespace Captura.Core.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class NoVideoSourceProvider : VideoSourceProviderBase
     {
-        public NoVideoSourceProvider(LanguageManager Loc,
-            IIconSet Icons) : base(Loc)
+        public NoVideoSourceProvider(LanguageManager loc,
+            IIconSet icons) : base(loc)
         {
             Sources = new IVideoItem[] {WaveItem.Instance}
                 .Concat(FFmpegAudioItem.Items)
                 .ToArray();
 
-            Icon = Icons.NoVideo;
+            Icon = icons.NoVideo;
         }
 
         public IVideoItem[] Sources { get; }
@@ -42,9 +48,9 @@ Make sure Audio sources are enabled.";
 
         public override string Icon { get; }
 
-        public override bool Deserialize(string Serialized)
+        public override bool Deserialize(string serialized)
         {
-            var source = Sources.FirstOrDefault(M => M.Name == Serialized);
+            var source = Sources.FirstOrDefault(videoItem => videoItem.Name == serialized);
 
             if (source == null)
                 return false;
@@ -54,9 +60,9 @@ Make sure Audio sources are enabled.";
             return true;
         }
 
-        public override bool ParseCli(string Arg)
+        public override bool ParseCli(string arg)
         {
-            return Arg == "none";
+            return arg == "none";
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Captura.Windows.Native.Enums;
+
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace Captura
+namespace Captura.Windows.Native.Structs
 {
     [StructLayout(LayoutKind.Sequential)]
     struct ShFileOpStruct

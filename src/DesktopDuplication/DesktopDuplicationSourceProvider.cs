@@ -1,62 +1,68 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Loc;
 using SharpDX.DXGI;
 
-namespace Captura.Models
+namespace DesktopDuplication
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class DeskDuplSourceProvider : NotifyPropertyChanged, IVideoSourceProvider
+    public class DesktopDuplicationSourceProvider : NotifyPropertyChanged, IVideoSourceProvider
     {
-        readonly IVideoSourcePicker _videoSourcePicker;
-        readonly IPlatformServices _platformServices;
+        private readonly IVideoSourcePicker _videoSourcePicker;
+        private readonly IPlatformServices _platformServices;
 
-        public DeskDuplSourceProvider(LanguageManager Loc,
-            IVideoSourcePicker VideoSourcePicker,
-            IIconSet Icons,
-            IPlatformServices PlatformServices)
+        public DesktopDuplicationSourceProvider(LanguageManager languageManager,
+            IVideoSourcePicker videoSourcePicker,
+            IIconSet icons,
+            IPlatformServices platformServices)
         {
-            _videoSourcePicker = VideoSourcePicker;
-            _platformServices = PlatformServices;
-            Icon = Icons.Game;
+            _videoSourcePicker = videoSourcePicker;
+            _platformServices = platformServices;
+            Icon = icons.Game;
 
-            Loc.LanguageChanged += L => RaisePropertyChanged(nameof(Name));
+            languageManager.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Name));
         }
 
-        bool PickScreen()
+        private bool PickScreen()
         {
             var screen = _videoSourcePicker.PickScreen();
 
             return screen != null && Set(screen);
         }
 
-        bool SelectFirst()
+        private bool SelectFirst()
         {
             var output = new Factory1()
                 .Adapters1
-                .SelectMany(M => M.Outputs
-                    .Select(N => N.QueryInterface<Output1>()))
+                .SelectMany(adapter1 => adapter1.Outputs
+                    .Select(output1 => output1.QueryInterface<Output1>()))
                     .FirstOrDefault();
 
             if (output == null)
+            {
                 return false;
+            }
 
-            Source = new DeskDuplItem(output);
+            Source = new DesktopDuplicationItem(output);
 
             return true;
         }
 
-        bool Set(IScreen Screen)
+        private bool Set(IScreen screen)
         {
             var outputs = new Factory1()
                             .Adapters1
-                            .SelectMany(M => M.Outputs
-                                .Select(N => N.QueryInterface<Output1>()));
+                            .SelectMany(adapter1 => adapter1.Outputs
+                                .Select(output => output.QueryInterface<Output1>()));
 
-            var match = outputs.FirstOrDefault(M =>
+            var match = outputs.FirstOrDefault(output1 =>
             {
-                var r1 = M.Description.DesktopBounds;
-                var r2 = Screen.Rectangle;
+                var r1 = output1.Description.DesktopBounds;
+                var r2 = screen.Rectangle;
 
                 return r1.Left == r2.Left
                        && r1.Right == r2.Right
@@ -65,14 +71,16 @@ namespace Captura.Models
             });
 
             if (match == null)
+            {
                 return false;
+            }
 
-            Source = new DeskDuplItem(match);
+            Source = new DesktopDuplicationItem(match);
 
             return true;
         }
 
-        IVideoItem _source;
+        private IVideoItem _source;
 
         public IVideoItem Source
         {
@@ -118,30 +126,37 @@ If it does not work, try running Captura on the Integrated Graphics card.";
             return Source.ToString();
         }
 
-        public bool Deserialize(string Serialized)
+        public bool Deserialize(string serialized)
         {
-            var screen = _platformServices.EnumerateScreens()
-                .FirstOrDefault(M => M.DeviceName == Serialized);
+            var screen = _platformServices
+                .EnumerateScreens()
+                .FirstOrDefault(screen1 => screen1.DeviceName == serialized);
 
             if (screen == null)
+            {
                 return false;
+            }
 
             Set(screen);
 
             return true;
         }
 
-        public bool ParseCli(string Arg)
+        public bool ParseCli(string arg)
         {
-            if (!Regex.IsMatch(Arg, @"^deskdupl:\d+$"))
+            if (!Regex.IsMatch(arg, @"^deskdupl:\d+$"))
+            {
                 return false;
+            }
 
-            var index = int.Parse(Arg.Substring(9));
+            var index = int.Parse(arg.Substring(9));
 
             var screens = _platformServices.EnumerateScreens().ToArray();
 
             if (index >= screens.Length)
+            {
                 return false;
+            }
 
             Set(screens[index]);
 

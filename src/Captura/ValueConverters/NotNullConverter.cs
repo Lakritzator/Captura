@@ -3,15 +3,15 @@ using System.Collections;
 using System.Globalization;
 using System.Windows;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class NotNullConverter : OneWayConverter
     {
-        public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var b = Value != null;
+            var b = value != null;
 
-            switch (Value)
+            switch (value)
             {
                 case ICollection collection:
                     b = collection.Count != 0;
@@ -30,10 +30,10 @@ namespace Captura
                     break;
             }
 
-            if ((Parameter is bool inverse || Parameter is string s && bool.TryParse(s, out inverse)) && inverse)
+            if ((parameter is bool inverse || parameter is string s && bool.TryParse(s, out inverse)) && inverse)
                 b = !b;
 
-            if (TargetType == typeof(Visibility))
+            if (targetType == typeof(Visibility))
                 return b ? Visibility.Visible : Visibility.Collapsed;
 
             return b;

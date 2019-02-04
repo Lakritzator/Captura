@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Captura.Base.Images;
 using DirectShowLib;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace Captura.Webcam
+namespace Captura.WebCam
 {
     /// <summary>
     /// Gets the video output of a webcam or other video device.
     /// </summary>
-    public class CaptureWebcam : ISampleGrabberCB, IDisposable
+    public class CaptureWebCam : ISampleGrabberCB, IDisposable
     {
         #region Fields
         /// <summary> 
@@ -18,12 +19,12 @@ namespace Captura.Webcam
         ///  device, dispose of the current Capture instance and create a new 
         ///  instance with the desired device. 
         /// </summary>
-        readonly Filter _videoDevice;
+        private readonly Filter _videoDevice;
 
         /// <summary>
         ///  The control that will host the preview window. 
         /// </summary>
-        readonly IntPtr _previewWindow;
+        private readonly IntPtr _previewWindow;
 
         /// <summary>
         /// The Width and Height of the video feed.
@@ -38,71 +39,71 @@ namespace Captura.Webcam
         /// <summary>
         /// When graphState==Rendered, have we rendered the preview stream?
         /// </summary>
-        bool _isPreviewRendered;
+        private bool _isPreviewRendered;
 
         /// <summary>
         /// Do we need the preview stream rendered (VideoDevice and PreviewWindow != null)
         /// </summary>
-        bool _wantPreviewRendered;
+        private bool _wantPreviewRendered;
 
         /// <summary>
         /// State of the internal filter graph.
         /// </summary>
-        GraphState _actualGraphState;
+        private GraphState _actualGraphState;
 
         /// <summary>
         /// DShow Filter: Graph builder.
         /// </summary>
-        IGraphBuilder _graphBuilder;
+        private IGraphBuilder _graphBuilder;
 
         /// <summary>
         /// DShow Filter: building graphs for capturing video.
         /// </summary>
-        ICaptureGraphBuilder2 _captureGraphBuilder;
+        private ICaptureGraphBuilder2 _captureGraphBuilder;
 
         /// <summary>
         /// DShow Filter: selected video device.
         /// </summary>
-        IBaseFilter _videoDeviceFilter;
+        private IBaseFilter _videoDeviceFilter;
 
         /// <summary>
         /// DShow Filter: Start/Stop the filter graph -> copy of graphBuilder.
         /// </summary>
-        IMediaControl _mediaControl;
+        private IMediaControl _mediaControl;
 
         /// <summary>
         /// DShow Filter: Control preview window -> copy of graphBuilder.
         /// </summary>
-        IVideoWindow _videoWindow;
+        private IVideoWindow _videoWindow;
 
         /// <summary>
         /// DShow Filter: selected video compressor.
         /// </summary>
-        IBaseFilter _videoCompressorFilter;
+        private IBaseFilter _videoCompressorFilter;
 
         /// <summary>
         /// Grabber filter interface. 
         /// </summary>
-        IBaseFilter _baseGrabFlt;
+        private IBaseFilter _baseGrabFlt;
 
-        byte[] _savedArray;
+        private byte[] _savedArray;
 
-        ISampleGrabber _sampGrabber;
-        VideoInfoHeader _videoInfoHeader;
+        private ISampleGrabber _sampGrabber;
+        private VideoInfoHeader _videoInfoHeader;
         #endregion
 
-        readonly DummyForm _form;
+        private readonly DummyForm _form;
 
-        public CaptureWebcam(Filter VideoDevice, Action OnClick, IntPtr PreviewWindow)
+        public CaptureWebCam(Filter videoDevice, Action onClick, IntPtr previewWindow)
         {
-            _previewWindow = PreviewWindow;
+            _previewWindow = previewWindow;
 
             _form = new DummyForm();
             _form.Show();
 
-            _form.Click += (S, E) => OnClick?.Invoke();
+            _form.Click += (sender, e) => onClick?.Invoke();
 
-            _videoDevice = VideoDevice ?? throw new ArgumentException("The videoDevice parameter must be set to a valid Filter.\n");
+            _videoDevice = videoDevice ?? throw new ArgumentException("The videoDevice parameter must be set to a valid Filter.\n");
 
             CreateGraph();
         }
@@ -135,20 +136,20 @@ namespace Captura.Webcam
         }
 
         /// <summary> Resize the preview when the PreviewWindow is resized </summary>
-        public void OnPreviewWindowResize(double Width, double Height, Point Offset)
+        public void OnPreviewWindowResize(double width, double height, Point offset)
         {
             // Position video window in client rect of owner window.
-            _videoWindow?.SetWindowPosition((int)(Offset.X * Scale),
-                (int)(Offset.Y * Scale),
-                (int)(Width * Scale),
-                (int)(Height * Scale));
+            _videoWindow?.SetWindowPosition((int)(offset.X * Scale),
+                (int)(offset.Y * Scale),
+                (int)(width * Scale),
+                (int)(height * Scale));
         }
 
         /// <summary>
         /// Gets the current frame from the buffer.
         /// </summary>
         /// <returns>The Bitmap of the frame.</returns>
-        public IDisposable GetFrame(IBitmapLoader BitmapLoader)
+        public IDisposable GetFrame(IBitmapLoader bitmapLoader)
         {
             if (_actualGraphState != GraphState.Rendered)
                 return null;
@@ -183,7 +184,7 @@ namespace Captura.Webcam
                 var stride = width * 4;
                 address += height * stride;
 
-                return BitmapLoader.CreateBitmapBgr32(new Size(width, height), address, -stride);
+                return bitmapLoader.CreateBitmapBgr32(new Size(width, height), address, -stride);
             }
             finally
             {
@@ -198,8 +199,14 @@ namespace Captura.Webcam
         {
             _wantPreviewRendered = false;
 
-            try { DestroyGraph(); }
-            catch { }
+            try
+            {
+                DestroyGraph();
+            }
+            catch
+            {
+                // Ignored in dispose
+            }
 
             _form.Dispose();
 
@@ -213,7 +220,7 @@ namespace Captura.Webcam
         ///  but leave the filters unconnected. Call RenderGraph()
         ///  to connect the filters.
         /// </summary>
-        void CreateGraph()
+        private void CreateGraph()
         {
             // Skip if already created
             if (_actualGraphState < GraphState.Created)
@@ -310,7 +317,7 @@ namespace Captura.Webcam
         ///  can only be set when the device output pins are not
         ///  connected. 
         /// </summary>
-        void DerenderGraph()
+        private void DerenderGraph()
         {
             // Stop the graph if it is running (ignore errors)
             _mediaControl?.Stop();
@@ -344,10 +351,10 @@ namespace Captura.Webcam
         ///  "removeFirstFilter" is used to keep a compressor (that should
         ///  be immediately downstream of the device) if one is begin used.
         /// </summary>
-        void RemoveDownstream(IBaseFilter Filter)
+        private void RemoveDownstream(IBaseFilter filter)
         {
             // Get a pin enumerator off the filter
-            var hr = Filter.EnumPins(out var pinEnum);
+            var hr = filter.EnumPins(out var pinEnum);
 
             if (pinEnum == null)
                 return;
@@ -408,7 +415,7 @@ namespace Captura.Webcam
         ///  is ready to be used. This method may also destroy
         ///  streams if we have streams we no longer want.
         /// </summary>
-        void RenderGraph()
+        private void RenderGraph()
         {
             var didSomething = false;
 
@@ -486,7 +493,7 @@ namespace Captura.Webcam
         ///  Setup and start the preview window if the user has
         ///  requested it (by setting PreviewWindow).
         /// </summary>
-        void StartPreviewIfNeeded()
+        private void StartPreviewIfNeeded()
         {
             // Render preview 
             if (_wantPreviewRendered && _isPreviewRendered)
@@ -503,16 +510,22 @@ namespace Captura.Webcam
         ///  Completely tear down a filter graph and 
         ///  release all associated resources.
         /// </summary>
-        void DestroyGraph()
+        private void DestroyGraph()
         {
-            // Derender the graph (This will stop the graph
+            // De-render the graph (This will stop the graph
             // and release preview window. It also destroys
             // half of the graph which is unnecessary but
             // harmless here.) (ignore errors)
-            try { DerenderGraph(); }
-            catch { }
+            try
+            {
+                DerenderGraph();
+            }
+            catch
+            {
+                // Ignored in destroy
+            }
 
-            // Update the state after derender because it
+            // Update the state after de-render because it
             // depends on correct status. But we also want to
             // update the state as early as possible in case
             // of error.
@@ -569,9 +582,9 @@ namespace Captura.Webcam
         #endregion
 
         #region SampleGrabber
-        int ISampleGrabberCB.SampleCB(double SampleTime, IMediaSample Sample) => 0;
+        int ISampleGrabberCB.SampleCB(double sampleTime, IMediaSample sample) => 0;
 
-        int ISampleGrabberCB.BufferCB(double SampleTime, IntPtr Buffer, int BufferLen) => 1;
+        int ISampleGrabberCB.BufferCB(double sampleTime, IntPtr buffer, int bufferLen) => 1;
         #endregion
     }
 }

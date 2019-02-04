@@ -1,30 +1,31 @@
 ﻿using System;
-using TestStack.White.UIItems.TabItems;
 using System.Diagnostics;
-using System.Threading;
 using System.IO;
+using System.Threading;
+using Tests.Fixtures;
+using TestStack.White.UIItems.TabItems;
 using Xunit;
 
-namespace Captura.Tests.Views
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class ScreenShotTests : IClassFixture<AppRunnerFixture>
     {
         readonly AppRunnerFixture _appRunner;
 
-        public ScreenShotTests(AppRunnerFixture AppRunner)
+        public ScreenShotTests(AppRunnerFixture appRunner)
         {
-            _appRunner = AppRunner;
+            _appRunner = appRunner;
         }
 
-        static void Shot(string FileName, IntPtr Window)
+        static void Shot(string fileName, IntPtr window)
         {
             Thread.Sleep(500);
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = TestManagerFixture.GetCliPath(),
-                Arguments = $"shot --source win:{Window} -f {FileName}",
+                Arguments = $"shot --source win:{window} -f {fileName}",
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -33,9 +34,9 @@ namespace Captura.Tests.Views
             process?.WaitForExit();
 
             Assert.False(process == null || process.ExitCode != 0,
-                $"Error occurred when taking ScreenShot, hWnd: {Window}, FileName: {FileName}, ExitCode: {process?.ExitCode}");
+                $"Error occurred when taking ScreenShot, hWnd: {window}, FileName: {fileName}, ExitCode: {process?.ExitCode}");
 
-            Assert.True(File.Exists(FileName), $"ScreenShot was not saved: {FileName}");
+            Assert.True(File.Exists(fileName), $"ScreenShot was not saved: {fileName}");
         }
 
         /// <summary>

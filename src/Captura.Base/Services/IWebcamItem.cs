@@ -1,8 +1,8 @@
 using System.ComponentModel;
 
-namespace Captura.Models
+namespace Captura.Base.Services
 {
-    public interface IWebcamItem : INotifyPropertyChanged
+    public interface IWebCamItem : INotifyPropertyChanged
     {
         string Name { get; }
     }

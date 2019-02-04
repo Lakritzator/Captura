@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using Captura.Base.Settings;
 
-namespace Captura
+namespace Captura.FFmpeg.Settings
 {
     public class FFmpegSettings : PropertyStore
     {

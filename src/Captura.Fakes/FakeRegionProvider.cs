@@ -1,7 +1,10 @@
-﻿using System.Drawing;
-using System;
+﻿using System;
+using System.Drawing;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Screna;
 
-namespace Captura.Models
+namespace Captura.Fakes
 {
     public class FakeRegionProvider : IRegionProvider
     {

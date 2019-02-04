@@ -1,15 +1,18 @@
 ﻿using System.Windows;
+using Captura.ImageEditor;
+using Captura.Presentation;
+using Captura.Windows;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class MainPage
     {
-        void OpenCanvas(object Sender, RoutedEventArgs E)
+        private void OpenCanvas(object sender, RoutedEventArgs e)
         {
             new ImageEditorWindow().ShowAndFocus();
         }
 
-        void OpenSettings(object Sender, RoutedEventArgs E)
+        private void OpenSettings(object sender, RoutedEventArgs e)
         {
             SettingsWindow.ShowInstance();
         }

@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
+using Captura.Base.Settings;
 
-namespace Captura
+namespace Captura.Core.Settings.Models
 {
     public class ImageEditorSettings : PropertyStore
     {

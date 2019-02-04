@@ -1,26 +1,30 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core.Models.ImageWriterItems;
+using Captura.Loc;
 using Screna;
 
-namespace Captura
+namespace Captura.Core
 {
     public static class Extensions
     {
-        public static void ExecuteIfCan(this ICommand Command)
+        public static void ExecuteIfCan(this ICommand command)
         {
-            if (Command.CanExecute(null))
-                Command.Execute(null);
+            if (command.CanExecute(null))
+                command.Execute(null);
         }
 
-        public static async Task UploadImage(this IBitmapImage Bitmap)
+        public static async Task UploadImage(this IBitmapImage bitmap)
         {
             var uploadWriter = ServiceProvider.Get<ImageUploadWriter>();
 
-            var settings = ServiceProvider.Get<Settings>();
+            var settings = ServiceProvider.Get<Settings.Settings>();
 
-            var response = await uploadWriter.Save(Bitmap, settings.ScreenShots.ImageFormat);
+            var response = await uploadWriter.Save(bitmap, settings.ScreenShots.ImageFormat);
 
             switch (response)
             {

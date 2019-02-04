@@ -1,32 +1,33 @@
 ﻿using System;
 using System.Drawing;
-using Captura;
+using Captura.Base;
+using Captura.Base.Images;
 
-namespace Screna
+namespace Screna.ImageProviders
 {
     /// <summary>
     /// Applies Overlays on an <see cref="IImageProvider"/>.
     /// </summary>
     public class OverlayedImageProvider : IImageProvider
     {
-        IOverlay[] _overlays;
-        IImageProvider _imageProvider;
-        readonly Func<Point, Point> _transform;
+        private IOverlay[] _overlays;
+        private IImageProvider _imageProvider;
+        private readonly Func<Point, Point> _transform;
         
         /// <summary>
         /// Creates a new instance of <see cref="OverlayedImageProvider"/>.
         /// </summary>
-        /// <param name="ImageProvider">The <see cref="IImageProvider"/> to apply the Overlays on.</param>
-        /// <param name="Overlays">Array of <see cref="IOverlay"/>(s) to apply.</param>
-        /// <param name="Transform">Point Transform Function.</param>
-        public OverlayedImageProvider(IImageProvider ImageProvider, Func<Point, Point> Transform, params IOverlay[] Overlays)
+        /// <param name="imageProvider">The <see cref="IImageProvider"/> to apply the Overlays on.</param>
+        /// <param name="overlays">Array of <see cref="IOverlay"/>(s) to apply.</param>
+        /// <param name="transform">Point Transform Function.</param>
+        public OverlayedImageProvider(IImageProvider imageProvider, Func<Point, Point> transform, params IOverlay[] overlays)
         {
-            _imageProvider = ImageProvider ?? throw new ArgumentNullException(nameof(ImageProvider));
-            _overlays = Overlays ?? throw new ArgumentNullException(nameof(Overlays));
-            _transform = Transform ?? throw new ArgumentNullException(nameof(Transform));
+            _imageProvider = imageProvider ?? throw new ArgumentNullException(nameof(imageProvider));
+            _overlays = overlays ?? throw new ArgumentNullException(nameof(overlays));
+            _transform = transform ?? throw new ArgumentNullException(nameof(transform));
 
-            Width = ImageProvider.Width;
-            Height = ImageProvider.Height;
+            Width = imageProvider.Width;
+            Height = imageProvider.Height;
         }
 
         /// <inheritdoc />

@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Captura.Models;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.Loc;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FileNameFormatViewModel : ViewModelBase
     {
-        public FileNameFormatViewModel(Settings Settings, LanguageManager LanguageManager)
-            : base(Settings, LanguageManager) { }
+        public FileNameFormatViewModel(Settings settings, LanguageManager languageManager)
+            : base(settings, languageManager) { }
 
         public IEnumerable<FileNameFormatGroup> FormatGroups { get; } = new []
         {

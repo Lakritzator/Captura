@@ -1,15 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Captura.Base.Recent;
+using Newtonsoft.Json.Linq;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Recents
 {
     public interface IRecentItemSerializer
     {
-        bool CanSerialize(IRecentItem Item);
+        bool CanSerialize(IRecentItem item);
 
-        bool CanDeserialize(JObject Item);
+        bool CanDeserialize(JObject item);
 
-        JObject Serialize(IRecentItem Item);
+        JObject Serialize(IRecentItem item);
 
-        IRecentItem Deserialize(JObject Item);
+        IRecentItem Deserialize(JObject item);
     }
 }

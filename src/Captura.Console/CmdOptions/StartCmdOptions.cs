@@ -6,11 +6,11 @@ using CommandLine.Text;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Captura
+namespace Captura.CmdOptions
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     [Verb("start", HelpText = "Start Recording")]
-    class StartCmdOptions : CommonCmdOptions
+    internal class StartCmdOptions : CommonCmdOptions
     {
         [Option("delay", HelpText = "Milliseconds to wait before starting recording.")]
         public int Delay { get; set; }
@@ -45,8 +45,8 @@ namespace Captura
         [Option("aq", HelpText = "Audio Quality")]
         public int? AudioQuality { get; set; }
 
-        [Option("webcam", Default = -1, HelpText = "Webcam to use. Default = -1 (No Webcam)")]
-        public int Webcam { get; set; }
+        [Option("webcam", Default = -1, HelpText = "WebCam to use. Default = -1 (No WebCam)")]
+        public int WebCam { get; set; }
 
         [Usage]
         public static IEnumerable<Example> Examples

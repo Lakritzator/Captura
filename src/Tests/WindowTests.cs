@@ -1,7 +1,8 @@
 ﻿using System;
+using Captura.Base.Services;
 using Xunit;
 
-namespace Captura.Tests
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class WindowTests

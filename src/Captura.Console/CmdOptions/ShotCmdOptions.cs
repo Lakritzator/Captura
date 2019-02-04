@@ -2,10 +2,10 @@
 using CommandLine;
 using CommandLine.Text;
 
-namespace Captura
+namespace Captura.CmdOptions
 {
     [Verb("shot", HelpText = "Take Screenshots")]
-    class ShotCmdOptions : CommonCmdOptions
+    internal class ShotCmdOptions : CommonCmdOptions
     {
         [Usage]
         public static IEnumerable<Example> Examples

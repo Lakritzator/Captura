@@ -1,8 +1,8 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base.Video;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class VideoSourceKindList
     {
@@ -11,9 +11,9 @@ namespace Captura
             InitializeComponent();
         }
 
-        void OnVideoSourceReSelect(object Sender, MouseButtonEventArgs E)
+        private void OnVideoSourceReSelect(object sender, MouseButtonEventArgs e)
         {
-            if (Sender is ListViewItem item && item.IsSelected)
+            if (sender is ListViewItem item && item.IsSelected)
             {
                 if (item.DataContext is IVideoSourceProvider provider)
                 {

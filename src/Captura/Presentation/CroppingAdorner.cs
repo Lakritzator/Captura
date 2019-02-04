@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Shapes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -7,41 +6,44 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using Captura.Base.Services;
+using Captura.Controls;
 using Point = System.Drawing.Point;
 
-namespace Captura
+namespace Captura.Presentation
 {
     public class CroppingAdorner : Adorner
     {
         #region Private variables
         // Width of the thumbs. I know these really aren't "pixels", but px is still a good mnemonic.
-        const int CpxThumbWidth = 6;
+        private const int CpxThumbWidth = 6;
 
         // PuncturedRect to hold the "Cropping" portion of the adorner
-        readonly PuncturedRect _prCropMask;
+        private readonly PuncturedRect _prCropMask;
 
         // Canvas to hold the thumbs so they can be moved in response to the user
-        readonly Canvas _cnvThumbs;
+        private readonly Canvas _cnvThumbs;
 
         // Cropping adorner uses Thumbs for visual elements.  
         // The Thumbs have built-in mouse input handling.
-        readonly CropThumb _crtTopLeft;
+        private readonly CropThumb _crtTopLeft;
 
-        readonly CropThumb _crtTopRight;
-        readonly CropThumb _crtBottomLeft;
-        readonly CropThumb _crtBottomRight;
+        private readonly CropThumb _crtTopRight;
+        private readonly CropThumb _crtBottomLeft;
+        private readonly CropThumb _crtBottomRight;
 
-        readonly CropThumb _crtTop;
-        readonly CropThumb _crtLeft;
-        readonly CropThumb _crtBottom;
-        readonly CropThumb _crtRight;
+        private readonly CropThumb _crtTop;
+        private readonly CropThumb _crtLeft;
+        private readonly CropThumb _crtBottom;
+        private readonly CropThumb _crtRight;
 
-        readonly Thumb _crtMove;
+        private readonly Thumb _crtMove;
 
-        readonly Border _checkButton;
+        private readonly Border _checkButton;
 
         // To store and manage the adorner's visual children.
-        readonly VisualCollection _vc;
+        private readonly VisualCollection _vc;
         #endregion
         
         #region Routed Events
@@ -69,11 +71,11 @@ namespace Captura
             set => SetValue(FillProperty, value);
         }
 
-        static void FillPropChanged(DependencyObject D, DependencyPropertyChangedEventArgs Args)
+        private static void FillPropChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
-            if (D is CroppingAdorner crp)
+            if (dependencyObject is CroppingAdorner crp)
             {
-                crp._prCropMask.Fill = (Brush)Args.NewValue;
+                crp._prCropMask.Fill = (Brush)dependencyPropertyChangedEventArgs.NewValue;
             }
         }
         #endregion
@@ -90,14 +92,14 @@ namespace Captura
                     FillPropChanged));
         }
 
-        public CroppingAdorner(UIElement AdornedElement, Rect RectInit)
-            : base(AdornedElement)
+        public CroppingAdorner(UIElement adornedElement, Rect rectInit)
+            : base(adornedElement)
         {
             _vc = new VisualCollection(this);
             _prCropMask = new PuncturedRect
             {
                 IsHitTestVisible = false,
-                RectInterior = RectInit,
+                RectInterior = rectInit,
                 Fill = Fill
             };
             _vc.Add(_prCropMask);
@@ -146,24 +148,24 @@ namespace Captura
 
             _cnvThumbs.Children.Add(_checkButton);
 
-            btn.Click += (S, E) => Checked?.Invoke();
+            btn.Click += (sender, e) => Checked?.Invoke();
             
             // Add handlers for Cropping.
-            _crtBottomLeft.DragDelta += (S, E) => HandleDrag(S, E, 1, 0, -1, 1);
-            _crtBottomRight.DragDelta += (S, E) => HandleDrag(S, E, 0, 0, 1, 1);
-            _crtTopLeft.DragDelta += (S, E) => HandleDrag(S, E, 1, 1, -1, -1);
-            _crtTopRight.DragDelta += (S, E) => HandleDrag(S, E, 0, 1, 1, -1);
-            _crtTop.DragDelta += (S, E) => HandleDrag(S, E, 0, 1, 0, -1);
-            _crtBottom.DragDelta += (S, E) => HandleDrag(S, E, 0, 0, 0, 1);
-            _crtRight.DragDelta += (S, E) => HandleDrag(S, E, 0, 0, 1, 0);
-            _crtLeft.DragDelta += (S, E) => HandleDrag(S, E, 1, 0, -1, 0);
+            _crtBottomLeft.DragDelta += (sender, e) => HandleDrag(sender, e, 1, 0, -1, 1);
+            _crtBottomRight.DragDelta += (sender, e) => HandleDrag(sender, e, 0, 0, 1, 1);
+            _crtTopLeft.DragDelta += (sender, e) => HandleDrag(sender, e, 1, 1, -1, -1);
+            _crtTopRight.DragDelta += (sender, e) => HandleDrag(sender, e, 0, 1, 1, -1);
+            _crtTop.DragDelta += (sender, e) => HandleDrag(sender, e, 0, 1, 0, -1);
+            _crtBottom.DragDelta += (sender, e) => HandleDrag(sender, e, 0, 0, 0, 1);
+            _crtRight.DragDelta += (sender, e) => HandleDrag(sender, e, 0, 0, 1, 0);
+            _crtLeft.DragDelta += (sender, e) => HandleDrag(sender, e, 1, 0, -1, 0);
 
             _crtMove.DragDelta += HandleMove;
 
             // We have to keep the clipping interior within the bounds of the adorned element
             // so we have to track it's size to guarantee that...
 
-            if (AdornedElement is FrameworkElement fel)
+            if (adornedElement is FrameworkElement fel)
             {
                 fel.SizeChanged += AdornedElement_SizeChanged;
             }
@@ -172,45 +174,45 @@ namespace Captura
 
         #region Thumb handlers
         // Generic handler for Cropping
-        void HandleThumb(
-            double DeltaRatioLeft,
-            double DeltaRatioTop,
-            double DeltaRatioWidth,
-            double DeltaRatioHeight,
-            double DeltaX,
-            double DeltaY)
+        private void HandleThumb(
+            double deltaRatioLeft,
+            double deltaRatioTop,
+            double deltaRatioWidth,
+            double deltaRatioHeight,
+            double deltaX,
+            double deltaY)
         {
             var rcInterior = _prCropMask.RectInterior;
 
-            if (rcInterior.Width + DeltaRatioWidth * DeltaX < 0)
+            if (rcInterior.Width + deltaRatioWidth * deltaX < 0)
             {
-                DeltaX = -rcInterior.Width / DeltaRatioWidth;
+                deltaX = -rcInterior.Width / deltaRatioWidth;
             }
 
-            if (rcInterior.Height + DeltaRatioHeight * DeltaY < 0)
+            if (rcInterior.Height + deltaRatioHeight * deltaY < 0)
             {
-                DeltaY = -rcInterior.Height / DeltaRatioHeight;
+                deltaY = -rcInterior.Height / deltaRatioHeight;
             }
 
             rcInterior = new Rect(
-                rcInterior.Left + DeltaRatioLeft * DeltaX,
-                rcInterior.Top + DeltaRatioTop * DeltaY,
-                rcInterior.Width + DeltaRatioWidth * DeltaX,
-                rcInterior.Height + DeltaRatioHeight * DeltaY);
+                rcInterior.Left + deltaRatioLeft * deltaX,
+                rcInterior.Top + deltaRatioTop * deltaY,
+                rcInterior.Width + deltaRatioWidth * deltaX,
+                rcInterior.Height + deltaRatioHeight * deltaY);
 
             _prCropMask.RectInterior = rcInterior;
             SetThumbs(_prCropMask.RectInterior);
             RaiseEvent(new RoutedEventArgs(CropChangedEvent, this));
         }
 
-        void HandleMove(object Sender, DragDeltaEventArgs Args)
+        private void HandleMove(object sender, DragDeltaEventArgs args)
         {
             if (AdornedElement is FrameworkElement fel)
             {
                 var rcInterior = _prCropMask.RectInterior;
 
-                var left = rcInterior.Left + Args.HorizontalChange;
-                var top = rcInterior.Top + Args.VerticalChange;
+                var left = rcInterior.Left + args.HorizontalChange;
+                var top = rcInterior.Top + args.VerticalChange;
 
                 if (left < 0)
                     left = 0;
@@ -234,18 +236,18 @@ namespace Captura
             }
         }
 
-        void HandleDrag(object Sender, DragDeltaEventArgs Args, int L, int T, int W, int H)
+        private void HandleDrag(object sender, DragDeltaEventArgs args, int l, int T, int w, int h)
         {
-            if (Sender is CropThumb)
+            if (sender is CropThumb)
             {
-                HandleThumb(L, T, W, H, Args.HorizontalChange, Args.VerticalChange);
+                HandleThumb(l, T, w, h, args.HorizontalChange, args.VerticalChange);
             }
         }
         #endregion
-        
-        void AdornedElement_SizeChanged(object Sender, SizeChangedEventArgs E)
+
+        private void AdornedElement_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var ratio = E.NewSize.Width / E.PreviousSize.Width;
+            var ratio = e.NewSize.Width / e.PreviousSize.Width;
 
             var rcInterior = _prCropMask.RectInterior;
             
@@ -258,28 +260,29 @@ namespace Captura
         }
         
         #region Arranging/positioning
-        void SetThumbs(Rect Rect)
+
+        private void SetThumbs(Rect rect)
         {
-            _crtBottomRight.SetPos(Rect.Right, Rect.Bottom);
-            _crtTopLeft.SetPos(Rect.Left, Rect.Top);
-            _crtTopRight.SetPos(Rect.Right, Rect.Top);
-            _crtBottomLeft.SetPos(Rect.Left, Rect.Bottom);
-            _crtTop.SetPos(Rect.Left + Rect.Width / 2, Rect.Top);
-            _crtBottom.SetPos(Rect.Left + Rect.Width / 2, Rect.Bottom);
-            _crtLeft.SetPos(Rect.Left, Rect.Top + Rect.Height / 2);
-            _crtRight.SetPos(Rect.Right, Rect.Top + Rect.Height / 2);
+            _crtBottomRight.SetPos(rect.Right, rect.Bottom);
+            _crtTopLeft.SetPos(rect.Left, rect.Top);
+            _crtTopRight.SetPos(rect.Right, rect.Top);
+            _crtBottomLeft.SetPos(rect.Left, rect.Bottom);
+            _crtTop.SetPos(rect.Left + rect.Width / 2, rect.Top);
+            _crtBottom.SetPos(rect.Left + rect.Width / 2, rect.Bottom);
+            _crtLeft.SetPos(rect.Left, rect.Top + rect.Height / 2);
+            _crtRight.SetPos(rect.Right, rect.Top + rect.Height / 2);
 
-            _crtMove.Width = Rect.Width;
-            _crtMove.Height = Rect.Height;
-            Canvas.SetLeft(_crtMove, Rect.Left);
-            Canvas.SetTop(_crtMove, Rect.Top);
+            _crtMove.Width = rect.Width;
+            _crtMove.Height = rect.Height;
+            Canvas.SetLeft(_crtMove, rect.Left);
+            Canvas.SetTop(_crtMove, rect.Top);
 
-            Canvas.SetLeft(_checkButton, Rect.Right - _checkButton.ActualWidth - 15);
-            Canvas.SetTop(_checkButton, Rect.Bottom - _checkButton.ActualHeight - 10);
+            Canvas.SetLeft(_checkButton, rect.Right - _checkButton.ActualWidth - 15);
+            Canvas.SetTop(_checkButton, rect.Bottom - _checkButton.ActualHeight - 10);
         }
 
         // Arrange the Adorners.
-        protected override Size ArrangeOverride(Size FinalSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
             var rcExterior = new Rect(0, 0, AdornedElement.RenderSize.Width, AdornedElement.RenderSize.Height);
             _prCropMask.RectExterior = rcExterior;
@@ -289,21 +292,21 @@ namespace Captura
             SetThumbs(rcInterior);
             _cnvThumbs.Arrange(rcExterior);
 
-            return FinalSize;
+            return finalSize;
         }
         #endregion
 
         public Rect SelectedRegion => _prCropMask.RectInterior;
 
-        public BitmapSource BpsCrop(BitmapSource Bmp)
+        public BitmapSource BpsCrop(BitmapSource bmp)
         {
-            var ratio = Bmp.PixelWidth / AdornedElement.RenderSize.Width;
+            var ratio = bmp.PixelWidth / AdornedElement.RenderSize.Width;
 
             var rcInterior = _prCropMask.RectInterior;
 
-            Point ToPoint(double X, double Y)
+            Point ToPoint(double x, double y)
             {
-                return new Point((int)(X * ratio), (int)(Y * ratio));
+                return new Point((int)(x * ratio), (int)(y * ratio));
             }
 
             var pxFromSize = ToPoint(rcInterior.Width, rcInterior.Height);
@@ -321,20 +324,20 @@ namespace Captura
 
             var rcFrom = new Int32Rect(pxFromPos.X, pxFromPos.Y, pxFromSize.X, pxFromSize.Y);
 
-            return new CroppedBitmap(Bmp, rcFrom);
+            return new CroppedBitmap(bmp, rcFrom);
         }
-        
-        void BuildCorner(ref CropThumb Thumb, Cursor CustomCursor)
+
+        private void BuildCorner(ref CropThumb thumb, Cursor customCursor)
         {
-            if (Thumb != null)
+            if (thumb != null)
                 return;
 
-            Thumb = new CropThumb(CpxThumbWidth)
+            thumb = new CropThumb(CpxThumbWidth)
             {
-                Cursor = CustomCursor
+                Cursor = customCursor
             };
 
-            _cnvThumbs.Children.Add(Thumb);
+            _cnvThumbs.Children.Add(thumb);
         }
 
         #region Visual tree overrides
@@ -342,29 +345,29 @@ namespace Captura
         // the adorner's visual collection.
         protected override int VisualChildrenCount => _vc.Count;
 
-        protected override Visual GetVisualChild(int Index) => _vc[Index];
+        protected override Visual GetVisualChild(int index) => _vc[index];
         #endregion
-        
-        class CropThumb : Thumb
-        {
-            readonly int _width;
 
-            public CropThumb(int Width)
+        private class CropThumb : Thumb
+        {
+            private readonly int _width;
+
+            public CropThumb(int width)
             {
-                _width = Width;
+                _width = width;
             }
             
-            protected override Visual GetVisualChild(int Index) => null;
+            protected override Visual GetVisualChild(int index) => null;
 
-            protected override void OnRender(DrawingContext DrawingContext)
+            protected override void OnRender(DrawingContext drawingContext)
             {
-                DrawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.Black, 1), new Rect(new Size(_width, _width)), 1, 1);
+                drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.Black, 1), new Rect(new Size(_width, _width)), 1, 1);
             }
 
-            public void SetPos(double X, double Y)
+            public void SetPos(double x, double y)
             {
-                Canvas.SetTop(this, Y - _width / 2.0);
-                Canvas.SetLeft(this, X - _width / 2.0);
+                Canvas.SetTop(this, y - _width / 2.0);
+                Canvas.SetLeft(this, x - _width / 2.0);
             }
         }
     }

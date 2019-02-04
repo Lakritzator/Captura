@@ -6,47 +6,56 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Captura.Models;
-using Captura.ViewModels;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.CmdOptions;
+using Captura.Core.Models;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.FFmpeg;
+using Captura.FFmpeg.Video;
+using Captura.SharpAvi;
+using Screna.Gif;
 using static System.Console;
 
 namespace Captura
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    class ConsoleManager : IDisposable
+    internal class ConsoleManager : IDisposable
     {
-        readonly Settings _settings;
-        readonly MainModel _mainModel;
-        readonly RecordingModel _recordingModel;
-        readonly ScreenShotModel _screenShotModel;
-        readonly VideoSourcesViewModel _videoSourcesViewModel;
-        readonly IEnumerable<IVideoSourceProvider> _videoSourceProviders;
-        readonly IWebCamProvider _webCamProvider;
-        readonly VideoWritersViewModel _videoWritersViewModel;
-        readonly IPlatformServices _platformServices;
+        private readonly Settings _settings;
+        private readonly MainModel _mainModel;
+        private readonly RecordingModel _recordingModel;
+        private readonly ScreenShotModel _screenShotModel;
+        private readonly VideoSourcesViewModel _videoSourcesViewModel;
+        private readonly IEnumerable<IVideoSourceProvider> _videoSourceProviders;
+        private readonly IWebCamProvider _webCamProvider;
+        private readonly VideoWritersViewModel _videoWritersViewModel;
+        private readonly IPlatformServices _platformServices;
 
-        public ConsoleManager(Settings Settings,
-            RecordingModel RecordingModel,
-            MainModel MainModel,
-            ScreenShotModel ScreenShotModel,
-            VideoSourcesViewModel VideoSourcesViewModel,
-            IEnumerable<IVideoSourceProvider> VideoSourceProviders,
-            IWebCamProvider WebCamProvider,
-            VideoWritersViewModel VideoWritersViewModel,
-            IPlatformServices PlatformServices)
+        public ConsoleManager(Settings settings,
+            RecordingModel recordingModel,
+            MainModel mainModel,
+            ScreenShotModel screenShotModel,
+            VideoSourcesViewModel videoSourcesViewModel,
+            IEnumerable<IVideoSourceProvider> videoSourceProviders,
+            IWebCamProvider webCamProvider,
+            VideoWritersViewModel videoWritersViewModel,
+            IPlatformServices platformServices)
         {
-            _settings = Settings;
-            _recordingModel = RecordingModel;
-            _mainModel = MainModel;
-            _screenShotModel = ScreenShotModel;
-            _videoSourcesViewModel = VideoSourcesViewModel;
-            _videoSourceProviders = VideoSourceProviders;
-            _webCamProvider = WebCamProvider;
-            _videoWritersViewModel = VideoWritersViewModel;
-            _platformServices = PlatformServices;
+            _settings = settings;
+            _recordingModel = recordingModel;
+            _mainModel = mainModel;
+            _screenShotModel = screenShotModel;
+            _videoSourcesViewModel = videoSourcesViewModel;
+            _videoSourceProviders = videoSourceProviders;
+            _webCamProvider = webCamProvider;
+            _videoWritersViewModel = videoWritersViewModel;
+            _platformServices = platformServices;
 
             // Hide on Full Screen Screenshot doesn't work on Console
-            Settings.UI.HideOnFullScreenShot = false;
+            settings.Ui.HideOnFullScreenShot = false;
         }
 
         public void Dispose()
@@ -60,7 +69,7 @@ namespace Captura
             var dummySettings = new Settings();
             dummySettings.Load();
 
-            _settings.WebcamOverlay = dummySettings.WebcamOverlay;
+            _settings.WebCamOverlay = dummySettings.WebCamOverlay;
             _settings.MousePointerOverlay = dummySettings.MousePointerOverlay;
             _settings.Clicks = dummySettings.Clicks;
             _settings.Keystrokes = dummySettings.Keystrokes;
@@ -85,50 +94,50 @@ namespace Captura
             }
         }
 
-        public void Start(StartCmdOptions StartOptions)
+        public void Start(StartCmdOptions startOptions)
         {
-            _settings.IncludeCursor = StartOptions.Cursor;
-            _settings.Clicks.Display = StartOptions.Clicks;
-            _settings.Keystrokes.Display = StartOptions.Keys;
+            _settings.IncludeCursor = startOptions.Cursor;
+            _settings.Clicks.Display = startOptions.Clicks;
+            _settings.Keystrokes.Display = startOptions.Keys;
 
-            if (File.Exists(StartOptions.FileName))
+            if (File.Exists(startOptions.FileName))
             {
-                if (!StartOptions.Overwrite)
+                if (!startOptions.Overwrite)
                 {
                     if (!ServiceProvider.MessageProvider
                         .ShowYesNo("Output File Already Exists, Do you want to overwrite?", ""))
                         return;
                 }
 
-                File.Delete(StartOptions.FileName);
+                File.Delete(startOptions.FileName);
             }
 
-            HandleVideoSource(StartOptions);
+            HandleVideoSource(startOptions);
 
-            HandleVideoEncoder(StartOptions);
+            HandleVideoEncoder(startOptions);
 
-            HandleAudioSource(StartOptions);
+            HandleAudioSource(startOptions);
 
-            HandleWebcam(StartOptions);
+            HandleWebCam(startOptions);
 
-            if (StartOptions.FrameRate is int frameRate)
+            if (startOptions.FrameRate is int frameRate)
                 _settings.Video.FrameRate = frameRate;
 
-            if (StartOptions.AudioQuality is int aq)
+            if (startOptions.AudioQuality is int aq)
                 _settings.Audio.Quality = aq;
 
-            if (StartOptions.VideoQuality is int vq)
+            if (startOptions.VideoQuality is int vq)
                 _settings.Video.Quality = vq;
 
-            if (StartOptions.Delay > 0)
-                Thread.Sleep(StartOptions.Delay);
+            if (startOptions.Delay > 0)
+                Thread.Sleep(startOptions.Delay);
 
-            if (!_recordingModel.StartRecording(StartOptions.FileName))
+            if (!_recordingModel.StartRecording(startOptions.FileName))
                 return;
 
             Task.Factory.StartNew(() =>
             {
-                Loop(StartOptions);
+                Loop(startOptions);
 
                 _recordingModel.StopRecording().Wait();
 
@@ -139,21 +148,21 @@ namespace Captura
             Application.Run(new ApplicationContext());
         }
 
-        public void Shot(ShotCmdOptions ShotOptions)
+        public void Shot(ShotCmdOptions shotOptions)
         {
-            _settings.IncludeCursor = ShotOptions.Cursor;
+            _settings.IncludeCursor = shotOptions.Cursor;
 
             // Screenshot Window with Transparency
-            if (ShotOptions.Source != null && Regex.IsMatch(ShotOptions.Source, @"win:\d+"))
+            if (shotOptions.Source != null && Regex.IsMatch(shotOptions.Source, @"win:\d+"))
             {
-                var ptr = int.Parse(ShotOptions.Source.Substring(4));
+                var ptr = int.Parse(shotOptions.Source.Substring(4));
 
                 try
                 {
                     var win = _platformServices.GetWindow(new IntPtr(ptr));
                     var bmp = _screenShotModel.ScreenShotWindow(win);
 
-                    _screenShotModel.SaveScreenShot(bmp, ShotOptions.FileName).Wait();
+                    _screenShotModel.SaveScreenShot(bmp, shotOptions.FileName).Wait();
                 }
                 catch
                 {
@@ -162,18 +171,18 @@ namespace Captura
             }
             else
             {
-                HandleVideoSource(ShotOptions);
+                HandleVideoSource(shotOptions);
 
-                _screenShotModel.CaptureScreenShot(ShotOptions.FileName);
+                _screenShotModel.CaptureScreenShot(shotOptions.FileName);
             }
         }
 
-        void HandleVideoSource(CommonCmdOptions CommonOptions)
+        private void HandleVideoSource(CommonCmdOptions commonOptions)
         {
-            if (CommonOptions.Source == null)
+            if (commonOptions.Source == null)
                 return;
 
-            var provider = _videoSourceProviders.FirstOrDefault(M => M.ParseCli(CommonOptions.Source));
+            var provider = _videoSourceProviders.FirstOrDefault(videoSourceProvider => videoSourceProvider.ParseCli(commonOptions.Source));
 
             if (provider != null)
             {
@@ -181,32 +190,32 @@ namespace Captura
             }
         }
 
-        void HandleAudioSource(StartCmdOptions StartOptions)
+        private void HandleAudioSource(StartCmdOptions startOptions)
         {
             var audioSource = ServiceProvider.Get<AudioSource>();
 
-            if (StartOptions.Microphone != -1 && StartOptions.Microphone < audioSource.AvailableRecordingSources.Count)
+            if (startOptions.Microphone != -1 && startOptions.Microphone < audioSource.AvailableRecordingSources.Count)
             {
                 _settings.Audio.Enabled = true;
-                audioSource.AvailableRecordingSources[StartOptions.Microphone].Active = true;
+                audioSource.AvailableRecordingSources[startOptions.Microphone].Active = true;
             }
 
-            if (StartOptions.Speaker != -1 && StartOptions.Speaker < audioSource.AvailableLoopbackSources.Count)
+            if (startOptions.Speaker != -1 && startOptions.Speaker < audioSource.AvailableLoopbackSources.Count)
             {
                 _settings.Audio.Enabled = true;
-                audioSource.AvailableLoopbackSources[StartOptions.Speaker].Active = true;
+                audioSource.AvailableLoopbackSources[startOptions.Speaker].Active = true;
             }
         }
 
-        void HandleVideoEncoder(StartCmdOptions StartOptions)
+        private void HandleVideoEncoder(StartCmdOptions startOptions)
         {
-            if (StartOptions.Encoder == null)
+            if (startOptions.Encoder == null)
                 return;
 
             // FFmpeg
-            if (FFmpegService.FFmpegExists && Regex.IsMatch(StartOptions.Encoder, @"^ffmpeg:\d+$"))
+            if (FFmpegService.FFmpegExists && Regex.IsMatch(startOptions.Encoder, @"^ffmpeg:\d+$"))
             {
-                var index = int.Parse(StartOptions.Encoder.Substring(7));
+                var index = int.Parse(startOptions.Encoder.Substring(7));
 
                 _videoWritersViewModel.SelectedVideoWriterKind = ServiceProvider.Get<FFmpegWriterProvider>();
 
@@ -215,9 +224,9 @@ namespace Captura
             }
 
             // SharpAvi
-            else if (ServiceProvider.FileExists("SharpAvi.dll") && Regex.IsMatch(StartOptions.Encoder, @"^sharpavi:\d+$"))
+            else if (ServiceProvider.FileExists("SharpAvi.dll") && Regex.IsMatch(startOptions.Encoder, @"^sharpavi:\d+$"))
             {
-                var index = int.Parse(StartOptions.Encoder.Substring(9));
+                var index = int.Parse(startOptions.Encoder.Substring(9));
 
                 _videoWritersViewModel.SelectedVideoWriterKind = ServiceProvider.Get<SharpAviWriterProvider>();
 
@@ -226,32 +235,34 @@ namespace Captura
             }
 
             // Gif
-            else if (StartOptions.Encoder == "gif")
+            else if (startOptions.Encoder == "gif")
             {
                 _videoWritersViewModel.SelectedVideoWriterKind = ServiceProvider.Get<GifWriterProvider>();
             }
         }
 
-        void HandleWebcam(StartCmdOptions StartOptions)
+        private void HandleWebCam(StartCmdOptions startOptions)
         {
-            if (StartOptions.Webcam != -1 && StartOptions.Webcam < _webCamProvider.AvailableCams.Count - 1)
+            if (startOptions.WebCam == -1 || startOptions.WebCam >= _webCamProvider.AvailableCams.Count - 1)
             {
-                _webCamProvider.SelectedCam = _webCamProvider.AvailableCams[StartOptions.Webcam + 1];
-
-                // Sleep to prevent AccessViolationException
-                Thread.Sleep(500);
+                return;
             }
+
+            _webCamProvider.SelectedCam = _webCamProvider.AvailableCams[startOptions.WebCam + 1];
+
+            // Sleep to prevent AccessViolationException
+            Thread.Sleep(500);
         }
 
-        void Loop(StartCmdOptions StartOptions)
+        private void Loop(StartCmdOptions startOptions)
         {
-            if (StartOptions.Length > 0)
+            if (startOptions.Length > 0)
             {
                 var elapsed = 0;
 
                 Write(TimeSpan.Zero);
 
-                while (elapsed++ < StartOptions.Length)
+                while (elapsed++ < startOptions.Length)
                 {
                     Thread.Sleep(1000);
                     Write(new string('\b', 8) + TimeSpan.FromSeconds(elapsed));
@@ -267,17 +278,20 @@ namespace Captura
 
                 char ReadChar()
                 {
-                    if (IsInputRedirected)
+                    if (!IsInputRedirected)
                     {
-                        var line = ReadLine();
-
-                        if (line != null && line.Length == 1)
-                            return line[0];
-
-                        return char.MinValue;
+                        return char.ToLower(ReadKey(true).KeyChar);
                     }
 
-                    return char.ToLower(ReadKey(true).KeyChar);
+                    var line = ReadLine();
+
+                    if (line != null && line.Length == 1)
+                    {
+                        return line[0];
+                    }
+
+                    return char.MinValue;
+
                 }
 
                 char c;

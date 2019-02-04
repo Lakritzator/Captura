@@ -1,74 +1,79 @@
 ﻿using System;
 using System.IO;
-using Captura.Audio;
-using static System.Text.Encoding;
+using System.Text;
+using Captura.Base.Audio;
+using Captura.Base.Audio.WaveFormat;
 
-namespace Screna.Audio
+namespace Screna
 {
     /// <summary>
     /// Writes an Audio file.
     /// </summary>
     public class AudioFileWriter : IAudioFileWriter
     {
-        readonly object _syncLock = new object();
-        readonly BinaryWriter _writer;
-        readonly WaveFormat _format;
+        private readonly object _syncLock = new object();
+        private readonly BinaryWriter _writer;
+        private readonly WaveFormat _format;
 
-        readonly long _dataSizePos, _factSampleCountPos;
+        private readonly long _dataSizePos, _factSampleCountPos;
 
-        readonly bool _riff;
+        private readonly bool _riff;
 
         /// <summary>
         /// Creates a new instance of <see cref="AudioFileWriter"/>.
         /// </summary>
-        public AudioFileWriter(Stream OutStream, WaveFormat Format, bool Riff = true)
+        public AudioFileWriter(Stream outStream, WaveFormat format, bool riff = true)
         {
-            if (OutStream == null)
-                throw new ArgumentNullException(nameof(OutStream));
-
-            _format = Format ?? throw new ArgumentNullException(nameof(Format));
-            _riff = Riff;
-
-            _writer = new BinaryWriter(OutStream, UTF8);
-
-            if (Riff)
+            if (outStream == null)
             {
-                _writer.Write(UTF8.GetBytes("RIFF"));
-                _writer.Write(0); // placeholder
-                _writer.Write(UTF8.GetBytes("WAVE"));
-
-                _writer.Write(UTF8.GetBytes("fmt "));
-
-                _writer.Write(18 + Format.ExtraSize); // wave format length
+                throw new ArgumentNullException(nameof(outStream));
             }
 
-            Format.Serialize(_writer);
+            _format = format ?? throw new ArgumentNullException(nameof(format));
+            _riff = riff;
 
-            if (!Riff)
+            _writer = new BinaryWriter(outStream, Encoding.UTF8);
+
+            if (riff)
+            {
+                _writer.Write(Encoding.UTF8.GetBytes("RIFF"));
+                _writer.Write(0); // placeholder
+                _writer.Write(Encoding.UTF8.GetBytes("WAVE"));
+
+                _writer.Write(Encoding.UTF8.GetBytes("fmt "));
+
+                _writer.Write(18 + format.ExtraSize); // wave format length
+            }
+
+            format.Serialize(_writer);
+
+            if (!riff)
+            {
                 return;
+            }
 
             // CreateFactChunk
             if (HasFactChunk)
             {
-                _writer.Write(UTF8.GetBytes("fact"));
+                _writer.Write(Encoding.UTF8.GetBytes("fact"));
                 _writer.Write(4);
-                _factSampleCountPos = OutStream.Position;
+                _factSampleCountPos = outStream.Position;
                 _writer.Write(0); // number of samples
             }
 
             // WriteDataChunkHeader
-            _writer.Write(UTF8.GetBytes("data"));
-            _dataSizePos = OutStream.Position;
+            _writer.Write(Encoding.UTF8.GetBytes("data"));
+            _dataSizePos = outStream.Position;
             _writer.Write(0); // placeholder
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="AudioFileWriter"/>.
         /// </summary>
-        public AudioFileWriter(string FileName, WaveFormat Format, bool Riff = true)
-            : this(new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read), Format, Riff) { }
-        
-        bool HasFactChunk => _format.Encoding != WaveFormatEncoding.Pcm && _format.BitsPerSample != 0;
+        public AudioFileWriter(string fileName, WaveFormat format, bool riff = true)
+            : this(new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read), format, riff) { }
+
+        private bool HasFactChunk => _format.Encoding != WaveFormatEncoding.Pcm && _format.BitsPerSample != 0;
         
         /// <summary>
         /// Number of bytes of audio in the data chunk
@@ -78,15 +83,17 @@ namespace Screna.Audio
         /// <summary>
         /// Writes to file.
         /// </summary>
-        public void Write(byte[] Data, int Offset, int Count)
+        public void Write(byte[] data, int offset, int count)
         {
             lock (_syncLock)
             {
-                if (_riff && _writer.BaseStream.Length + Count > uint.MaxValue)
-                    throw new ArgumentException("WAV file too large", nameof(Count));
+                if (_riff && _writer.BaseStream.Length + count > uint.MaxValue)
+                {
+                    throw new ArgumentException("WAV file too large", nameof(count));
+                }
                 
-                _writer.Write(Data, Offset, Count);
-                Length += Count;
+                _writer.Write(data, offset, count);
+                Length += count;
             }
         }
 
@@ -98,9 +105,11 @@ namespace Screna.Audio
             lock (_syncLock)
             {
                 _writer.Flush();
-                
+
                 if (!_riff)
+                {
                     return;
+                }
 
                 var pos = _writer.BaseStream.Position;
                 UpdateHeader();
@@ -111,7 +120,7 @@ namespace Screna.Audio
         /// <summary>
         /// Updates the header with file size information
         /// </summary>
-        void UpdateHeader()
+        private void UpdateHeader()
         {
             // UpdateRiffChunk
             _writer.Seek(4, SeekOrigin.Begin);
@@ -140,7 +149,9 @@ namespace Screna.Audio
         public void Dispose()
         {
             using (_writer)
+            {
                 Flush();
+            }
         }
     }
 }

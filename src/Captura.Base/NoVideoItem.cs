@@ -1,26 +1,29 @@
-﻿using Captura.Audio;
-using System;
+﻿using System;
 using System.Drawing;
+using Captura.Base.Audio;
+using Captura.Base.Audio.WaveFormat;
+using Captura.Base.Images;
+using Captura.Base.Video;
 
-namespace Captura.Models
+namespace Captura.Base
 {
     /// <summary>
     /// Holds codecs for audio-alone capture.
     /// </summary>
     public abstract class NoVideoItem : NotifyPropertyChanged, IVideoItem
     {
-        protected NoVideoItem(string DisplayName, string Extension)
+        protected NoVideoItem(string displayName, string extension)
         {
-            Name = DisplayName;
+            Name = displayName;
 
-            this.Extension = Extension;
+            Extension = extension;
         }
 
         public string Name { get; }
 
-        public IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform)
+        public IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform)
         {
-            Transform = null;
+            transform = null;
 
             return null;
         }
@@ -29,6 +32,6 @@ namespace Captura.Models
 
         public string Extension { get; }
 
-        public abstract IAudioFileWriter GetAudioFileWriter(string FileName, WaveFormat Wf, int AudioQuality);
+        public abstract IAudioFileWriter GetAudioFileWriter(string fileName, WaveFormat wf, int audioQuality);
     }
 }

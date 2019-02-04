@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Captura
+namespace Captura.Base.Images
 {
     public class RepeatFrame : IBitmapFrame, IEditableFrame
     {
@@ -15,12 +15,12 @@ namespace Captura
 
         float IEditableFrame.Height { get; } = -1;
 
-        IDisposable IBitmapLoader.CreateBitmapBgr32(Size Size, IntPtr MemoryData, int Stride)
+        IDisposable IBitmapLoader.CreateBitmapBgr32(Size size, IntPtr memoryData, int stride)
         {
             throw new NotImplementedException();
         }
 
-        IDisposable IBitmapLoader.LoadBitmap(string FileName, out Size Size)
+        IDisposable IBitmapLoader.LoadBitmap(string fileName, out Size size)
         {
             throw new NotImplementedException();
         }
@@ -31,52 +31,52 @@ namespace Captura
 
         void IDisposable.Dispose() { }
 
-        void IEditableFrame.DrawImage(object Image, Rectangle? Region, int Opacity)
+        void IEditableFrame.DrawImage(object image, Rectangle? region, int opacity)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.FillRectangle(Color Color, RectangleF Rectangle)
+        void IEditableFrame.FillRectangle(Color color, RectangleF rectangle)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.FillRectangle(Color Color, RectangleF Rectangle, int CornerRadius)
+        void IEditableFrame.FillRectangle(Color color, RectangleF rectangle, int cornerRadius)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle)
+        void IEditableFrame.DrawRectangle(Color color, float strokeWidth, RectangleF rectangle)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.DrawRectangle(Color Color, float StrokeWidth, RectangleF Rectangle, int CornerRadius)
+        void IEditableFrame.DrawRectangle(Color color, float strokeWidth, RectangleF rectangle, int cornerRadius)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.FillEllipse(Color Color, RectangleF Rectangle)
+        void IEditableFrame.FillEllipse(Color color, RectangleF rectangle)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.DrawEllipse(Color Color, float StrokeWidth, RectangleF Rectangle)
+        void IEditableFrame.DrawEllipse(Color color, float strokeWidth, RectangleF rectangle)
         {
             throw new NotImplementedException();
         }
 
-        SizeF IEditableFrame.MeasureString(string Text, int FontSize)
+        SizeF IEditableFrame.MeasureString(string text, int fontSize)
         {
             throw new NotImplementedException();
         }
 
-        void IEditableFrame.DrawString(string Text, int FontSize, Color Color, RectangleF LayoutRectangle)
+        void IEditableFrame.DrawString(string text, int fontSize, Color color, RectangleF layoutRectangle)
         {
             throw new NotImplementedException();
         }
 
-        void IBitmapFrame.CopyTo(byte[] Buffer, int Length)
+        void IBitmapFrame.CopyTo(byte[] buffer, int length)
         {
             throw new NotImplementedException();
         }

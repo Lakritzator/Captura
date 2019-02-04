@@ -1,27 +1,30 @@
-﻿using System.Drawing;
-using Screna;
-using System;
+﻿using System;
+using System.Drawing;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Video;
+using Screna.ImageProviders;
 
-namespace Captura.Models
+namespace Screna.VideoItems
 {
     public class ScreenItem : NotifyPropertyChanged, IVideoItem
     {
         public IScreen Screen { get; }
 
-        public ScreenItem(IScreen Screen)
+        public ScreenItem(IScreen screen)
         {
-            this.Screen = Screen;
+            Screen = screen;
         }
 
         public string Name => Screen.DeviceName;
 
         public override string ToString() => Name;
 
-        public IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform)
+        public IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform)
         {
-            Transform = P => new Point(P.X - Screen.Rectangle.X, P.Y - Screen.Rectangle.Y);
+            transform = point => new Point(point.X - Screen.Rectangle.X, point.Y - Screen.Rectangle.Y);
 
-            return new RegionProvider(Screen.Rectangle, IncludeCursor);
+            return new RegionProvider(Screen.Rectangle, includeCursor);
         }
     }
 }

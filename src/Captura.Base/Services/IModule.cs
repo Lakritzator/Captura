@@ -1,9 +1,9 @@
 using System;
 
-namespace Captura
+namespace Captura.Base.Services
 {
     public interface IModule : IDisposable
     {
-        void OnLoad(IBinder Binder);
+        void OnLoad(IBinder binder);
     }
 }

@@ -1,5 +1,5 @@
 ﻿// ReSharper disable UnusedMember.Global
-namespace Captura
+namespace Captura.Base.Services
 {
     public interface IIconSet
     {
@@ -159,7 +159,7 @@ namespace Captura
 
         string Web { get; }
 
-        string Webcam { get; }
+        string WebCam { get; }
 
         string Window { get; }
 

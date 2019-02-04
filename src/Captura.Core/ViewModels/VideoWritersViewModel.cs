@@ -1,9 +1,10 @@
 using System.Collections.Generic;
-using Captura.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Captura.Base;
+using Captura.Base.Video;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class VideoWritersViewModel : NotifyPropertyChanged
@@ -12,9 +13,9 @@ namespace Captura.ViewModels
         readonly ObservableCollection<IVideoWriterItem> _videoWriters = new ObservableCollection<IVideoWriterItem>();
         public ReadOnlyObservableCollection<IVideoWriterItem> AvailableVideoWriters { get; }
 
-        public VideoWritersViewModel(IEnumerable<IVideoWriterProvider> WriterProviders)
+        public VideoWritersViewModel(IEnumerable<IVideoWriterProvider> writerProviders)
         {
-            VideoWriterProviders = WriterProviders.ToList();
+            VideoWriterProviders = writerProviders.ToList();
 
             AvailableVideoWriters = new ReadOnlyObservableCollection<IVideoWriterItem>(_videoWriters);
 
@@ -38,7 +39,7 @@ namespace Captura.ViewModels
             if (_videoWriters.Count > 0)
                 SelectedVideoWriter = _videoWriters[0];
 
-            var matchingVideoCodec = AvailableVideoWriters.FirstOrDefault(M => M.ToString() == lastVideoCodecName);
+            var matchingVideoCodec = AvailableVideoWriters.FirstOrDefault(videoWriterItem => videoWriterItem.ToString() == lastVideoCodecName);
 
             if (matchingVideoCodec != null)
             {

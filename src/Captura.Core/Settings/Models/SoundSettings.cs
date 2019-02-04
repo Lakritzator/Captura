@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using Captura.Base.Audio;
+using Captura.Base.Settings;
 
-namespace Captura.Models
+namespace Captura.Core.Settings.Models
 {
     public class SoundSettings : PropertyStore
     {

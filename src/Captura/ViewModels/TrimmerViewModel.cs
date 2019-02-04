@@ -5,25 +5,27 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Captura.Base;
+using Captura.FFmpeg;
 using FirstFloor.ModernUI.Windows.Controls;
 using Microsoft.Win32;
 
-namespace Captura
+namespace Captura.ViewModels
 {
     public class TrimmerViewModel : NotifyPropertyChanged, IDisposable
     {
-        MediaElement _player;
-        Window _window;
-        readonly DispatcherTimer _timer;
+        private MediaElement _player;
+        private Window _window;
+        private readonly DispatcherTimer _timer;
 
         public bool IsDragging { get; set; }
 
-        public void AssignPlayer(MediaElement Player, Window Window)
+        public void AssignPlayer(MediaElement player, Window window)
         {
-            _player = Player;
-            _window = Window;
+            _player = player;
+            _window = window;
 
-            _player.MediaOpened += (S, E) =>
+            _player.MediaOpened += (sender, e) =>
             {
                 From = TimeSpan.Zero;
 
@@ -49,7 +51,7 @@ namespace Captura
                 Interval = TimeSpan.FromMilliseconds(100)
             };
 
-            _timer.Tick += (Sender, Args) =>
+            _timer.Tick += (sender, args) =>
             {
                 if (IsDragging)
                     return;
@@ -69,7 +71,7 @@ namespace Captura
             TrimCommand = new DelegateCommand(Trim, false);
         }
 
-        TimeSpan _from, _to, _end;
+        private TimeSpan _from, _to, _end;
         
         public TimeSpan From
         {
@@ -92,7 +94,7 @@ namespace Captura
             }
         }
 
-        void Stop()
+        private void Stop()
         {
             if (!_isPlaying)
                 return;
@@ -104,7 +106,7 @@ namespace Captura
             PlaybackPosition = From;
         }
 
-        void Play()
+        private void Play()
         {
             if (IsPlaying)
                 Stop();
@@ -150,7 +152,7 @@ namespace Captura
             }
         }
 
-        string _fileName;
+        private string _fileName;
 
         public string FileName
         {
@@ -163,7 +165,7 @@ namespace Captura
             }
         }
 
-        string _filePath;
+        private string _filePath;
 
         public string FilePath
         {
@@ -184,7 +186,7 @@ namespace Captura
 
         public DelegateCommand TrimCommand { get; }
 
-        void Open()
+        private void Open()
         {
             var ofd = new OpenFileDialog
             {
@@ -198,12 +200,12 @@ namespace Captura
             }
         }
 
-        public void Open(string Path)
+        public void Open(string path)
         {
             PlayCommand.RaiseCanExecuteChanged(false);
             TrimCommand.RaiseCanExecuteChanged(false);
 
-            _player.Source = new Uri(Path);
+            _player.Source = new Uri(path);
 
             var oldVol = _player.Volume;
 
@@ -213,10 +215,10 @@ namespace Captura
 
             _player.Volume = oldVol;
 
-            FilePath = Path;
+            FilePath = path;
         }
 
-        bool _isPlaying;
+        private bool _isPlaying;
 
         public bool IsPlaying
         {
@@ -241,7 +243,7 @@ namespace Captura
             _player.Source = null;
         }
 
-        async void Trim()
+        private async void Trim()
         {
             if (!FFmpegService.FFmpegExists)
             {
@@ -283,7 +285,7 @@ namespace Captura
 
                 var output = "";
 
-                process.ErrorDataReceived += (Sender, Args) => output += "\n" + Args.Data;
+                process.ErrorDataReceived += (sender, args) => output += "\n" + args.Data;
 
                 OpenCommand.RaiseCanExecuteChanged(false);
                 PlayCommand.RaiseCanExecuteChanged(false);

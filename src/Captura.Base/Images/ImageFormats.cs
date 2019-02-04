@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.Base.Images
 {
     public enum ImageFormats
     {

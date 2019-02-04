@@ -1,6 +1,6 @@
-﻿namespace Captura
+﻿namespace Captura.Models
 {
-    enum HitType
+    internal enum HitType
     {
         None,
         Body,

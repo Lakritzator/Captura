@@ -1,28 +1,30 @@
 ﻿using System.Runtime.CompilerServices;
+using Captura.Base;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 
-namespace Captura
+namespace Captura.Loc
 {
     public class LanguageFields : NotifyPropertyChanged
     {
-        protected virtual string GetValue(string Key) => "";
+        protected virtual string GetValue(string key) => "";
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         // ReSharper disable UnusedParameter.Global
-        protected virtual void SetValue(string Key, string Value) { }
+        protected virtual void SetValue(string key, string value) { }
         // ReSharper restore UnusedParameter.Global
 
-        string Get([CallerMemberName] string PropertyName = null)
+        string Get([CallerMemberName] string propertyName = null)
         {
-            return GetValue(PropertyName);
+            return GetValue(propertyName);
         }
 
-        void Set(string Value, [CallerMemberName] string PropertyName = null)
+        void Set(string value, [CallerMemberName] string propertyName = null)
         {
-            SetValue(PropertyName, Value);
+            SetValue(propertyName, value);
 
-            RaisePropertyChanged(PropertyName);
+            RaisePropertyChanged(propertyName);
         }
 
         public string About
@@ -331,7 +333,7 @@ namespace Captura
             set => Set(value);
         }
 
-        public string Hotkeys
+        public string HotKeys
         {
             get => Get();
             set => Set(value);
@@ -547,7 +549,7 @@ namespace Captura
             set => Set(value);
         }
 
-        public string NoWebcam
+        public string NoWebCam
         {
             get => Get();
             set => Set(value);

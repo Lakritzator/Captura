@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using Captura.Audio;
-using Screna.Audio;
+using Captura.Base.Audio.WaveFormat;
+using Screna;
 using Xunit;
 
-namespace Captura.Tests
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class AudioFileWriterTests
@@ -14,7 +14,7 @@ namespace Captura.Tests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using (new AudioFileWriter(OutStream: null, Format: new WaveFormat())) { }
+                using (new AudioFileWriter(outStream: null, format: new WaveFormat())) { }
             });
         }
 
@@ -32,7 +32,7 @@ namespace Captura.Tests
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                using (new AudioFileWriter(FileName: null, Format: new WaveFormat())) { }
+                using (new AudioFileWriter(fileName: null, format: new WaveFormat())) { }
             });
         }
     }

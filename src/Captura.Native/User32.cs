@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Captura.Native.Enums;
+using Captura.Native.Structs;
 
 // ReSharper disable InconsistentNaming
 namespace Captura.Native

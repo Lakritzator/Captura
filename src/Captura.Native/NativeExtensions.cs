@@ -1,9 +1,10 @@
 ﻿using System.Drawing;
+using Captura.Native.Structs;
 
 namespace Captura.Native
 {
     public static class NativeExtensions
     {
-        public static Rectangle ToRectangle(this RECT R) => Rectangle.FromLTRB(R.Left, R.Top, R.Right, R.Bottom);
+        public static Rectangle ToRectangle(this RECT rect) => Rectangle.FromLTRB(rect.Left, rect.Top, rect.Right, rect.Bottom);
     }
 }

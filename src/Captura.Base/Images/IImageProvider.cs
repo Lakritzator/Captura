@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Captura
+namespace Captura.Base.Images
 {
     /// <summary>
     /// Provides images.

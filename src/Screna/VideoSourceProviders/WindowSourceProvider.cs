@@ -1,32 +1,37 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Loc;
+using Screna.VideoItems;
 
-namespace Captura.Models
+namespace Screna.VideoSourceProviders
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class WindowSourceProvider : VideoSourceProviderBase
     {
-        readonly IVideoSourcePicker _videoSourcePicker;
-        readonly IRegionProvider _regionProvider;
-        readonly IPlatformServices _platformServices;
+        private readonly IVideoSourcePicker _videoSourcePicker;
+        private readonly IRegionProvider _regionProvider;
+        private readonly IPlatformServices _platformServices;
 
-        public WindowSourceProvider(LanguageManager Loc,
-            IVideoSourcePicker VideoSourcePicker,
-            IRegionProvider RegionProvider,
-            IIconSet Icons,
-            IPlatformServices PlatformServices) : base(Loc)
+        public WindowSourceProvider(LanguageManager loc,
+            IVideoSourcePicker videoSourcePicker,
+            IRegionProvider regionProvider,
+            IIconSet icons,
+            IPlatformServices platformServices) : base(loc)
         {
-            _videoSourcePicker = VideoSourcePicker;
-            _regionProvider = RegionProvider;
-            _platformServices = PlatformServices;
+            _videoSourcePicker = videoSourcePicker;
+            _regionProvider = regionProvider;
+            _platformServices = platformServices;
 
-            Icon = Icons.Window;
+            Icon = icons.Window;
         }
 
-        bool PickWindow()
+        private bool PickWindow()
         {
-            var window = _videoSourcePicker.PickWindow(M => M.Handle != _regionProvider.Handle);
+            var window = _videoSourcePicker.PickWindow(window1 => window1.Handle != _regionProvider.Handle);
 
             if (window == null)
                 return false;
@@ -37,13 +42,13 @@ namespace Captura.Models
             return true;
         }
 
-        void Set(IWindow Window)
+        private void Set(IWindow window)
         {
-            _source = new WindowItem(Window);
+            _source = new WindowItem(window);
             RaisePropertyChanged(nameof(Source));
         }
 
-        IVideoItem _source;
+        private IVideoItem _source;
 
         public override IVideoItem Source => _source;
 
@@ -59,10 +64,10 @@ The video is of the initial size of the window.";
             return PickWindow();
         }
 
-        public override bool Deserialize(string Serialized)
+        public override bool Deserialize(string serialized)
         {
             var window = _platformServices.EnumerateWindows()
-                .FirstOrDefault(M => M.Title == Serialized);
+                .FirstOrDefault(window1 => window1.Title == serialized);
 
             if (window == null)
                 return false;
@@ -72,12 +77,12 @@ The video is of the initial size of the window.";
             return true;
         }
 
-        public override bool ParseCli(string Arg)
+        public override bool ParseCli(string arg)
         {
-            if (!Regex.IsMatch(Arg, @"^win:\d+$"))
+            if (!Regex.IsMatch(arg, @"^win:\d+$"))
                 return false;
 
-            var handle = new IntPtr(int.Parse(Arg.Substring(4)));
+            var handle = new IntPtr(int.Parse(arg.Substring(4)));
 
             Set(_platformServices.GetWindow(handle));
 

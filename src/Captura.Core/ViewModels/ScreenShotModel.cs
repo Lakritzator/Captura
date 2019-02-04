@@ -1,10 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core.Models.Notifications;
+using Captura.Loc;
+using DesktopDuplication;
 using Screna;
+using Screna.VideoItems;
+using Screna.VideoSourceProviders;
 
-namespace Captura.ViewModels
+namespace Captura.Core.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ScreenShotModel : NotifyPropertyChanged
@@ -15,36 +23,36 @@ namespace Captura.ViewModels
         readonly IMainWindow _mainWindow;
         readonly IVideoSourcePicker _sourcePicker;
         readonly IAudioPlayer _audioPlayer;
-        readonly Settings _settings;
+        readonly Settings.Settings _settings;
         readonly LanguageManager _loc;
         readonly IPlatformServices _platformServices;
 
         public IReadOnlyList<IImageWriterItem> AvailableImageWriters { get; }
 
-        public ScreenShotModel(VideoSourcesViewModel VideoSourcesViewModel,
-            ISystemTray SystemTray,
-            IRegionProvider RegionProvider,
-            IMainWindow MainWindow,
-            IVideoSourcePicker SourcePicker,
-            IAudioPlayer AudioPlayer,
-            IEnumerable<IImageWriterItem> ImageWriters,
-            Settings Settings,
-            LanguageManager Loc,
-            IPlatformServices PlatformServices)
+        public ScreenShotModel(VideoSourcesViewModel videoSourcesViewModel,
+            ISystemTray systemTray,
+            IRegionProvider regionProvider,
+            IMainWindow mainWindow,
+            IVideoSourcePicker sourcePicker,
+            IAudioPlayer audioPlayer,
+            IEnumerable<IImageWriterItem> imageWriters,
+            Settings.Settings settings,
+            LanguageManager loc,
+            IPlatformServices platformServices)
         {
-            _videoSourcesViewModel = VideoSourcesViewModel;
-            _systemTray = SystemTray;
-            _regionProvider = RegionProvider;
-            _mainWindow = MainWindow;
-            _sourcePicker = SourcePicker;
-            _audioPlayer = AudioPlayer;
-            _settings = Settings;
-            _loc = Loc;
-            _platformServices = PlatformServices;
+            _videoSourcesViewModel = videoSourcesViewModel;
+            _systemTray = systemTray;
+            _regionProvider = regionProvider;
+            _mainWindow = mainWindow;
+            _sourcePicker = sourcePicker;
+            _audioPlayer = audioPlayer;
+            _settings = settings;
+            _loc = loc;
+            _platformServices = platformServices;
 
-            AvailableImageWriters = ImageWriters.ToList();
+            AvailableImageWriters = imageWriters.ToList();
 
-            if (!AvailableImageWriters.Any(M => M.Active))
+            if (!AvailableImageWriters.Any(imageWriterItem => imageWriterItem.Active))
                 AvailableImageWriters[0].Active = true;
         }
 
@@ -82,26 +90,26 @@ namespace Captura.ViewModels
             }
         }
 
-        public async Task SaveScreenShot(IBitmapImage Bmp, string FileName = null)
+        public async Task SaveScreenShot(IBitmapImage bmp, string fileName = null)
         {
             _audioPlayer.Play(SoundKind.Shot);
 
-            if (Bmp != null)
+            if (bmp != null)
             {
                 var allTasks = AvailableImageWriters
-                    .Where(M => M.Active)
-                    .Select(M => M.Save(Bmp, _settings.ScreenShots.ImageFormat, FileName));
+                    .Where(imageWriterItem => imageWriterItem.Active)
+                    .Select(imageWriterItem => imageWriterItem.Save(bmp, _settings.ScreenShots.ImageFormat, fileName));
 
-                await Task.WhenAll(allTasks).ContinueWith(T => Bmp.Dispose());
+                await Task.WhenAll(allTasks).ContinueWith(task => bmp.Dispose());
             }
             else _systemTray.ShowNotification(new TextNotification(_loc.ImgEmpty));
         }
 
-        public IBitmapImage ScreenShotWindow(IWindow Window)
+        public IBitmapImage ScreenShotWindow(IWindow window)
         {
             _systemTray.HideNotification();
 
-            if (Window.Handle == _platformServices.DesktopWindow.Handle)
+            if (window.Handle == _platformServices.DesktopWindow.Handle)
             {
                 return ScreenShot.Capture(_settings.IncludeCursor);
             }
@@ -112,11 +120,11 @@ namespace Captura.ViewModels
 
                 if (_settings.ScreenShots.WindowShotTransparent)
                 {
-                    bmp = ScreenShot.CaptureTransparent(Window, _settings.IncludeCursor);
+                    bmp = ScreenShot.CaptureTransparent(window, _settings.IncludeCursor);
                 }
 
                 // Capture without Transparency
-                return bmp ?? ScreenShot.Capture(Window.Rectangle, _settings.IncludeCursor);
+                return bmp ?? ScreenShot.Capture(window.Rectangle, _settings.IncludeCursor);
             }
             catch
             {
@@ -124,13 +132,13 @@ namespace Captura.ViewModels
             }
         }
 
-        public async void CaptureScreenShot(string FileName = null)
+        public async void CaptureScreenShot(string fileName = null)
         {
             _systemTray.HideNotification();
 
             var bmp = await GetScreenShot();
 
-            await SaveScreenShot(bmp, FileName);
+            await SaveScreenShot(bmp, fileName);
         }
 
         public async Task<IBitmapImage> GetScreenShot()
@@ -155,15 +163,15 @@ namespace Captura.ViewModels
                     bmp = ScreenShotWindow(hWnd);
                     break;
 
-                case DeskDuplSourceProvider _:
-                    if (selectedVideoSource is DeskDuplItem deskDuplItem)
+                case DesktopDuplicationSourceProvider _:
+                    if (selectedVideoSource is DesktopDuplicationItem deskDuplItem)
                     {
                         bmp = ScreenShot.Capture(deskDuplItem.Rectangle, includeCursor);
                     }
                     break;
 
                 case FullScreenSourceProvider _:
-                    var hide = _mainWindow.IsVisible && _settings.UI.HideOnFullScreenShot;
+                    var hide = _mainWindow.IsVisible && _settings.Ui.HideOnFullScreenShot;
 
                     if (hide)
                     {

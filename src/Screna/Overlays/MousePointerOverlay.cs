@@ -1,22 +1,24 @@
-﻿using Screna;
-using System;
+﻿using System;
 using System.Drawing;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Settings;
 
-namespace Captura.Models
+namespace Screna.Overlays
 {
     public class MousePointerOverlay : IOverlay
     {
-        readonly MouseOverlaySettings _settings;
+        private readonly MouseOverlaySettings _settings;
         
-        public MousePointerOverlay(MouseOverlaySettings Settings)
+        public MousePointerOverlay(MouseOverlaySettings settings)
         {
-            _settings = Settings;
+            _settings = settings;
         }
         
         /// <summary>
         /// Draws overlay.
         /// </summary>
-        public void Draw(IEditableFrame Editor, Func<Point, Point> Transform = null)
+        public void Draw(IEditableFrame editor, Func<Point, Point> transform = null)
         {
             if (!_settings.Display)
                 return;
@@ -25,26 +27,28 @@ namespace Captura.Models
 
             var curPos = MouseCursor.CursorPosition;
 
-            if (Transform != null)
-                curPos = Transform(curPos);
+            if (transform != null)
+                curPos = transform(curPos);
 
             var d = clickRadius * 2;
 
             var x = curPos.X - clickRadius;
             var y = curPos.Y - clickRadius;
 
-            Editor.FillEllipse(_settings.Color, new RectangleF(x, y, d, d));
+            editor.FillEllipse(_settings.Color, new RectangleF(x, y, d, d));
 
             var border = _settings.BorderThickness;
 
-            if (border > 0)
+            if (border <= 0)
             {
-                x -= border / 2;
-                y -= border / 2;
-                d += border;
-
-                Editor.DrawEllipse(_settings.BorderColor, border, new RectangleF(x, y, d, d));
+                return;
             }
+
+            x -= border / 2;
+            y -= border / 2;
+            d += border;
+
+            editor.DrawEllipse(_settings.BorderColor, border, new RectangleF(x, y, d, d));
         }
 
         public void Dispose() { }

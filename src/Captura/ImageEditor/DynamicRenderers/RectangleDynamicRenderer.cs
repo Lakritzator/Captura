@@ -5,94 +5,94 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Input.StylusPlugIns;
 using System.Windows.Media;
-using Captura.ImageEditor;
+using Captura.ImageEditor.Strokes;
 
-namespace Captura
+namespace Captura.ImageEditor.DynamicRenderers
 {
     public class RectangleDynamicRenderer : DynamicRenderer, IDynamicRenderer
     {
-        bool _isManipulating;
+        private bool _isManipulating;
 
-        Point _firstPoint;
+        private Point _firstPoint;
 
         public RectangleDynamicRenderer()
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
         }
 
-        protected override void OnStylusDown(RawStylusInput RawStylusInput)
+        protected override void OnStylusDown(RawStylusInput rawStylusInput)
         {
-            _firstPoint = RawStylusInput.GetStylusPoints().First().ToPoint();
-            base.OnStylusDown(RawStylusInput);
+            _firstPoint = rawStylusInput.GetStylusPoints().First().ToPoint();
+            base.OnStylusDown(rawStylusInput);
         }
 
-        public static void Prepare(ref Point Start, ref Point End, out double Width, out double Height)
+        public static void Prepare(ref Point start, ref Point end, out double width, out double height)
         {
-            if (End.X < Start.X)
+            if (end.X < start.X)
             {
-                var t = Start.X;
-                Start.X = End.X;
-                End.X = t;
+                var t = start.X;
+                start.X = end.X;
+                end.X = t;
             }
 
-            if (End.Y < Start.Y)
+            if (end.Y < start.Y)
             {
-                var t = Start.Y;
-                Start.Y = End.Y;
-                End.Y = t;
+                var t = start.Y;
+                start.Y = end.Y;
+                end.Y = t;
             }
 
-            Width = End.X - Start.X;
-            Height = End.Y - Start.Y;
+            width = end.X - start.X;
+            height = end.Y - start.Y;
 
-            if (Width <= 0)
-                Width = 1;
+            if (width <= 0)
+                width = 1;
 
-            if (Height <= 0)
-                Height = 1;
+            if (height <= 0)
+                height = 1;
 
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
-                Width = Height = Math.Min(Width, Height);
+                width = height = Math.Min(width, height);
             }
         }
 
-        public static void Draw(DrawingContext DrawingContext, Point Start, Point End, Pen Pen)
+        public static void Draw(DrawingContext drawingContext, Point start, Point end, Pen pen)
         {
-            Prepare(ref Start, ref End, out var w, out var h);
+            Prepare(ref start, ref end, out var w, out var h);
             
-            var r = new Rect(Start, new Size(w, h));
+            var r = new Rect(start, new Size(w, h));
 
-            DrawingContext.DrawRectangle(null, Pen, r);
+            drawingContext.DrawRectangle(null, pen, r);
         }
 
-        protected override void OnDraw(DrawingContext DrawingContext, StylusPointCollection StylusPoints, Geometry Geometry, Brush FillBrush)
+        protected override void OnDraw(DrawingContext drawingContext, StylusPointCollection stylusPoints, Geometry geometry, Brush fillBrush)
         {
             if (!_isManipulating)
             {
                 _isManipulating = true;
 
                 var currentStylus = Stylus.CurrentStylusDevice;
-                Reset(currentStylus, StylusPoints);
+                Reset(currentStylus, stylusPoints);
             }
 
             _isManipulating = false;
 
-            Draw(DrawingContext,
+            Draw(drawingContext,
                 _firstPoint,
-                StylusPoints.First().ToPoint(),
-                new Pen(FillBrush, 2));
+                stylusPoints.First().ToPoint(),
+                new Pen(fillBrush, 2));
         }
 
-        protected override void OnStylusUp(RawStylusInput RawStylusInput)
+        protected override void OnStylusUp(RawStylusInput rawStylusInput)
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            base.OnStylusUp(RawStylusInput);
+            base.OnStylusUp(rawStylusInput);
         }
 
-        public Stroke GetStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttribs)
+        public Stroke GetStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttribs)
         {
-            return new RectangleStroke(StylusPoints, DrawingAttribs);
+            return new RectangleStroke(stylusPoints, drawingAttribs);
         }
     }
 }

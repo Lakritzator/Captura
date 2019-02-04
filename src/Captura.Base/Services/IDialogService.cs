@@ -1,9 +1,9 @@
-﻿namespace Captura.Models
+﻿namespace Captura.Base.Services
 {
     public interface IDialogService
     {
-        string PickFolder(string Current, string Description);
+        string PickFolder(string current, string description);
 
-        string PickFile(string InitialFolder, string Description);
+        string PickFile(string initialFolder, string description);
     }
 }

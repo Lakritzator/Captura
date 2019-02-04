@@ -1,6 +1,6 @@
-﻿using Captura.Audio;
+﻿using Captura.Base.Audio;
 
-namespace Captura.Models
+namespace Captura.Core.Models
 {
     /// <summary>
     /// Used when no audio sources are available.

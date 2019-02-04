@@ -1,6 +1,6 @@
 using System;
 
-namespace Captura.Models
+namespace Captura.Base.Video
 {
     public interface IVideoSourceProvider
     {
@@ -20,8 +20,8 @@ namespace Captura.Models
 
         string Serialize();
 
-        bool Deserialize(string Serialized);
+        bool Deserialize(string serialized);
 
-        bool ParseCli(string Arg);
+        bool ParseCli(string arg);
     }
 }

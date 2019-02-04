@@ -1,26 +1,31 @@
 using System.Linq;
 using System.Text.RegularExpressions;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Loc;
+using Screna.VideoItems;
 
-namespace Captura.Models
+namespace Screna.VideoSourceProviders
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ScreenSourceProvider : VideoSourceProviderBase
     {
-        readonly IVideoSourcePicker _videoSourcePicker;
-        readonly IPlatformServices _platformServices;
+        private readonly IVideoSourcePicker _videoSourcePicker;
+        private readonly IPlatformServices _platformServices;
         
-        public ScreenSourceProvider(LanguageManager Loc,
-            IVideoSourcePicker VideoSourcePicker,
-            IIconSet Icons,
-            IPlatformServices PlatformServices) : base(Loc)
+        public ScreenSourceProvider(LanguageManager loc,
+            IVideoSourcePicker videoSourcePicker,
+            IIconSet icons,
+            IPlatformServices platformServices) : base(loc)
         {
-            _videoSourcePicker = VideoSourcePicker;
-            _platformServices = PlatformServices;
+            _videoSourcePicker = videoSourcePicker;
+            _platformServices = platformServices;
 
-            Icon = Icons.Screen;
+            Icon = icons.Screen;
         }
 
-        bool PickScreen()
+        private bool PickScreen()
         {
             var screen = _videoSourcePicker.PickScreen();
 
@@ -32,13 +37,13 @@ namespace Captura.Models
             return true;
         }
 
-        void Set(IScreen Screen)
+        private void Set(IScreen screen)
         {
-            _source = new ScreenItem(Screen);
+            _source = new ScreenItem(screen);
             RaisePropertyChanged(nameof(Source));
         }
 
-        IVideoItem _source;
+        private IVideoItem _source;
 
         public override IVideoItem Source => _source;
 
@@ -62,10 +67,10 @@ namespace Captura.Models
             return PickScreen();
         }
 
-        public override bool Deserialize(string Serialized)
+        public override bool Deserialize(string serialized)
         {
             var screen = _platformServices.EnumerateScreens()
-                .FirstOrDefault(M => M.DeviceName == Serialized);
+                .FirstOrDefault(screen1 => screen1.DeviceName == serialized);
 
             if (screen == null)
                 return false;
@@ -75,12 +80,12 @@ namespace Captura.Models
             return true;
         }
 
-        public override bool ParseCli(string Arg)
+        public override bool ParseCli(string arg)
         {
-            if (!Regex.IsMatch(Arg, @"^screen:\d+$"))
+            if (!Regex.IsMatch(arg, @"^screen:\d+$"))
                 return false;
 
-            var index = int.Parse(Arg.Substring(7));
+            var index = int.Parse(arg.Substring(7));
 
             var screens = _platformServices.EnumerateScreens().ToArray();
 

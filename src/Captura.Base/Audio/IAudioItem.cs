@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Captura.Models
+namespace Captura.Base.Audio
 {
     public interface IAudioItem : INotifyPropertyChanged
     {

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using Captura.Base.Images;
 
-namespace Captura.Models
+namespace Captura.Base.Video
 {
     /// <summary>
     /// Items to show in Video Source List.
@@ -11,6 +12,6 @@ namespace Captura.Models
     {
         string Name { get; }
 
-        IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform);
+        IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform);
     }
 }

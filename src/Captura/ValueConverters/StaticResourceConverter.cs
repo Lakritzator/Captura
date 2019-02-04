@@ -2,13 +2,13 @@
 using System.Globalization;
 using System.Windows;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class StaticResourceConverter : OneWayConverter
     {
-        public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Value != null ? Application.Current.Resources[Value] : null;
+            return value != null ? Application.Current.Resources[value] : null;
         }
     }
 }

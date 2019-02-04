@@ -1,30 +1,30 @@
 ﻿using System;
-using Captura;
+using Captura.Base.Images;
 
-namespace Screna
+namespace Screna.Frames
 {
     public class MultiDisposeFrame : IBitmapFrame
     {
-        int _count;
+        private int _count;
 
         public IBitmapFrame Frame { get; }
 
-        readonly object _syncLock = new object();
+        private readonly object _syncLock = new object();
 
-        public MultiDisposeFrame(IBitmapFrame Frame, int Count)
+        public MultiDisposeFrame(IBitmapFrame frame, int count)
         {
-            if (this.Frame is RepeatFrame)
+            if (Frame is RepeatFrame)
             {
                 throw new NotSupportedException();
             }
 
-            if (Count < 2)
+            if (count < 2)
             {
-                throw new ArgumentException("Count should be atleast 2", nameof(Count));
+                throw new ArgumentException("Count should be at least 2", nameof(count));
             }
 
-            this.Frame = Frame ?? throw new ArgumentNullException(nameof(Frame));
-            _count = Count;
+            Frame = frame ?? throw new ArgumentNullException(nameof(frame));
+            _count = count;
         }
 
         public void Dispose()
@@ -43,9 +43,9 @@ namespace Screna
         public int Width => Frame.Width;
         public int Height => Frame.Height;
 
-        public void CopyTo(byte[] Buffer, int Length)
+        public void CopyTo(byte[] buffer, int length)
         {
-            Frame.CopyTo(Buffer, Length);
+            Frame.CopyTo(buffer, length);
         }
     }
 }

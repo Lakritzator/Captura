@@ -1,4 +1,4 @@
-﻿namespace Captura.Views
+﻿namespace Captura.Pages
 {
     public partial class RecentPage
     {

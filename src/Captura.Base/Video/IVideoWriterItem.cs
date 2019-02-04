@@ -1,4 +1,4 @@
-﻿namespace Captura.Models
+﻿namespace Captura.Base.Video
 {
     /// <summary>
     /// Items to show in Video Writers list.
@@ -10,6 +10,6 @@
 
         string Description { get; }
 
-        IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args);
+        IVideoFileWriter GetVideoFileWriter(VideoWriterArgs args);
     }
 }

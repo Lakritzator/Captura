@@ -8,10 +8,10 @@ namespace Captura.NAudio
     {
         readonly IWavePlayer _wasapiOut;
 
-        public WasapiLoopbackCaptureProvider(MMDevice Device)
-            : base(new WasapiLoopbackCapture(Device))
+        public WasapiLoopbackCaptureProvider(MMDevice device)
+            : base(new WasapiLoopbackCapture(device))
         {
-            _wasapiOut = new WasapiOut(Device, AudioClientShareMode.Shared, true, 200);
+            _wasapiOut = new WasapiOut(device, AudioClientShareMode.Shared, true, 200);
 
             _wasapiOut.Init(new SilenceProvider(Wf.CreateIeeeFloatWaveFormat(44100, 2)));
         }

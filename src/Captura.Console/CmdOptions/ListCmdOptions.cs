@@ -1,10 +1,10 @@
 ﻿using CommandLine;
 
-namespace Captura
+namespace Captura.CmdOptions
 {
     [Verb("list", HelpText = "Display available video sources, encoders, audio sources, etc.")]
     // ReSharper disable once ClassNeverInstantiated.Global
-    class ListCmdOptions
+    internal class ListCmdOptions
     {
     }
 }

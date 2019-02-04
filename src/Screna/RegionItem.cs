@@ -1,32 +1,36 @@
 ﻿using System;
 using System.Drawing;
-using Screna;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Screna.ImageProviders;
 
-namespace Captura.Models
+namespace Screna
 {
     public class RegionItem : NotifyPropertyChanged, IVideoItem
     {
-        readonly IRegionProvider _selector;
+        private readonly IRegionProvider _selector;
 
-        public RegionItem(IRegionProvider RegionSelector)
+        public RegionItem(IRegionProvider regionSelector)
         {
-            _selector = RegionSelector;
+            _selector = regionSelector;
         }
 
-        public IImageProvider GetImageProvider(bool IncludeCursor, out Func<Point, Point> Transform)
+        public IImageProvider GetImageProvider(bool includeCursor, out Func<Point, Point> transform)
         {
-            Transform = P =>
+            transform = point =>
             {
                 var region = _selector.SelectedRegion.Location;
 
-                return new Point(P.X - region.X, P.Y - region.Y);
+                return new Point(point.X - region.X, point.Y - region.Y);
             };
 
-            return new RegionProvider(_selector.SelectedRegion, IncludeCursor,
+            return new RegionProvider(_selector.SelectedRegion, includeCursor,
                 () => _selector.SelectedRegion.Location);
         }
 
-        string _name;
+        private string _name;
 
         public string Name
         {

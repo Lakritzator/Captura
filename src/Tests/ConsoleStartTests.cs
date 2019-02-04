@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Threading;
+using Tests.Fixtures;
 using Xunit;
 
-namespace Captura.Tests.Console
+namespace Tests
 {
     [Collection(nameof(Tests))]
     public class ConsoleStartTests
     {
-        static Process Start(string Arguments)
+        static Process Start(string arguments)
         {
             var path = TestManagerFixture.GetCliPath();
 
@@ -16,7 +17,7 @@ namespace Captura.Tests.Console
                 StartInfo =
                 {
                     FileName = path,
-                    Arguments = Arguments,
+                    Arguments = arguments,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardInput = true,
@@ -31,16 +32,16 @@ namespace Captura.Tests.Console
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
 
-            void Write(string Data, string Prefix)
+            void Write(string data, string prefix)
             {
-                if (string.IsNullOrWhiteSpace(Data))
+                if (string.IsNullOrWhiteSpace(data))
                     return;
 
-                Trace.WriteLine($"{Prefix}: {Data}");
+                Trace.WriteLine($"{prefix}: {data}");
             }
 
-            process.ErrorDataReceived += (S, E) => Write(E.Data, "Err");
-            process.OutputDataReceived += (S, E) => Write(E.Data, "Out");
+            process.ErrorDataReceived += (s, e) => Write(e.Data, "Err");
+            process.OutputDataReceived += (s, e) => Write(e.Data, "Out");
 
             return process;
         }

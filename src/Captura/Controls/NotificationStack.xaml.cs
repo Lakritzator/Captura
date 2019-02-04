@@ -4,15 +4,16 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Captura.Models;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
-namespace Captura
+namespace Captura.Controls
 {
     public partial class NotificationStack
     {
-        static readonly TimeSpan TimeoutToHide = TimeSpan.FromSeconds(5);
-        DateTime _lastMouseMoveTime;
-        readonly DispatcherTimer _timer;
+        private static readonly TimeSpan TimeoutToHide = TimeSpan.FromSeconds(5);
+        private DateTime _lastMouseMoveTime;
+        private readonly DispatcherTimer _timer;
 
         public NotificationStack()
         {
@@ -28,14 +29,14 @@ namespace Captura
             _timer.Start();
         }
 
-        void TimerOnTick(object Sender, EventArgs Args)
+        private void TimerOnTick(object sender, EventArgs args)
         {
             var now = DateTime.Now;
             var elapsed = now - _lastMouseMoveTime;
 
             var unfinished = ItemsControl.Items
                 .OfType<NotificationBalloon>()
-                .Any(M => !M.Notification.Finished);
+                .Any(notificationBalloon => !notificationBalloon.Notification.Finished);
 
             if (unfinished)
             {
@@ -69,7 +70,7 @@ namespace Captura
                 _timer.Start();
         }
 
-        void OnClose()
+        private void OnClose()
         {
             Hide();
 
@@ -81,24 +82,24 @@ namespace Captura
             }
         }
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => OnClose();
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => OnClose();
 
         /// <summary>
         /// Slides out element while decreasing opacity, then decreases height, then removes.
         /// </summary>
-        void Remove(FrameworkElement Element)
+        private void Remove(FrameworkElement element)
         {
             var transform = new TranslateTransform();
-            Element.RenderTransform = transform;
+            element.RenderTransform = transform;
 
             var translateAnim = new DoubleAnimation(500, new Duration(TimeSpan.FromMilliseconds(200)));
             var opactityAnim = new DoubleAnimation(0, new Duration(TimeSpan.FromMilliseconds(200)));
 
-            var heightAnim = new DoubleAnimation(Element.ActualHeight, 0, new Duration(TimeSpan.FromMilliseconds(200)));
+            var heightAnim = new DoubleAnimation(element.ActualHeight, 0, new Duration(TimeSpan.FromMilliseconds(200)));
 
-            heightAnim.Completed += (S, E) =>
+            heightAnim.Completed += (sender, e) =>
             {
-                ItemsControl.Items.Remove(Element);
+                ItemsControl.Items.Remove(element);
 
                 if (ItemsControl.Items.Count == 0)
                 {
@@ -106,22 +107,22 @@ namespace Captura
                 }
             };
 
-            opactityAnim.Completed += (S, E) => Element.BeginAnimation(HeightProperty, heightAnim);
+            opactityAnim.Completed += (sender, e) => element.BeginAnimation(HeightProperty, heightAnim);
 
             transform.BeginAnimation(TranslateTransform.XProperty, translateAnim);
-            Element.BeginAnimation(OpacityProperty, opactityAnim);
+            element.BeginAnimation(OpacityProperty, opactityAnim);
         }
 
-        const int MaxItems = 5;
+        private const int MaxItems = 5;
 
-        public void Add(FrameworkElement Element)
+        public void Add(FrameworkElement element)
         {
-            if (Element is IRemoveRequester removeRequester)
+            if (element is IRemoveRequester removeRequester)
             {
-                removeRequester.RemoveRequested += () => Remove(Element);
+                removeRequester.RemoveRequested += () => Remove(element);
             }
 
-            if (Element is ScreenShotBalloon ssBalloon)
+            if (element is ScreenShotBalloon ssBalloon)
                 ssBalloon.Expander.IsExpanded = true;
 
             foreach (var item in ItemsControl.Items)
@@ -132,7 +133,7 @@ namespace Captura
                 }
             }
 
-            ItemsControl.Items.Insert(0, Element);
+            ItemsControl.Items.Insert(0, element);
 
             if (ItemsControl.Items.Count > MaxItems)
             {
@@ -151,7 +152,7 @@ namespace Captura
             }
         }
 
-        void NotificationStack_OnMouseMove(object Sender, MouseEventArgs E)
+        private void NotificationStack_OnMouseMove(object sender, MouseEventArgs e)
         {
             if (ItemsControl.Items.Count == 0)
                 return;

@@ -1,11 +1,13 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Notification;
+
+namespace Captura.Base.Services
 {
     public interface ISystemTray
     {
-        void ShowScreenShotNotification(string FilePath);
+        void ShowScreenShotNotification(string filePath);
 
         void HideNotification();
 
-        void ShowNotification(INotification Notification);
+        void ShowNotification(INotification notification);
     }
 }

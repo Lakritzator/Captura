@@ -1,15 +1,15 @@
-﻿using Screna;
+﻿using Captura.Base.Video;
 
-namespace Captura.Models
+namespace Screna.Gif
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class GifItem : IVideoWriterItem
     {
-        readonly GifSettings _settings;
+        private readonly GifSettings _settings;
 
-        public GifItem(GifSettings Settings)
+        public GifItem(GifSettings settings)
         {
-            _settings = Settings;
+            _settings = settings;
         }
 
         public string Extension { get; } = ".gif";
@@ -18,11 +18,11 @@ namespace Captura.Models
 
         public override string ToString() => "Gif";
 
-        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs Args)
+        public IVideoFileWriter GetVideoFileWriter(VideoWriterArgs args)
         {
             var repeat = _settings.Repeat ? _settings.RepeatCount : -1;
             
-            return new GifWriter(Args.FileName, Args.FrameRate, repeat);
+            return new GifWriter(args.FileName, args.FrameRate, repeat);
         }
     }
 }

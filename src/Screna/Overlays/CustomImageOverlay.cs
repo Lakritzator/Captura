@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base.Images;
+using Screna.Overlays.Settings;
 
-namespace Captura.Models
+namespace Screna.Overlays
 {
     public class CustomImageOverlay : ImageOverlay<CustomImageOverlaySettings>
     {
-        IDisposable _bmp;
-        Size _size;
+        private IDisposable _bmp;
+        private Size _size;
 
-        public CustomImageOverlay(CustomImageOverlaySettings ImageOverlaySettings)
-            : base(ImageOverlaySettings, false) { }
+        public CustomImageOverlay(CustomImageOverlaySettings imageOverlaySettings)
+            : base(imageOverlaySettings, false) { }
 
         public override void Dispose()
         {
             _bmp?.Dispose();
         }
 
-        protected override IDisposable GetImage(IEditableFrame Editor, out Size Size)
+        protected override IDisposable GetImage(IEditableFrame editor, out Size size)
         {
             if (_bmp == null)
             {
-                _bmp = Editor.LoadBitmap(Settings.Source, out _size);
+                _bmp = editor.LoadBitmap(Settings.Source, out _size);
             }
 
-            Size = _size;
+            size = _size;
 
             return _bmp;
         }

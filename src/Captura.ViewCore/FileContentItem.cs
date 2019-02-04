@@ -1,16 +1,16 @@
 ﻿using System.IO;
 
-namespace Captura.Models
+namespace Captura.ViewCore
 {
     public class FileContentItem
     {
         public string FileName { get; }
 
-        public FileContentItem(string FileName)
+        public FileContentItem(string fileName)
         {
-            this.FileName = FileName;
+            FileName = fileName;
 
-            Name = Path.GetFileNameWithoutExtension(FileName);
+            Name = Path.GetFileNameWithoutExtension(fileName);
         }
 
         public string Name { get; }

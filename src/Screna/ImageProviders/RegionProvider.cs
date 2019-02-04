@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Drawing;
-using Captura;
+using Captura.Base.Images;
 using Captura.Native;
+using Screna.Frames;
 
-namespace Screna
+namespace Screna.ImageProviders
 {
     public class RegionProvider : IImageProvider
     {
-        Rectangle _region;
-        readonly Func<Point> _locationFunc;
-        readonly bool _includeCursor;
-        readonly Func<Point, Point> _transform;
+        private Rectangle _region;
+        private readonly Func<Point> _locationFunc;
+        private readonly bool _includeCursor;
+        private readonly Func<Point, Point> _transform;
 
-        readonly IntPtr _hdcSrc, _hdcDest, _hBitmap;
+        private readonly IntPtr _hdcSrc, _hdcDest, _hBitmap;
 
-        public RegionProvider(Rectangle Region, bool IncludeCursor)
-            : this(Region, IncludeCursor, () => Region.Location) { }
+        public RegionProvider(Rectangle region, bool includeCursor)
+            : this(region, includeCursor, () => region.Location) { }
 
-        public RegionProvider(Rectangle Region, bool IncludeCursor, Func<Point> LocationFunc)
+        public RegionProvider(Rectangle region, bool includeCursor, Func<Point> locationFunc)
         {
-            _region = Region;
-            _includeCursor = IncludeCursor;
-            _locationFunc = LocationFunc;
+            _region = region;
+            _includeCursor = includeCursor;
+            _locationFunc = locationFunc;
 
             // Width and Height must be even.
             // Use these for Bitmap size, but capture as per region size
@@ -33,7 +34,7 @@ namespace Screna
             if (Height % 2 == 1)
                 ++Height;
 
-            _transform = P => new Point(P.X - _region.X, P.Y - _region.Y);
+            _transform = point => new Point(point.X - _region.X, point.Y - _region.Y);
 
             _hdcSrc = User32.GetDC(IntPtr.Zero);
 

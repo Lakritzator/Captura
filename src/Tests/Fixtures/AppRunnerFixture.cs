@@ -3,7 +3,7 @@ using System.Diagnostics;
 using TestStack.White;
 using TestStack.White.UIItems.WindowItems;
 
-namespace Captura.Tests.Views
+namespace Tests.Fixtures
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class AppRunnerFixture : IDisposable

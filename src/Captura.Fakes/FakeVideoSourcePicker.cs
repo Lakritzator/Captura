@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base;
+using Captura.Base.Services;
 
-namespace Captura.Models
+namespace Captura.Fakes
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FakeVideoSourcePicker : IVideoSourcePicker
@@ -12,7 +14,7 @@ namespace Captura.Models
 
         public IWindow SelectedWindow { get; set; }
 
-        public IWindow PickWindow(Predicate<IWindow> Filter = null) => SelectedWindow;
+        public IWindow PickWindow(Predicate<IWindow> filter = null) => SelectedWindow;
 
         public IScreen SelectedScreen { get; set; }
 

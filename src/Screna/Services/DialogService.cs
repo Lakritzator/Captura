@@ -1,18 +1,19 @@
 ﻿using System.Windows.Forms;
+using Captura.Base.Services;
 using Ookii.Dialogs;
 
-namespace Captura.Models
+namespace Screna.Services
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class DialogService : IDialogService
     {
-        public string PickFolder(string Current, string Description)
+        public string PickFolder(string current, string description)
         {
             using (var dlg = new VistaFolderBrowserDialog
             {
-                SelectedPath = Current,
+                SelectedPath = current,
                 UseDescriptionForTitle = true,
-                Description = Description
+                Description = description
             })
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
@@ -22,14 +23,14 @@ namespace Captura.Models
             return null;
         }
 
-        public string PickFile(string InitialFolder, string Description)
+        public string PickFile(string initialFolder, string description)
         {
             var ofd = new OpenFileDialog
             {
                 CheckFileExists = true,
                 CheckPathExists = true,
-                InitialDirectory = InitialFolder,
-                Title = Description
+                InitialDirectory = initialFolder,
+                Title = description
             };
 
             return ofd.ShowDialog() == DialogResult.OK ? ofd.FileName : null;

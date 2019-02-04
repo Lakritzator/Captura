@@ -2,12 +2,14 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Captura;
-using Captura.Audio;
+using Captura.Base;
+using Captura.Base.Audio;
+using Captura.Base.Images;
+using Captura.Base.Video;
 
 // ReSharper disable MethodSupportsCancellation
 
-namespace Screna
+namespace Screna.Recorder
 {
     /// <summary>
     /// Default implementation of <see cref="IRecorder"/> interface.
@@ -16,49 +18,50 @@ namespace Screna
     public class Recorder : IRecorder
     {
         #region Fields
-        IAudioProvider _audioProvider;
-        IVideoFileWriter _videoWriter;
-        IAudioFileWriter _audioWriter;
-        IImageProvider _imageProvider;
 
-        readonly int _frameRate;
+        private IAudioProvider _audioProvider;
+        private IVideoFileWriter _videoWriter;
+        private IAudioFileWriter _audioWriter;
+        private IImageProvider _imageProvider;
 
-        readonly Stopwatch _sw;
+        private readonly int _frameRate;
 
-        readonly ManualResetEvent _continueCapturing;
-        readonly CancellationTokenSource _cancellationTokenSource;
-        readonly CancellationToken _cancellationToken;
+        private readonly Stopwatch _sw;
 
-        readonly Task _recordTask;
+        private readonly ManualResetEvent _continueCapturing;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly CancellationToken _cancellationToken;
 
-        readonly object _syncLock = new object();
+        private readonly Task _recordTask;
+
+        private readonly object _syncLock = new object();
         #endregion
 
         /// <summary>
         /// Creates a new instance of <see cref="IRecorder"/> writing to <see cref="IVideoFileWriter"/>.
         /// </summary>
-        /// <param name="VideoWriter">The <see cref="IVideoFileWriter"/> to write to.</param>
-        /// <param name="ImageProvider">The image source.</param>
-        /// <param name="FrameRate">Video Frame Rate.</param>
-        /// <param name="AudioProvider">The audio source. null = no audio.</param>
-        public Recorder(IVideoFileWriter VideoWriter, IImageProvider ImageProvider, int FrameRate, IAudioProvider AudioProvider = null)
+        /// <param name="videoWriter">The <see cref="IVideoFileWriter"/> to write to.</param>
+        /// <param name="imageProvider">The image source.</param>
+        /// <param name="frameRate">Video Frame Rate.</param>
+        /// <param name="audioProvider">The audio source. null = no audio.</param>
+        public Recorder(IVideoFileWriter videoWriter, IImageProvider imageProvider, int frameRate, IAudioProvider audioProvider = null)
         {
-            _videoWriter = VideoWriter ?? throw new ArgumentNullException(nameof(VideoWriter));
-            _imageProvider = ImageProvider ?? throw new ArgumentNullException(nameof(ImageProvider));
-            _audioProvider = AudioProvider;
+            _videoWriter = videoWriter ?? throw new ArgumentNullException(nameof(videoWriter));
+            _imageProvider = imageProvider ?? throw new ArgumentNullException(nameof(imageProvider));
+            _audioProvider = audioProvider;
 
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
 
-            if (FrameRate <= 0)
-                throw new ArgumentException("Frame Rate must be possitive", nameof(FrameRate));
+            if (frameRate <= 0)
+                throw new ArgumentException("Frame Rate must be possitive", nameof(frameRate));
 
-            _frameRate = FrameRate;
+            _frameRate = frameRate;
 
             _continueCapturing = new ManualResetEvent(false);
 
-            if (VideoWriter.SupportsAudio && AudioProvider != null)
-                AudioProvider.DataAvailable += AudioProvider_DataAvailable;
+            if (videoWriter.SupportsAudio && audioProvider != null)
+                audioProvider.DataAvailable += AudioProvider_DataAvailable;
             else _audioProvider = null;
 
             _sw = new Stopwatch();
@@ -69,19 +72,19 @@ namespace Screna
         /// <summary>
         /// Creates a new instance of <see cref="IRecorder"/> writing to <see cref="IAudioFileWriter"/>.
         /// </summary>
-        /// <param name="AudioWriter">The <see cref="IAudioFileWriter"/> to write to.</param>
-        /// <param name="AudioProvider">The audio source.</param>
-        public Recorder(IAudioFileWriter AudioWriter, IAudioProvider AudioProvider)
+        /// <param name="audioWriter">The <see cref="IAudioFileWriter"/> to write to.</param>
+        /// <param name="audioProvider">The audio source.</param>
+        public Recorder(IAudioFileWriter audioWriter, IAudioProvider audioProvider)
         {
-            _audioWriter = AudioWriter ?? throw new ArgumentNullException(nameof(AudioWriter));
-            _audioProvider = AudioProvider ?? throw new ArgumentNullException(nameof(AudioProvider));
+            _audioWriter = audioWriter ?? throw new ArgumentNullException(nameof(audioWriter));
+            _audioProvider = audioProvider ?? throw new ArgumentNullException(nameof(audioProvider));
 
             _audioProvider.DataAvailable += AudioProvider_DataAvailable;
         }
 
-        Task<bool> _task;
+        private Task<bool> _task;
 
-        async Task DoRecord()
+        private async Task DoRecord()
         {
             try
             {
@@ -89,11 +92,11 @@ namespace Screna
                 var frameCount = 0;
 
                 // Returns false when stopped
-                bool AddFrame(IBitmapFrame Frame)
+                bool AddFrame(IBitmapFrame frame)
                 {
                     try
                     {
-                        _videoWriter.WriteFrame(Frame);
+                        _videoWriter.WriteFrame(frame);
 
                         ++frameCount;
 
@@ -172,11 +175,11 @@ namespace Screna
             }
         }
 
-        void AudioProvider_DataAvailable(object Sender, DataAvailableEventArgs E)
+        private void AudioProvider_DataAvailable(object sender, DataAvailableEventArgs dataAvailableEventArgs)
         {
             if (_videoWriter == null)
             {
-                _audioWriter.Write(E.Buffer, 0, E.Length);
+                _audioWriter.Write(dataAvailableEventArgs.Buffer, 0, dataAvailableEventArgs.Length);
                 return;
             }
 
@@ -188,7 +191,7 @@ namespace Screna
                         return;
                 }
 
-                _videoWriter.WriteAudio(E.Buffer, E.Length);
+                _videoWriter.WriteAudio(dataAvailableEventArgs.Buffer, dataAvailableEventArgs.Length);
             }
             catch (Exception e)
             {
@@ -208,7 +211,8 @@ namespace Screna
         }
 
         #region Dispose
-        void Dispose(bool TerminateRecord)
+
+        private void Dispose(bool terminateRecord)
         {
             if (_disposed)
                 return;
@@ -230,15 +234,20 @@ namespace Screna
                 // Resume record loop if paused so it can exit
                 _continueCapturing.Set();
 
-                if (TerminateRecord)
+                if (terminateRecord)
                     _recordTask.Wait();
 
                 try
                 {
                     if (_task != null && !_task.IsCompleted)
+                    {
                         _task.GetAwaiter().GetResult();
+                    }
                 }
-                catch { }
+                catch
+                {
+                    // Ignored in dispose
+                }
 
                 _videoWriter.Dispose();
                 _videoWriter = null;
@@ -266,14 +275,14 @@ namespace Screna
             }
         }
 
-        bool _disposed;
+        private bool _disposed;
 
         /// <summary>
         /// Fired when an error occurs
         /// </summary>
         public event Action<Exception> ErrorOccurred;
 
-        void ThrowIfDisposed()
+        private void ThrowIfDisposed()
         {
             lock (_syncLock)
             {

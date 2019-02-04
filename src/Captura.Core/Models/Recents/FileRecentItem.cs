@@ -3,24 +3,29 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Input;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Recent;
+using Captura.Base.Services;
+using Captura.Loc;
 using Screna;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Recents
 {
     public class FileRecentItem : NotifyPropertyChanged, IRecentItem
     {
         public string FileName { get; }
         public RecentFileType FileType { get; }
 
-        public FileRecentItem(string FileName, RecentFileType FileType, bool IsSaving = false)
+        public FileRecentItem(string fileName, RecentFileType fileType, bool isSaving = false)
         {
-            this.FileName = FileName;
-            this.FileType = FileType;
-            this.IsSaving = IsSaving;
+            FileName = fileName;
+            FileType = fileType;
+            IsSaving = isSaving;
 
-            Display = Path.GetFileName(FileName);
+            Display = Path.GetFileName(fileName);
 
-            ClickCommand = new DelegateCommand(() => ServiceProvider.LaunchFile(new ProcessStartInfo(FileName)));
+            ClickCommand = new DelegateCommand(() => ServiceProvider.LaunchFile(new ProcessStartInfo(fileName)));
 
             RemoveCommand = new DelegateCommand(() => RemoveRequested?.Invoke());
 
@@ -28,26 +33,26 @@ namespace Captura.Models
             var loc = ServiceProvider.Get<LanguageManager>();
             var windowService = ServiceProvider.Get<IMainWindow>();
 
-            Icon = GetIcon(FileType, icons);
-            IconColor = GetColor(FileType);
+            Icon = GetIcon(fileType, icons);
+            IconColor = GetColor(fileType);
 
             var list = new List<RecentAction>
             {
-                new RecentAction(loc.CopyPath, icons.Clipboard, () => this.FileName.WriteToClipboard())
+                new RecentAction(loc.CopyPath, icons.Clipboard, () => FileName.WriteToClipboard())
             };
 
             void AddTrimMedia()
             {
-                list.Add(new RecentAction(loc.Trim, icons.Trim, () => windowService.TrimMedia(FileName)));
+                list.Add(new RecentAction(loc.Trim, icons.Trim, () => windowService.TrimMedia(fileName)));
             }
 
-            switch (FileType)
+            switch (fileType)
             {
                 case RecentFileType.Image:
                     list.Add(new RecentAction(loc.CopyToClipboard, icons.Clipboard, OnCopyToClipboardExecute));
                     list.Add(new RecentAction(loc.UploadToImgur, icons.Upload, OnUploadToImgurExecute));
-                    list.Add(new RecentAction(loc.Edit, icons.Pencil, () => windowService.EditImage(FileName)));
-                    list.Add(new RecentAction(loc.Crop, icons.Crop, () => windowService.CropImage(FileName)));
+                    list.Add(new RecentAction(loc.Edit, icons.Pencil, () => windowService.EditImage(fileName)));
+                    list.Add(new RecentAction(loc.Crop, icons.Crop, () => windowService.CropImage(fileName)));
                     break;
 
                 case RecentFileType.Audio:
@@ -56,7 +61,7 @@ namespace Captura.Models
 
                 case RecentFileType.Video:
                     AddTrimMedia();
-                    list.Add(new RecentAction("Upload to YouTube", icons.YouTube, () => windowService.UploadToYouTube(FileName)));
+                    list.Add(new RecentAction("Upload to YouTube", icons.YouTube, () => windowService.UploadToYouTube(fileName)));
                     break;
             }
 
@@ -122,26 +127,26 @@ namespace Captura.Models
             RemoveRequested?.Invoke();
         }
 
-        static string GetIcon(RecentFileType ItemType, IIconSet Icons)
+        static string GetIcon(RecentFileType itemType, IIconSet icons)
         {
-            switch (ItemType)
+            switch (itemType)
             {
                 case RecentFileType.Audio:
-                    return Icons.Music;
+                    return icons.Music;
 
                 case RecentFileType.Image:
-                    return Icons.Image;
+                    return icons.Image;
 
                 case RecentFileType.Video:
-                    return Icons.Video;
+                    return icons.Video;
             }
 
             return null;
         }
 
-        static string GetColor(RecentFileType ItemType)
+        static string GetColor(RecentFileType itemType)
         {
-            switch (ItemType)
+            switch (itemType)
             {
                 case RecentFileType.Audio:
                     return "DodgerBlue";

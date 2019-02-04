@@ -2,10 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.Base.Services;
 using Screna;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class CrashLogsViewModel : NotifyPropertyChanged
@@ -18,7 +19,7 @@ namespace Captura.ViewModels
             {
                 CrashLogs = new ObservableCollection<FileContentItem>(Directory
                     .EnumerateFiles(folder)
-                    .Select(FileName => new FileContentItem(FileName))
+                    .Select(fileName => new FileContentItem(fileName))
                     .Reverse());
 
                 if (CrashLogs.Count > 0)
@@ -32,7 +33,7 @@ namespace Captura.ViewModels
             RemoveCommand = new DelegateCommand(OnRemoveExecute);
         }
 
-        void OnRemoveExecute()
+        private void OnRemoveExecute()
         {
             if (SelectedCrashLog != null)
             {
@@ -49,7 +50,7 @@ namespace Captura.ViewModels
 
         public ObservableCollection<FileContentItem> CrashLogs { get; }
 
-        FileContentItem _selectedCrashLog;
+        private FileContentItem _selectedCrashLog;
 
         public FileContentItem SelectedCrashLog
         {

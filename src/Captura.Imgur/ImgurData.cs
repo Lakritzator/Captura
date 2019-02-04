@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Captura.Models
+namespace Captura.Imgur
 {
-    class ImgurData
+    internal class ImgurData
     {
         [JsonProperty("id")]
         public string Id { get; set; }

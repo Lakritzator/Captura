@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Captura.Audio;
+using Captura.Base.Audio;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using WaveFormat = Captura.Audio.WaveFormat;
+using WaveFormat = Captura.Base.Audio.WaveFormat.WaveFormat;
 
 namespace Captura.NAudio
 {
@@ -21,15 +21,15 @@ namespace Captura.NAudio
         byte[] _buffer;
         const int ReadInterval = 200;
 
-        public MixedAudioProvider(IEnumerable<NAudioProvider> AudioProviders)
+        public MixedAudioProvider(IEnumerable<NAudioProvider> audioProviders)
         {
-            foreach (var provider in AudioProviders)
+            foreach (var provider in audioProviders)
             {
                 var bufferedProvider = new BufferedWaveProvider(provider.NAudioWaveFormat);
 
-                provider.DataAvailable += (S, E) =>
+                provider.DataAvailable += (sender, e) =>
                 {
-                    bufferedProvider.AddSamples(E.Buffer, 0, E.Length);
+                    bufferedProvider.AddSamples(e.Buffer, 0, e.Length);
                 };
 
                 var sampleProvider = bufferedProvider.ToSampleProvider();

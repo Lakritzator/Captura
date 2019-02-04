@@ -1,4 +1,4 @@
-Captura.Webcam is adapted from ScreenToGif
+Captura.WebCam is adapted from ScreenToGif
 
 # Microsoft Public License (Ms-PL)
 

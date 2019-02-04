@@ -1,4 +1,6 @@
-﻿namespace Captura
+﻿using Captura.Base.Settings;
+
+namespace Captura.Core.Settings.Models
 {
     public class VideoSettings : PropertyStore
     {
@@ -26,7 +28,7 @@
             set => Set(value);
         }
 
-        public string Webcam
+        public string WebCam
         {
             get => Get("");
             set => Set(value);

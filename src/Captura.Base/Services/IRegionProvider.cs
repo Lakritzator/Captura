@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using Captura.Base.Video;
 
-namespace Captura.Models
+namespace Captura.Base.Services
 {
     public interface IRegionProvider
     {

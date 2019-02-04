@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
+using Captura.Base;
+using Captura.Base.Notification;
+using Captura.Base.Services;
+using Captura.Loc;
 using Screna;
 
-namespace Captura
+namespace Captura.Core.Models.Notifications
 {
     public class ImageUploadNotification : NotifyPropertyChanged, INotification
     {
@@ -39,20 +43,20 @@ namespace Captura
 
         string _link;
 
-        public void RaiseFinished(string Link)
+        public void RaiseFinished(string link)
         {
-            _link = Link;
+            _link = link;
 
             Finished = true;
             PrimaryText = _loc.ImageUploadSuccess;
-            SecondaryText = Link;
+            SecondaryText = link;
 
             var icons = ServiceProvider.Get<IIconSet>();
 
             var copyLinkAction = AddAction();
             copyLinkAction.Name = _loc.CopyToClipboard;
             copyLinkAction.Icon = icons.Link;
-            copyLinkAction.Click += Link.WriteToClipboard;
+            copyLinkAction.Click += link.WriteToClipboard;
         }
 
         readonly ObservableCollection<NotificationAction> _actions = new ObservableCollection<NotificationAction>();
@@ -67,7 +71,7 @@ namespace Captura
 
             if (_syncContext != null)
             {
-                _syncContext.Post(S => _actions.Add(action), null);
+                _syncContext.Post(state => _actions.Add(action), null);
             }
             else _actions.Add(action);
 

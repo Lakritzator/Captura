@@ -1,88 +1,95 @@
 ﻿using System.Reactive.Linq;
-using Captura.Models;
+using Captura.Base.Audio;
+using Captura.Core.Models;
+using Captura.Core.Models.Discard;
+using Captura.Core.Settings;
+using Captura.Core.ViewModels;
+using Captura.FFmpeg.Video;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using Screna.Gif;
+using Screna.VideoSourceProviders;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ViewConditionsModel
     {
-        public ViewConditionsModel(VideoSourcesViewModel VideoSourcesViewModel,
-            VideoWritersViewModel VideoWritersViewModel,
-            Settings Settings,
-            RecordingModel RecordingModel,
-            AudioSource AudioSource)
+        public ViewConditionsModel(VideoSourcesViewModel videoSourcesViewModel,
+            VideoWritersViewModel videoWritersViewModel,
+            Settings settings,
+            RecordingModel recordingModel,
+            AudioSource audioSource)
         {
-            IsRegionMode = VideoSourcesViewModel
-                .ObserveProperty(M => M.SelectedVideoSourceKind)
-                .Select(M => M is RegionSourceProvider)
+            IsRegionMode = videoSourcesViewModel
+                .ObserveProperty(sourcesViewModel => sourcesViewModel.SelectedVideoSourceKind)
+                .Select(videoSourceProvider => videoSourceProvider is RegionSourceProvider)
                 .ToReadOnlyReactivePropertySlim();
 
-            IsAudioMode = VideoSourcesViewModel
-                .ObserveProperty(M => M.SelectedVideoSourceKind)
-                .Select(M => M is NoVideoSourceProvider)
+            IsAudioMode = videoSourcesViewModel
+                .ObserveProperty(sourcesViewModel => sourcesViewModel.SelectedVideoSourceKind)
+                .Select(videoSourceProvider => videoSourceProvider is NoVideoSourceProvider)
                 .ToReadOnlyReactivePropertySlim();
 
-            MultipleVideoWriters = VideoWritersViewModel.AvailableVideoWriters
-                .ObserveProperty(M => M.Count)
-                .Select(M => M > 1)
+            MultipleVideoWriters = videoWritersViewModel.AvailableVideoWriters
+                .ObserveProperty(readOnlyObservableCollection => readOnlyObservableCollection.Count)
+                .Select(i => i > 1)
                 .ToReadOnlyReactivePropertySlim();
 
-            IsFFmpeg = VideoWritersViewModel
-                .ObserveProperty(M => M.SelectedVideoWriterKind)
-                .Select(M => M is FFmpegWriterProvider || M is StreamingWriterProvider)
+            IsFFmpeg = videoWritersViewModel
+                .ObserveProperty(writersViewModel => writersViewModel.SelectedVideoWriterKind)
+                .Select(videoWriterProvider => videoWriterProvider is FFmpegWriterProvider || videoWriterProvider is StreamingWriterProvider)
                 .ToReadOnlyReactivePropertySlim();
 
-            IsGifMode = VideoWritersViewModel
-                .ObserveProperty(M => M.SelectedVideoWriterKind)
-                .Select(M => M is GifWriterProvider)
+            IsGifMode = videoWritersViewModel
+                .ObserveProperty(writersViewModel => writersViewModel.SelectedVideoWriterKind)
+                .Select(videoWriterProvider => videoWriterProvider is GifWriterProvider)
                 .ToReadOnlyReactivePropertySlim();
 
             CanSelectFrameRate = new[]
                 {
-                    VideoWritersViewModel
-                        .ObserveProperty(M => M.SelectedVideoWriterKind)
-                        .Select(M => M is GifWriterProvider),
-                    Settings.Gif
-                        .ObserveProperty(M => M.VariableFrameRate)
+                    videoWritersViewModel
+                        .ObserveProperty(writersViewModel => writersViewModel.SelectedVideoWriterKind)
+                        .Select(videoWriterProvider => videoWriterProvider is GifWriterProvider),
+                    settings.Gif
+                        .ObserveProperty(gifSettings => gifSettings.VariableFrameRate)
                 }
                 .CombineLatestValuesAreAllTrue()
-                .Select(M => !M)
+                .Select(b => !b)
                 .ToReadOnlyReactivePropertySlim();
 
-            IsVideoQuality = VideoWritersViewModel
-                .ObserveProperty(M => M.SelectedVideoWriterKind)
-                .Select(M => !(M is GifWriterProvider || M is DiscardWriterProvider))
+            IsVideoQuality = videoWritersViewModel
+                .ObserveProperty(writersViewModel => writersViewModel.SelectedVideoWriterKind)
+                .Select(videoWriterProvider => !(videoWriterProvider is GifWriterProvider || videoWriterProvider is DiscardWriterProvider))
                 .ToReadOnlyReactivePropertySlim();
 
-            CanChangeWebcam = new[]
+            CanChangeWebCam = new[]
                 {
-                    RecordingModel
-                        .ObserveProperty(M => M.RecorderState)
-                        .Select(M => M == RecorderState.NotRecording),
-                    Settings.WebcamOverlay
-                        .ObserveProperty(M => M.SeparateFile)
+                    recordingModel
+                        .ObserveProperty(model => model.RecorderState)
+                        .Select(recorderState => recorderState == RecorderState.NotRecording),
+                    settings.WebCamOverlay
+                        .ObserveProperty(webCamOverlaySettings => webCamOverlaySettings.SeparateFile)
                 }
-                .CombineLatest(M => !M[1] || M[0]) // Not SeparateFile or NotRecording
+                .CombineLatest(bools => !bools[1] || bools[0]) // Not SeparateFile or NotRecording
                 .ToReadOnlyReactivePropertySlim();
 
             CanChangeAudioSources = new[]
                 {
-                    RecordingModel
-                        .ObserveProperty(M => M.RecorderState)
-                        .Select(M => M == RecorderState.NotRecording),
-                    Settings.Audio
-                        .ObserveProperty(M => M.SeparateFilePerSource)
+                    recordingModel
+                        .ObserveProperty(model => model.RecorderState)
+                        .Select(recorderState => recorderState == RecorderState.NotRecording),
+                    settings.Audio
+                        .ObserveProperty(audioSettings => audioSettings.SeparateFilePerSource)
                 }
-                .CombineLatest(M =>
-                    AudioSource.CanChangeSourcesDuringRecording ||
-                    !M[1] || M[0]) // Not SeparateFilePerSource or NotRecording
+                .CombineLatest(bools =>
+                    audioSource.CanChangeSourcesDuringRecording ||
+                    !bools[1] || bools[0]) // Not SeparateFilePerSource or NotRecording
                 .ToReadOnlyReactivePropertySlim();
 
-            IsEnabled = RecordingModel
-                .ObserveProperty(M => M.RecorderState)
-                .Select(M => M == RecorderState.NotRecording)
+            IsEnabled = recordingModel
+                .ObserveProperty(model => model.RecorderState)
+                .Select(recorderState => recorderState == RecorderState.NotRecording)
                 .ToReadOnlyReactivePropertySlim();
         }
 
@@ -100,7 +107,7 @@ namespace Captura.ViewModels
 
         public IReadOnlyReactiveProperty<bool> IsVideoQuality { get; }
 
-        public IReadOnlyReactiveProperty<bool> CanChangeWebcam { get; }
+        public IReadOnlyReactiveProperty<bool> CanChangeWebCam { get; }
 
         public IReadOnlyReactiveProperty<bool> CanChangeAudioSources { get; }
 

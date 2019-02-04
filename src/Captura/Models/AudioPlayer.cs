@@ -1,33 +1,36 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Media;
+using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Core.Settings.Models;
 
 namespace Captura.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class AudioPlayer : IAudioPlayer
     {
-        readonly SoundSettings _settings;
-        readonly MediaPlayer _mediaPlayer;
+        private readonly SoundSettings _settings;
+        private readonly MediaPlayer _mediaPlayer;
 
-        public AudioPlayer(SoundSettings Settings)
+        public AudioPlayer(SoundSettings settings)
         {
-            _settings = Settings;
+            _settings = settings;
             _mediaPlayer = new MediaPlayer();
         }
 
-        void PlaySound(string Path)
+        private void PlaySound(string path)
         {
-            if (!File.Exists(Path))
+            if (!File.Exists(path))
                 return;
 
-            _mediaPlayer.Open(new Uri(Path));
+            _mediaPlayer.Open(new Uri(path));
             _mediaPlayer.Play();
         }
 
-        public void Play(SoundKind SoundKind)
+        public void Play(SoundKind soundKind)
         {
-            if (_settings.Items.TryGetValue(SoundKind, out var value))
+            if (_settings.Items.TryGetValue(soundKind, out var value))
                 PlaySound(value);
         }
     }

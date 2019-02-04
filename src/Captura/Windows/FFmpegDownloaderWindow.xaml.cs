@@ -1,9 +1,10 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Shell;
-using Captura.ViewModels;
+using Captura.Core;
+using Captura.FFmpeg;
 
-namespace Captura.Views
+namespace Captura.Windows
 {
     public partial class FFmpegDownloaderWindow
     {
@@ -11,33 +12,35 @@ namespace Captura.Views
         {
             InitializeComponent();
 
-            if (DataContext is FFmpegDownloadViewModel vm)
+            if (!(DataContext is FFmpegDownloadViewModel vm))
             {
-                vm.CloseWindowAction += Close;
-
-                vm.ProgressChanged += P =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
-                        TaskbarItemInfo.ProgressValue = P / 100.0;
-                    });
-                };
-
-                vm.AfterDownload += Success =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        TaskbarItemInfo.ProgressState = Success ? TaskbarItemProgressState.None : TaskbarItemProgressState.Error;
-                        TaskbarItemInfo.ProgressValue = 1;
-                    });
-                };
+                return;
             }
+
+            vm.CloseWindowAction += Close;
+
+            vm.ProgressChanged += i =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    TaskbarItemInfo.ProgressState = TaskbarItemProgressState.Normal;
+                    TaskbarItemInfo.ProgressValue = i / 100.0;
+                });
+            };
+
+            vm.AfterDownload += success =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    TaskbarItemInfo.ProgressState = success ? TaskbarItemProgressState.None : TaskbarItemProgressState.Error;
+                    TaskbarItemInfo.ProgressValue = 1;
+                });
+            };
         }
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => Close();
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
-        void SelectTargetFolder(object Sender, MouseButtonEventArgs E)
+        private void SelectTargetFolder(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is FFmpegDownloadViewModel vm)
             {

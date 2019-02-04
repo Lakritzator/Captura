@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Media.Imaging;
 using Clipboard = System.Windows.Forms.Clipboard;
 
-namespace Captura
+namespace Captura.ImageEditor
 {
     public static class ImageFromClipboard
     {

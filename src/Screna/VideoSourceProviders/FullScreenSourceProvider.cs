@@ -1,15 +1,20 @@
-namespace Captura.Models
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.Loc;
+using Screna.VideoItems;
+
+namespace Screna.VideoSourceProviders
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FullScreenSourceProvider : VideoSourceProviderBase
     {
-        public FullScreenSourceProvider(LanguageManager Loc,
-            IIconSet Icons,
+        public FullScreenSourceProvider(LanguageManager loc,
+            IIconSet icons,
             // ReSharper disable once SuggestBaseTypeForParameter
-            FullScreenItem FullScreenItem) : base(Loc)
+            FullScreenItem fullScreenItem) : base(loc)
         {
-            Source = FullScreenItem;
-            Icon = Icons.MultipleMonitor;
+            Source = fullScreenItem;
+            Icon = icons.MultipleMonitor;
         }
 
         public override IVideoItem Source { get; }
@@ -22,11 +27,11 @@ namespace Captura.Models
 
         public override string Serialize() => "";
 
-        public override bool Deserialize(string Serialized) => true;
+        public override bool Deserialize(string serialized) => true;
 
-        public override bool ParseCli(string Arg)
+        public override bool ParseCli(string arg)
         {
-            return Arg == "desktop";
+            return arg == "desktop";
         }
     }
 }

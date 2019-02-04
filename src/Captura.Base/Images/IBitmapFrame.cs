@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Captura
+namespace Captura.Base.Images
 {
     public interface IBitmapFrame : IDisposable
     {
@@ -8,6 +8,6 @@ namespace Captura
 
         int Height { get; }
 
-        void CopyTo(byte[] Buffer, int Length);
+        void CopyTo(byte[] buffer, int length);
     }
 }

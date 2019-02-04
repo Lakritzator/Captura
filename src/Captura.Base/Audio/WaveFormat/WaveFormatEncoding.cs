@@ -1,4 +1,4 @@
-namespace Captura.Audio
+namespace Captura.Base.Audio.WaveFormat
 {
     /// <summary>
     /// WaveFormat Encoding

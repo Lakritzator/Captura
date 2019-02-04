@@ -5,76 +5,77 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Input.StylusPlugIns;
 using System.Windows.Media;
+using Captura.ImageEditor.Strokes;
 
-namespace Captura
+namespace Captura.ImageEditor.DynamicRenderers
 {
     public class ArrowDynamicRenderer : DynamicRenderer, IDynamicRenderer
     {
-        bool _isManipulating;
+        private bool _isManipulating;
 
-        Point _firstPoint;
+        private Point _firstPoint;
 
         public ArrowDynamicRenderer()
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
         }
 
-        protected override void OnStylusDown(RawStylusInput RawStylusInput)
+        protected override void OnStylusDown(RawStylusInput rawStylusInput)
         {
-            _firstPoint = RawStylusInput.GetStylusPoints().First().ToPoint();
-            base.OnStylusDown(RawStylusInput);
+            _firstPoint = rawStylusInput.GetStylusPoints().First().ToPoint();
+            base.OnStylusDown(rawStylusInput);
         }
 
-        const double ArrowAngle = Math.PI / 180 * 150;
-        const int ArrowLength = 10;
+        private const double ArrowAngle = Math.PI / 180 * 150;
+        private const int ArrowLength = 10;
 
-        public static void GetArrowPoints(Point Start, Point End, out Point P1, out Point P2)
+        public static void GetArrowPoints(Point start, Point end, out Point p1, out Point p2)
         {
-            var theta = Math.Atan2(End.Y - Start.Y, End.X - Start.X);
+            var theta = Math.Atan2(end.Y - start.Y, end.X - start.X);
 
-            P1 = new Point(End.X + ArrowLength * Math.Cos(theta + ArrowAngle),
-                End.Y + ArrowLength * Math.Sin(theta + ArrowAngle));
+            p1 = new Point(end.X + ArrowLength * Math.Cos(theta + ArrowAngle),
+                end.Y + ArrowLength * Math.Sin(theta + ArrowAngle));
 
-            P2 = new Point(End.X + ArrowLength * Math.Cos(theta - ArrowAngle),
-                End.Y + ArrowLength * Math.Sin(theta - ArrowAngle));
+            p2 = new Point(end.X + ArrowLength * Math.Cos(theta - ArrowAngle),
+                end.Y + ArrowLength * Math.Sin(theta - ArrowAngle));
         }
 
-        static void Draw(DrawingContext DrawingContext, Point Start, Point End, Pen Pen)
+        private static void Draw(DrawingContext drawingContext, Point start, Point end, Pen pen)
         {
-            LineDynamicRenderer.Prepare(ref Start, ref End);
+            LineDynamicRenderer.Prepare(ref start, ref end);
 
-            DrawingContext.DrawLine(Pen, Start, End);
+            drawingContext.DrawLine(pen, start, end);
 
-            GetArrowPoints(Start, End, out var p1, out var p2);
+            GetArrowPoints(start, end, out var p1, out var p2);
 
-            DrawingContext.DrawLine(Pen, End, p1);
-            DrawingContext.DrawLine(Pen, End, p2);
+            drawingContext.DrawLine(pen, end, p1);
+            drawingContext.DrawLine(pen, end, p2);
         }
 
-        protected override void OnDraw(DrawingContext DrawingContext, StylusPointCollection StylusPoints, Geometry Geometry, Brush FillBrush)
+        protected override void OnDraw(DrawingContext drawingContext, StylusPointCollection stylusPoints, Geometry geometry, Brush fillBrush)
         {
             if (!_isManipulating)
             {
                 _isManipulating = true;
 
                 var currentStylus = Stylus.CurrentStylusDevice;
-                Reset(currentStylus, StylusPoints);
+                Reset(currentStylus, stylusPoints);
             }
 
             _isManipulating = false;
 
-            Draw(DrawingContext, _firstPoint, StylusPoints.First().ToPoint(), new Pen(FillBrush, 2));
+            Draw(drawingContext, _firstPoint, stylusPoints.First().ToPoint(), new Pen(fillBrush, 2));
         }
 
-        protected override void OnStylusUp(RawStylusInput RawStylusInput)
+        protected override void OnStylusUp(RawStylusInput rawStylusInput)
         {
             _firstPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
-            base.OnStylusUp(RawStylusInput);
+            base.OnStylusUp(rawStylusInput);
         }
 
-        public Stroke GetStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttribs)
+        public Stroke GetStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttribs)
         {
-            return new ArrowStroke(StylusPoints, DrawingAttribs);
+            return new ArrowStroke(stylusPoints, drawingAttribs);
         }
     }
 }

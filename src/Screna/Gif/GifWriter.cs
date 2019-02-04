@@ -1,8 +1,10 @@
 using System;
 using System.IO;
-using Captura;
+using Captura.Base.Images;
+using Captura.Base.Video;
+using Screna.Frames;
 
-namespace Screna
+namespace Screna.Gif
 {
     /// <summary>
     /// Creates a GIF using .Net GIF encoding and additional animation headers.
@@ -10,67 +12,68 @@ namespace Screna
     public class GifWriter : IVideoFileWriter
     {
         #region Fields
-        const long SourceGlobalColorInfoPosition = 10,
+
+        private const long SourceGlobalColorInfoPosition = 10,
             SourceImageBlockPosition = 789;
 
-        readonly BinaryWriter _writer;
-        bool _firstFrame = true;
-        readonly int _defaultFrameDelay, _repeat;
+        private readonly BinaryWriter _writer;
+        private bool _firstFrame = true;
+        private readonly int _defaultFrameDelay, _repeat;
         #endregion
 
         /// <summary>
         /// Creates a new instance of GifWriter.
         /// </summary>
-        /// <param name="OutStream">The <see cref="Stream"/> to output the Gif to.</param>
-        /// <param name="FrameRate">Fame Rate.</param>
-        /// <param name="Repeat">No of times the Gif should repeat... -1 to repeat indefinitely.</param>
-        public GifWriter(Stream OutStream, int FrameRate, int Repeat = -1)
+        /// <param name="outStream">The <see cref="Stream"/> to output the Gif to.</param>
+        /// <param name="frameRate">Fame Rate.</param>
+        /// <param name="repeat">No of times the Gif should repeat... -1 to repeat indefinitely.</param>
+        public GifWriter(Stream outStream, int frameRate, int repeat = -1)
         {
-            if (Repeat < -1)
-                throw new ArgumentOutOfRangeException(nameof(Repeat));
+            if (repeat < -1)
+                throw new ArgumentOutOfRangeException(nameof(repeat));
 
-            _writer = new BinaryWriter(OutStream ?? throw new ArgumentNullException(nameof(OutStream)));
-            _defaultFrameDelay = 1000 / FrameRate;
-            _repeat = Repeat;
+            _writer = new BinaryWriter(outStream ?? throw new ArgumentNullException(nameof(outStream)));
+            _defaultFrameDelay = 1000 / frameRate;
+            _repeat = repeat;
         }
 
         /// <summary>
         /// Creates a new instance of GifWriter.
         /// </summary>
-        /// <param name="FileName">The path to the file to output the Gif to.</param>
-        /// <param name="FrameRate">Frame Rate.</param>
-        /// <param name="Repeat">No of times the Gif should repeat... -1 to repeat indefinitely.</param>
-        public GifWriter(string FileName, int FrameRate, int Repeat = -1)
-            : this(new FileStream(FileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read), FrameRate, Repeat) { }
+        /// <param name="fileName">The path to the file to output the Gif to.</param>
+        /// <param name="frameRate">Frame Rate.</param>
+        /// <param name="repeat">No of times the Gif should repeat... -1 to repeat indefinitely.</param>
+        public GifWriter(string fileName, int frameRate, int repeat = -1)
+            : this(new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read), frameRate, repeat) { }
 
         /// <summary>
         /// <see cref="GifWriter"/> does not Support Audio.
         /// </summary>
-        public void WriteAudio(byte[] Buffer, int Count) { }
+        public void WriteAudio(byte[] buffer, int count) { }
 
-        MemoryStream _gifStream = new MemoryStream();
+        private MemoryStream _gifStream = new MemoryStream();
 
-        int _width, _height;
+        private int _width, _height;
 
         /// <summary>
         /// Adds a frame to this animation.
         /// </summary>
-        public void WriteFrame(IBitmapFrame Frame, int Delay)
+        public void WriteFrame(IBitmapFrame frame, int delay)
         {
             _gifStream.Position = 0;
             
             if (_firstFrame)
             {
-                if (Frame is RepeatFrame)
+                if (frame is RepeatFrame)
                     return;
 
-                _width = Frame.Width;
-                _height = Frame.Height;
+                _width = frame.Width;
+                _height = frame.Height;
             }
 
-            if (Frame is DrawingFrameBase frameBase)
+            if (frame is DrawingFrameBase frameBase)
             {
-                using (Frame)
+                using (frame)
                     frameBase.SaveGif(_gifStream);
             }
 
@@ -78,7 +81,7 @@ namespace Screna
             if (_firstFrame)
                 InitHeader(_gifStream, _writer, _width, _height);
 
-            WriteGraphicControlBlock(_gifStream, _writer, Delay);
+            WriteGraphicControlBlock(_gifStream, _writer, delay);
             WriteImageBlock(_gifStream, _writer, !_firstFrame, 0, 0, _width, _height);
             
             if (_firstFrame)
@@ -88,8 +91,8 @@ namespace Screna
         /// <summary>
         /// Writes a Image frame.
         /// </summary>
-        /// <param name="Image">Image frame to write.</param>
-        public void WriteFrame(IBitmapFrame Image) => WriteFrame(Image, _defaultFrameDelay);
+        /// <param name="image">Image frame to write.</param>
+        public void WriteFrame(IBitmapFrame image) => WriteFrame(image, _defaultFrameDelay);
         
         /// <summary>
         /// <see cref="GifWriter"/> does not support Audio.
@@ -97,99 +100,100 @@ namespace Screna
         public bool SupportsAudio => false;
 
         #region Write
-        void InitHeader(Stream SourceGif, BinaryWriter Writer, int Width, int Height)
+
+        private void InitHeader(Stream sourceGif, BinaryWriter writer, int width, int height)
         {
             // File Header
-            Writer.Write("GIF".ToCharArray()); // File type
-            Writer.Write("89a".ToCharArray()); // File Version
+            writer.Write("GIF".ToCharArray()); // File type
+            writer.Write("89a".ToCharArray()); // File Version
 
-            Writer.Write((short)Width); // Initial Logical Width
-            Writer.Write((short)Height); // Initial Logical Height
+            writer.Write((short)width); // Initial Logical Width
+            writer.Write((short)height); // Initial Logical Height
 
-            SourceGif.Position = SourceGlobalColorInfoPosition;
-            Writer.Write((byte)SourceGif.ReadByte()); // Global Color Table Info
-            Writer.Write((byte)0); // Background Color Index
-            Writer.Write((byte)0); // Pixel aspect ratio
-            WriteColorTable(SourceGif, Writer);
+            sourceGif.Position = SourceGlobalColorInfoPosition;
+            writer.Write((byte)sourceGif.ReadByte()); // Global Color Table Info
+            writer.Write((byte)0); // Background Color Index
+            writer.Write((byte)0); // Pixel aspect ratio
+            WriteColorTable(sourceGif, writer);
 
             // App Extension Header for Repeating
             if (_repeat == -1)
                 return;
 
-            Writer.Write(unchecked((short)0xff21)); // Application Extension Block Identifier
-            Writer.Write((byte)0x0b); // Application Block Size
-            Writer.Write("NETSCAPE2.0".ToCharArray()); // Application Identifier
-            Writer.Write((byte)3); // Application block length
-            Writer.Write((byte)1);
-            Writer.Write((short)_repeat); // Repeat count for images.
-            Writer.Write((byte)0); // terminator
+            writer.Write(unchecked((short)0xff21)); // Application Extension Block Identifier
+            writer.Write((byte)0x0b); // Application Block Size
+            writer.Write("NETSCAPE2.0".ToCharArray()); // Application Identifier
+            writer.Write((byte)3); // Application block length
+            writer.Write((byte)1);
+            writer.Write((short)_repeat); // Repeat count for images.
+            writer.Write((byte)0); // terminator
         }
 
-        static void WriteColorTable(Stream SourceGif, BinaryWriter Writer)
+        private static void WriteColorTable(Stream sourceGif, BinaryWriter writer)
         {
-            SourceGif.Position = 13; // Locating the image color table
+            sourceGif.Position = 13; // Locating the image color table
             var colorTable = new byte[768];
-            SourceGif.Read(colorTable, 0, colorTable.Length);
-            Writer.Write(colorTable, 0, colorTable.Length);
+            sourceGif.Read(colorTable, 0, colorTable.Length);
+            writer.Write(colorTable, 0, colorTable.Length);
         }
 
-        static void WriteGraphicControlBlock(Stream SourceGif, BinaryWriter Writer, int FrameDelay)
+        private static void WriteGraphicControlBlock(Stream sourceGif, BinaryWriter writer, int frameDelay)
         {
-            SourceGif.Position = 781; // Locating the source GCE
+            sourceGif.Position = 781; // Locating the source GCE
             var blockhead = new byte[8];
-            SourceGif.Read(blockhead, 0, blockhead.Length); // Reading source GCE
+            sourceGif.Read(blockhead, 0, blockhead.Length); // Reading source GCE
 
-            Writer.Write(unchecked((short)0xf921)); // Identifier
-            Writer.Write((byte)0x04); // Block Size
-            Writer.Write((byte)(blockhead[3] & 0xf7 | 0x08)); // Setting disposal flag
-            Writer.Write((short)(FrameDelay / 10)); // Setting frame delay
-            Writer.Write(blockhead[6]); // Transparent color index
-            Writer.Write((byte)0); // Terminator
+            writer.Write(unchecked((short)0xf921)); // Identifier
+            writer.Write((byte)0x04); // Block Size
+            writer.Write((byte)(blockhead[3] & 0xf7 | 0x08)); // Setting disposal flag
+            writer.Write((short)(frameDelay / 10)); // Setting frame delay
+            writer.Write(blockhead[6]); // Transparent color index
+            writer.Write((byte)0); // Terminator
         }
 
-        byte[] _buffer;
-        static readonly byte[] Header = new byte[11];
+        private byte[] _buffer;
+        private static readonly byte[] Header = new byte[11];
 
-        void WriteImageBlock(Stream SourceGif, BinaryWriter Writer, bool IncludeColorTable, int X, int Y, int Width, int Height)
+        private void WriteImageBlock(Stream sourceGif, BinaryWriter writer, bool includeColorTable, int x, int y, int width, int height)
         {
-            SourceGif.Position = SourceImageBlockPosition; // Locating the image block
+            sourceGif.Position = SourceImageBlockPosition; // Locating the image block
             
-            SourceGif.Read(Header, 0, Header.Length);
-            Writer.Write(Header[0]); // Separator
-            Writer.Write((short)X); // Position X
-            Writer.Write((short)Y); // Position Y
-            Writer.Write((short)Width); // Width
-            Writer.Write((short)Height); // Height
+            sourceGif.Read(Header, 0, Header.Length);
+            writer.Write(Header[0]); // Separator
+            writer.Write((short)x); // Position X
+            writer.Write((short)y); // Position Y
+            writer.Write((short)width); // Width
+            writer.Write((short)height); // Height
 
-            if (IncludeColorTable) // If first frame, use global color table - else use local
+            if (includeColorTable) // If first frame, use global color table - else use local
             {
-                SourceGif.Position = SourceGlobalColorInfoPosition;
-                Writer.Write((byte)(SourceGif.ReadByte() & 0x3f | 0x80)); // Enabling local color table
-                WriteColorTable(SourceGif, Writer);
+                sourceGif.Position = SourceGlobalColorInfoPosition;
+                writer.Write((byte)(sourceGif.ReadByte() & 0x3f | 0x80)); // Enabling local color table
+                WriteColorTable(sourceGif, writer);
             }
-            else Writer.Write((byte)(Header[9] & 0x07 | 0x07)); // Disabling local color table
+            else writer.Write((byte)(Header[9] & 0x07 | 0x07)); // Disabling local color table
 
-            Writer.Write(Header[10]); // LZW Min Code Size
+            writer.Write(Header[10]); // LZW Min Code Size
 
             // Read/Write image data
-            SourceGif.Position = SourceImageBlockPosition + Header.Length;
+            sourceGif.Position = SourceImageBlockPosition + Header.Length;
 
-            var dataLength = SourceGif.ReadByte();
+            var dataLength = sourceGif.ReadByte();
             while (dataLength > 0)
             {
                 if (_buffer == null || _buffer.Length < dataLength)
                     _buffer = new byte[dataLength];
                                                 
-                SourceGif.Read(_buffer, 0, dataLength);
+                sourceGif.Read(_buffer, 0, dataLength);
                 
-                Writer.Write((byte)dataLength);
-                Writer.Write(_buffer, 0, dataLength);
-                dataLength = SourceGif.ReadByte();
+                writer.Write((byte)dataLength);
+                writer.Write(_buffer, 0, dataLength);
+                dataLength = sourceGif.ReadByte();
             }
 
-            Writer.Write((byte)0); // Terminator
+            writer.Write((byte)0); // Terminator
 
-            Writer.Flush();
+            writer.Flush();
         }
         #endregion
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Captura;
+using Captura.Base.Services;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 
@@ -9,18 +9,18 @@ namespace DesktopDuplication
 {
     public class D3D9PreviewAssister : IDisposable
     {
-        readonly Direct3DEx _direct3D;
-        readonly DeviceEx _device;
+        private readonly Direct3DEx _direct3D;
+        private readonly DeviceEx _device;
 
-        public D3D9PreviewAssister(IPlatformServices PlatformServices)
+        public D3D9PreviewAssister(IPlatformServices platformServices)
         {
             _direct3D = new Direct3DEx();
 
-            var presentparams = new PresentParameters
+            var presentParameters = new PresentParameters
             {
                 Windowed = true,
                 SwapEffect = SwapEffect.Discard,
-                DeviceWindowHandle = PlatformServices.DesktopWindow.Handle,
+                DeviceWindowHandle = platformServices.DesktopWindow.Handle,
                 PresentationInterval = PresentInterval.Default
             };
 
@@ -29,28 +29,28 @@ namespace DesktopDuplication
                 DeviceType.Hardware,
                 IntPtr.Zero,
                 CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve,
-                presentparams);
+                presentParameters);
         }
 
-        public Texture GetSharedTexture(Texture2D Texture)
+        public Texture GetSharedTexture(Texture2D texture)
         {
-            return GetSharedD3D9(_device, Texture);
+            return GetSharedD3D9(_device, texture);
         }
 
         // Texture must be created with ResourceOptionFlags.Shared
         // Texture format must be B8G8R8A8_UNorm
-        static Texture GetSharedD3D9(DeviceEx Device, Texture2D RenderTarget)
+        private static Texture GetSharedD3D9(DeviceEx device, Texture2D renderTarget)
         {
-            using (var resource = RenderTarget.QueryInterface<SharpDX.DXGI.Resource>())
+            using (var resource = renderTarget.QueryInterface<SharpDX.DXGI.Resource>())
             {
                 var handle = resource.SharedHandle;
 
                 if (handle == IntPtr.Zero)
                     throw new ArgumentNullException(nameof(handle));
 
-                return new Texture(Device,
-                    RenderTarget.Description.Width,
-                    RenderTarget.Description.Height,
+                return new Texture(device,
+                    renderTarget.Description.Width,
+                    renderTarget.Description.Height,
                     1,
                     Usage.RenderTarget,
                     Format.A8R8G8B8,

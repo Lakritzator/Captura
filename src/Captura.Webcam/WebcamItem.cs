@@ -1,29 +1,31 @@
 ﻿using System;
-using Captura.Webcam;
+using Captura.Base;
+using Captura.Base.Services;
+using Captura.Loc;
 
-namespace Captura.Models
+namespace Captura.WebCam
 {
-    public class WebcamItem : NotifyPropertyChanged, IWebcamItem
+    public class WebCamItem : NotifyPropertyChanged, IWebCamItem
     {
-        WebcamItem()
+        private WebCamItem()
         {
-            Name = LanguageManager.Instance.NoWebcam;
+            Name = LanguageManager.Instance.NoWebCam;
 
-            LanguageManager.Instance.LanguageChanged += L =>
+            LanguageManager.Instance.LanguageChanged += cultureInfo =>
             {
-                Name = LanguageManager.Instance.NoWebcam;
+                Name = LanguageManager.Instance.NoWebCam;
 
                 RaisePropertyChanged(nameof(Name));
             };
         }
 
-        public WebcamItem(Filter Cam)
+        public WebCamItem(Filter cam)
         {
-            this.Cam = Cam ?? throw new ArgumentNullException(nameof(Cam));
-            Name = Cam.Name;
+            Cam = cam ?? throw new ArgumentNullException(nameof(cam));
+            Name = cam.Name;
         }
 
-        public static WebcamItem NoWebcam { get; } = new WebcamItem();
+        public static WebCamItem NoWebCam { get; } = new WebCamItem();
 
         public Filter Cam { get; }
 

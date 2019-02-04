@@ -1,19 +1,22 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Video;
+using Captura.FFmpeg.Audio;
+
+namespace Captura.FFmpeg.Video
 {
     public class FFmpegVideoWriterArgs : VideoWriterArgs
     {
-        public static FFmpegVideoWriterArgs FromVideoWriterArgs(VideoWriterArgs Args, FFmpegVideoArgsProvider VideoArgsProvider, FFmpegAudioArgsProvider AudioArgsProvider)
+        public static FFmpegVideoWriterArgs FromVideoWriterArgs(VideoWriterArgs args, FFmpegVideoArgsProvider videoArgsProvider, FFmpegAudioArgsProvider audioArgsProvider)
         {
             return new FFmpegVideoWriterArgs
             {
-                FileName = Args.FileName,
-                ImageProvider = Args.ImageProvider,
-                FrameRate = Args.FrameRate,
-                VideoQuality = Args.VideoQuality,
-                VideoArgsProvider = VideoArgsProvider,
-                AudioQuality = Args.AudioQuality,
-                AudioArgsProvider = AudioArgsProvider,
-                AudioProvider = Args.AudioProvider
+                FileName = args.FileName,
+                ImageProvider = args.ImageProvider,
+                FrameRate = args.FrameRate,
+                VideoQuality = args.VideoQuality,
+                VideoArgsProvider = videoArgsProvider,
+                AudioQuality = args.AudioQuality,
+                AudioArgsProvider = audioArgsProvider,
+                AudioProvider = args.AudioProvider
             };
         }
 

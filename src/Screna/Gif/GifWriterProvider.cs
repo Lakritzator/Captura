@@ -1,18 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Captura.Base;
+using Captura.Base.Video;
+using Captura.Loc;
 
-namespace Captura.Models
+namespace Screna.Gif
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class GifWriterProvider : NotifyPropertyChanged, IVideoWriterProvider
     {
-        readonly GifItem _gifItem;
+        private readonly GifItem _gifItem;
 
-        public GifWriterProvider(LanguageManager Loc, GifItem GifItem)
+        public GifWriterProvider(LanguageManager loc, GifItem gifItem)
         {
-            _gifItem = GifItem;
+            _gifItem = gifItem;
 
-            Loc.LanguageChanged += L => RaisePropertyChanged(nameof(Name));
+            loc.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Name));
         }
         
         public string Name => "Gif";

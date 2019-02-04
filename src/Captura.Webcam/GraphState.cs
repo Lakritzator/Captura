@@ -1,9 +1,9 @@
-﻿namespace Captura.Webcam
+﻿namespace Captura.WebCam
 {
     /// <summary> 
     /// Possible states of the interal filter graph.
     /// </summary>
-    enum GraphState
+    internal enum GraphState
     {
         /// <summary>
         /// No filter graph at all.

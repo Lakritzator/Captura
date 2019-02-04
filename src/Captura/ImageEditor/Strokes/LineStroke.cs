@@ -1,21 +1,22 @@
 ﻿using System.Linq;
 using System.Windows.Ink;
 using System.Windows.Input;
+using Captura.ImageEditor.DynamicRenderers;
 
-namespace Captura
+namespace Captura.ImageEditor.Strokes
 {
     public class LineStroke : Stroke
     {
-        static StylusPointCollection Points(StylusPointCollection StylusPoints)
+        private static StylusPointCollection Points(StylusPointCollection stylusPoints)
         {
-            var start = StylusPoints.First().ToPoint();
-            var end = StylusPoints.Last().ToPoint();
+            var start = stylusPoints.First().ToPoint();
+            var end = stylusPoints.Last().ToPoint();
 
             LineDynamicRenderer.Prepare(ref start, ref end);
 
             return new StylusPointCollection(new[] { start, end });
         }
 
-        public LineStroke(StylusPointCollection StylusPoints, DrawingAttributes DrawingAttributes) : base(Points(StylusPoints), DrawingAttributes) { }
+        public LineStroke(StylusPointCollection stylusPoints, DrawingAttributes drawingAttributes) : base(Points(stylusPoints), drawingAttributes) { }
     }
 }

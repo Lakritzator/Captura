@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.ImageEditor.Effects
 {
-    public delegate void ModifyPixel(ref byte Red, ref byte Green, ref byte Blue);
+    public delegate void ModifyPixel(ref byte red, ref byte green, ref byte blue);
 }

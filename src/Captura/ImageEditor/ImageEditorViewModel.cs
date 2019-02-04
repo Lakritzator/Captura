@@ -8,26 +8,33 @@ using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Captura.Base;
+using Captura.Base.Images;
+using Captura.Base.Services;
+using Captura.Core;
+using Captura.ImageEditor.Effects;
+using Captura.ImageEditor.History;
+using Captura.Presentation;
 using FirstFloor.ModernUI.Windows.Controls;
 using Microsoft.Win32;
 
-namespace Captura
+namespace Captura.ImageEditor
 {
     public class ImageEditorViewModel : NotifyPropertyChanged
     {
-        int _stride;
-        byte[] _data;
+        private int _stride;
+        private byte[] _data;
         public Window Window { get; set; }
 
         public bool UnsavedChanges { get; private set; }
 
-        int _editingOperationCount;
+        private int _editingOperationCount;
 
-        readonly Stack<IHistoryItem> _undoStack = new Stack<IHistoryItem>();
-        readonly Stack<IHistoryItem> _redoStack = new Stack<IHistoryItem>();
+        private readonly Stack<IHistoryItem> _undoStack = new Stack<IHistoryItem>();
+        private readonly Stack<IHistoryItem> _redoStack = new Stack<IHistoryItem>();
 
-        const int BrightnessStep = 10;
-        const int ContrastStep = 10;
+        private const int BrightnessStep = 10;
+        private const int ContrastStep = 10;
 
         public DelegateCommand DiscardChangesCommand { get; }
         public DelegateCommand UndoCommand { get; }
@@ -60,62 +67,81 @@ namespace Captura
                 await Update();
             }, false);
 
-            SetEffectCommand = new DelegateCommand(async M =>
+            SetEffectCommand = new DelegateCommand(async o =>
             {
-                if (M is ImageEffect effect)
+                if (!(o is ImageEffect effect))
                 {
-                    UpdateHistory();
-
-                    CurrentImageEffect = effect;
-
-                    await Update();
+                    return;
                 }
+
+                UpdateHistory();
+
+                CurrentImageEffect = effect;
+
+                await Update();
             }, false);
 
-            SetBrightnessCommand = new DelegateCommand(async M =>
+            SetBrightnessCommand = new DelegateCommand(async o =>
             {
-                if (M is int i || M is string s && int.TryParse(s, out i))
+                if (!(o is int i) && (!(o is string s) || !int.TryParse(s, out i)))
                 {
-                    UpdateHistory();
-
-                    if (i == 0)
-                        _brightness = 0;
-                    else if (i > 0)
-                        _brightness += BrightnessStep;
-                    else _brightness -= BrightnessStep;
-
-                    await Update();
+                    return;
                 }
+
+                UpdateHistory();
+
+                if (i == 0)
+                {
+                    _brightness = 0;
+                }
+                else if (i > 0)
+                {
+                    _brightness += BrightnessStep;
+                }
+                else
+                {
+                    _brightness -= BrightnessStep;
+                }
+
+                await Update();
             }, false);
 
-            SetContrastCommand = new DelegateCommand(async M =>
+            SetContrastCommand = new DelegateCommand(async o =>
             {
-                if (M is int i || M is string s && int.TryParse(s, out i))
+                if (!(o is int i) && (!(o is string s) || !int.TryParse(s, out i)))
                 {
-                    UpdateHistory();
+                    return;
+                }
 
-                    if (i == 0)
-                        _contrastThreshold = 0;
-                    else if (i > 0)
+                UpdateHistory();
+
+                if (i == 0)
+                {
+                    _contrastThreshold = 0;
+                }
+                else if (i > 0)
+                {
+                    if (_contrastThreshold == 100)
                     {
-                        if (_contrastThreshold == 100)
-                            return;
-
-                        _contrastThreshold += ContrastStep;
-                    }
-                    else
-                    {
-                        if (_contrastThreshold == -100)
-                            return;
-
-                        _contrastThreshold -= ContrastStep;
+                        return;
                     }
 
-                    await Update();
+                    _contrastThreshold += ContrastStep;
                 }
+                else
+                {
+                    if (_contrastThreshold == -100)
+                    {
+                        return;
+                    }
+
+                    _contrastThreshold -= ContrastStep;
+                }
+
+                await Update();
             }, false);
 
-            RotateRightCommand = new DelegateCommand(async M =>
+            RotateRightCommand = new DelegateCommand(async o =>
             {
                 UpdateHistory();
 
@@ -124,7 +150,7 @@ namespace Captura
                 await Update();
             }, false);
 
-            RotateLeftCommand = new DelegateCommand(async M =>
+            RotateLeftCommand = new DelegateCommand(async o =>
             {
                 UpdateHistory();
 
@@ -133,7 +159,7 @@ namespace Captura
                 await Update();
             }, false);
 
-            FlipXCommand = new DelegateCommand(async M =>
+            FlipXCommand = new DelegateCommand(async o =>
             {
                 UpdateHistory();
 
@@ -142,7 +168,7 @@ namespace Captura
                 await Update();
             }, false);
 
-            FlipYCommand = new DelegateCommand(async M =>
+            FlipYCommand = new DelegateCommand(async o =>
             {
                 UpdateHistory();
 
@@ -152,7 +178,7 @@ namespace Captura
             }, false);
         }
 
-        async void UploadToImgur()
+        private async void UploadToImgur()
         {
             using (var ms = new MemoryStream())
             {
@@ -172,7 +198,7 @@ namespace Captura
             }
         }
 
-        BitmapSource _originalBmp;
+        private BitmapSource _originalBmp;
 
         public BitmapSource OriginalBitmap
         {
@@ -185,7 +211,7 @@ namespace Captura
             }
         }
 
-        WriteableBitmap _editedBmp;
+        private WriteableBitmap _editedBmp;
 
         public WriteableBitmap EditedBitmap
         {
@@ -198,7 +224,7 @@ namespace Captura
             }
         }
 
-        TransformedBitmap _transformedBmp;
+        private TransformedBitmap _transformedBmp;
 
         public TransformedBitmap TransformedBitmap
         {
@@ -211,7 +237,7 @@ namespace Captura
             }
         }
 
-        ImageEffect _imageEffect = ImageEffect.None;
+        private ImageEffect _imageEffect = ImageEffect.None;
 
         public ImageEffect CurrentImageEffect
         {
@@ -224,9 +250,9 @@ namespace Captura
             }
         }
 
-        int _brightness;
+        private int _brightness;
 
-        void Brightness(ref byte Red, ref byte Green, ref byte Blue)
+        private void Brightness(ref byte red, ref byte green, ref byte blue)
         {
             void Apply(ref byte Byte)
             {
@@ -239,15 +265,15 @@ namespace Captura
                 else Byte = (byte) val;
             }
 
-            Apply(ref Red);
-            Apply(ref Green);
-            Apply(ref Blue);
+            Apply(ref red);
+            Apply(ref green);
+            Apply(ref blue);
         }
 
-        int _contrastThreshold;
-        double _contrastLevel;
+        private int _contrastThreshold;
+        private double _contrastLevel;
 
-        void Contrast(ref byte Red, ref byte Green, ref byte Blue)
+        private void Contrast(ref byte red, ref byte green, ref byte blue)
         {
             void Apply(ref byte Byte)
             {
@@ -260,12 +286,12 @@ namespace Captura
                 else Byte = (byte)val;
             }
 
-            Apply(ref Red);
-            Apply(ref Green);
-            Apply(ref Blue);
+            Apply(ref red);
+            Apply(ref green);
+            Apply(ref blue);
         }
 
-        HistoryState GetHistoryState()
+        private HistoryState GetHistoryState()
         {
             return new HistoryState
             {
@@ -278,7 +304,7 @@ namespace Captura
             };
         }
 
-        void UpdateHistory()
+        private void UpdateHistory()
         {
             UnsavedChanges = true;
 
@@ -291,7 +317,7 @@ namespace Captura
             RedoCommand.RaiseCanExecuteChanged(false);
         }
 
-        async Task Update()
+        private async Task Update()
         {
             OriginalBitmap.CopyPixels(_data, _stride, 0);
 
@@ -323,7 +349,7 @@ namespace Captura
         public bool FlipX { get; private set; }
         public bool FlipY { get; private set; }
 
-        void UpdateTransformBitmap()
+        private void UpdateTransformBitmap()
         {
             var rotate = new RotateTransform(Rotation, OriginalBitmap.PixelWidth / 2.0, OriginalBitmap.PixelHeight / 2.0);
             var scale = new ScaleTransform(FlipX ? -1 : 1, FlipY ? -1 : 1);
@@ -338,7 +364,7 @@ namespace Captura
             });
         }
 
-        void Reset()
+        private void Reset()
         {
             UnsavedChanges = false;
 
@@ -356,7 +382,7 @@ namespace Captura
             RedoCommand.RaiseCanExecuteChanged(false);
         }
 
-        string _fileName;
+        private string _fileName;
 
         public void Open()
         {
@@ -373,11 +399,11 @@ namespace Captura
             }
         }
 
-        public void OpenFile(string FilePath)
+        public void OpenFile(string filePath)
         {
-            _fileName = FilePath;
+            _fileName = filePath;
 
-            var decoder = BitmapDecoder.Create(new Uri(FilePath),
+            var decoder = BitmapDecoder.Create(new Uri(filePath),
                 BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
 
             Open(decoder.Frames[0]);
@@ -414,11 +440,11 @@ namespace Captura
             Open(img);
         }
 
-        public void Open(BitmapSource Frame)
+        public void Open(BitmapSource frame)
         {
             Reset();
 
-            OriginalBitmap = Frame;
+            OriginalBitmap = frame;
 
             _stride = OriginalBitmap.PixelWidth * (OriginalBitmap.Format.BitsPerPixel / 8);
 
@@ -445,15 +471,15 @@ namespace Captura
 
         public InkCanvas InkCanvas { get; set; }
 
-        public void AddInkHistory(StrokeHistory HistoryItem)
+        public void AddInkHistory(StrokeHistory historyItem)
         {
             if (!_trackChanges)
                 return;
 
             UnsavedChanges = true;
 
-            HistoryItem.EditingMode = InkCanvas.EditingMode;
-            HistoryItem.EditingOperationCount = _editingOperationCount;
+            historyItem.EditingMode = InkCanvas.EditingMode;
+            historyItem.EditingOperationCount = _editingOperationCount;
 
             var merged = false;
 
@@ -461,14 +487,14 @@ namespace Captura
             {
                 var peek = _undoStack.Peek();
 
-                if (HistoryItem.EditingMode == InkCanvasEditingMode.EraseByPoint
+                if (historyItem.EditingMode == InkCanvasEditingMode.EraseByPoint
                     && peek is StrokeHistory stroke
                     && stroke.EditingMode == InkCanvasEditingMode.EraseByPoint
-                    && HistoryItem.EditingOperationCount == stroke.EditingOperationCount)
+                    && historyItem.EditingOperationCount == stroke.EditingOperationCount)
                 {
                     // Possible for point-erase to have hit intersection of >1 strokes!
                     // For each newly hit stroke, merge results into this history item.
-                    foreach (var doomed in HistoryItem.Removed)
+                    foreach (var doomed in historyItem.Removed)
                     {
                         if (stroke.Added.Contains(doomed))
                         {
@@ -480,7 +506,7 @@ namespace Captura
                         }
                     }
 
-                    stroke.Added.AddRange(HistoryItem.Added);
+                    stroke.Added.AddRange(historyItem.Added);
                     
                     merged = true;
                 }
@@ -488,7 +514,7 @@ namespace Captura
 
             if (!merged)
             {
-                _undoStack.Push(HistoryItem);
+                _undoStack.Push(historyItem);
 
                 UndoCommand.RaiseCanExecuteChanged(true);
             }
@@ -498,14 +524,14 @@ namespace Captura
             RedoCommand.RaiseCanExecuteChanged(false);
         }
 
-        public void AddSelectHistory(SelectHistory HistoryItem)
+        public void AddSelectHistory(SelectHistory historyItem)
         {
             if (!_trackChanges)
                 return;
 
             UnsavedChanges = true;
 
-            HistoryItem.EditingOperationCount = _editingOperationCount;
+            historyItem.EditingOperationCount = _editingOperationCount;
 
             var merged = false;
 
@@ -514,10 +540,10 @@ namespace Captura
                 var peek = _undoStack.Peek();
 
                 if (peek is SelectHistory select
-                    && HistoryItem.EditingOperationCount == select.EditingOperationCount
-                    && StrokeCollectionsAreEqual(HistoryItem.Selection, select.Selection))
+                    && historyItem.EditingOperationCount == select.EditingOperationCount
+                    && StrokeCollectionsAreEqual(historyItem.Selection, select.Selection))
                 {
-                    select.NewRect = HistoryItem.NewRect;
+                    select.NewRect = historyItem.NewRect;
 
                     merged = true;
                 }
@@ -525,7 +551,7 @@ namespace Captura
 
             if (!merged)
             {
-                _undoStack.Push(HistoryItem);
+                _undoStack.Push(historyItem);
 
                 UndoCommand.RaiseCanExecuteChanged(true);
             }
@@ -535,7 +561,7 @@ namespace Captura
             RedoCommand.RaiseCanExecuteChanged(false);
         }
 
-        bool _trackChanges = true;
+        private bool _trackChanges = true;
 
         public void RemoveLastHistory()
         {
@@ -552,7 +578,7 @@ namespace Captura
             _trackChanges = true;
         }
 
-        async void Undo()
+        private async void Undo()
         {
             _trackChanges = false;
 
@@ -603,7 +629,7 @@ namespace Captura
             _trackChanges = true;
         }
 
-        async void Redo()
+        private async void Redo()
         {
             _trackChanges = false;
 
@@ -654,14 +680,14 @@ namespace Captura
             _trackChanges = true;
         }
 
-        void ApplyHistoryState(HistoryState State)
+        private void ApplyHistoryState(HistoryState state)
         {
-            _imageEffect = State.Effect;
-            _brightness = State.Brightness;
-            _contrastThreshold = State.Contrast;
-            Rotation = State.Rotation;
-            FlipX = State.FlipX;
-            FlipY = State.FlipY;
+            _imageEffect = state.Effect;
+            _brightness = state.Brightness;
+            _contrastThreshold = state.Contrast;
+            Rotation = state.Rotation;
+            FlipX = state.FlipX;
+            FlipY = state.FlipY;
         }
         
         public void IncrementEditingOperationCount()
@@ -681,14 +707,14 @@ namespace Captura
             return true;
         }
 
-        void SaveToClipboard()
+        private void SaveToClipboard()
         {
             var bmp = GetBmp();
 
             Clipboard.SetImage(bmp);
         }
 
-        BitmapSource GetBmp()
+        private BitmapSource GetBmp()
         {
             var drawingVisual = new DrawingVisual();
 
@@ -724,29 +750,29 @@ namespace Captura
             }
         }
 
-        static Matrix GetTransformFromRectToRect(Rect Source, Rect Destination)
+        private static Matrix GetTransformFromRectToRect(Rect source, Rect destination)
         {
             var m = Matrix.Identity;
 
-            m.Translate(-Source.X, -Source.Y);
-            m.Scale(Destination.Width / Source.Width, Destination.Height / Source.Height);
-            m.Translate(Destination.X, Destination.Y);
+            m.Translate(-source.X, -source.Y);
+            m.Scale(destination.Width / source.Width, destination.Height / source.Height);
+            m.Translate(destination.X, destination.Y);
 
             return m;
         }
 
-        static bool StrokeCollectionsAreEqual(StrokeCollection A, StrokeCollection B)
+        private static bool StrokeCollectionsAreEqual(StrokeCollection strokeCollectionA, StrokeCollection strokeCollectionB)
         {
-            if (A == null && B == null)
+            if (strokeCollectionA == null && strokeCollectionB == null)
                 return true;
 
-            if (A == null || B == null)
+            if (strokeCollectionA == null || strokeCollectionB == null)
                 return false;
 
-            if (A.Count != B.Count)
+            if (strokeCollectionA.Count != strokeCollectionB.Count)
                 return false;
 
-            return !A.Where((T, I) => T != B[I]).Any();
+            return !strokeCollectionA.Where((T, I) => T != strokeCollectionB[I]).Any();
         }
     }
 }

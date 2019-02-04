@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Captura.ViewModels;
 
-namespace Captura.Views
+namespace Captura.Windows
 {
     public partial class TrimmerWindow
     {
@@ -14,21 +15,21 @@ namespace Captura.Views
             {
                 vm.AssignPlayer(MediaElement, this);
 
-                Closing += (S, E) => vm.Dispose();
+                Closing += (sender, e) => vm.Dispose();
             }
         }
 
-        public void Open(string FileName)
+        public void Open(string fileName)
         {
             if (DataContext is TrimmerViewModel vm)
             {
-                vm.Open(FileName);
+                vm.Open(fileName);
             }
         }
 
-        void Slider_PreviewMouseLeftButtonUp(object Sender, MouseButtonEventArgs E)
+        private void Slider_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (DataContext is TrimmerViewModel vm && Sender is Slider slider)
+            if (DataContext is TrimmerViewModel vm && sender is Slider slider)
             {
                 if (!vm.IsDragging)
                     return;
@@ -39,7 +40,7 @@ namespace Captura.Views
             }
         }
 
-        void Slider_PreviewMouseLeftButtonDown(object Sender, MouseButtonEventArgs E)
+        private void Slider_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (DataContext is TrimmerViewModel vm)
             {
@@ -47,9 +48,9 @@ namespace Captura.Views
             }
         }
 
-        void Slider_MouseLeftButtonUp(object Sender, MouseButtonEventArgs E)
+        private void Slider_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (DataContext is TrimmerViewModel vm && Sender is Slider slider)
+            if (DataContext is TrimmerViewModel vm && sender is Slider slider)
             {
                 vm.PlaybackPosition = TimeSpan.FromSeconds(slider.Value);
             }

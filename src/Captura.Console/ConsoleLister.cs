@@ -1,4 +1,9 @@
-﻿using Captura.Models;
+﻿using Captura.Base.Audio;
+using Captura.Base.Services;
+using Captura.Bass;
+using Captura.FFmpeg;
+using Captura.FFmpeg.Video;
+using Captura.SharpAvi;
 using static System.Console;
 
 namespace Captura
@@ -6,19 +11,19 @@ namespace Captura
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ConsoleLister
     {
-        static readonly string Underline = $"\n{new string('-', 30)}";
+        private static readonly string Underline = $"\n{new string('-', 30)}";
 
-        readonly IWebCamProvider _webcam;
-        readonly AudioSource _audioSource;
-        readonly IPlatformServices _platformServices;
+        private readonly IWebCamProvider _webCam;
+        private readonly AudioSource _audioSource;
+        private readonly IPlatformServices _platformServices;
 
-        public ConsoleLister(IWebCamProvider Webcam,
-            AudioSource AudioSource,
-            IPlatformServices PlatformServices)
+        public ConsoleLister(IWebCamProvider webCam,
+            AudioSource audioSource,
+            IPlatformServices platformServices)
         {
-            _webcam = Webcam;
-            _audioSource = AudioSource;
-            _platformServices = PlatformServices;
+            _webCam = webCam;
+            _audioSource = audioSource;
+            _platformServices = platformServices;
         }
 
         public void List()
@@ -33,25 +38,27 @@ namespace Captura
 
             Audio();
 
-            Webcam();
+            WebCam();
         }
 
-        void Webcam()
+        private void WebCam()
         {
-            if (_webcam.AvailableCams.Count > 1)
+            if (_webCam.AvailableCams.Count <= 1)
             {
-                WriteLine("AVAILABLE WEBCAMS" + Underline);
-
-                for (var i = 1; i < _webcam.AvailableCams.Count; ++i)
-                {
-                    WriteLine($"{(i - 1).ToString().PadRight(2)}: {_webcam.AvailableCams[i]}");
-                }
-
-                WriteLine();
+                return;
             }
+
+            WriteLine("AVAILABLE WEBCAMS" + Underline);
+
+            for (var i = 1; i < _webCam.AvailableCams.Count; ++i)
+            {
+                WriteLine($"{(i - 1).ToString().PadRight(2)}: {_webCam.AvailableCams[i]}");
+            }
+
+            WriteLine();
         }
 
-        void Audio()
+        private void Audio()
         {
             WriteLine($"ManagedBass Available: {(_audioSource is BassAudioSource ? "YES" : "NO")}");
 
@@ -90,7 +97,7 @@ namespace Captura
             #endregion
         }
 
-        void Screens()
+        private void Screens()
         {
             WriteLine("AVAILABLE SCREENS" + Underline);
 
@@ -107,7 +114,7 @@ namespace Captura
             WriteLine();
         }
 
-        void Windows()
+        private void Windows()
         {
             WriteLine("AVAILABLE WINDOWS" + Underline);
 
@@ -120,7 +127,7 @@ namespace Captura
             WriteLine();
         }
 
-        static void SharpAvi()
+        private static void SharpAvi()
         {
             var sharpAviExists = ServiceProvider.FileExists("SharpAvi.dll");
 
@@ -146,7 +153,7 @@ namespace Captura
             }
         }
 
-        static void FFmpeg()
+        private static void FFmpeg()
         {
             var ffmpegExists = FFmpegService.FFmpegExists;
 
@@ -154,22 +161,24 @@ namespace Captura
 
             WriteLine();
 
-            if (ffmpegExists)
+            if (!ffmpegExists)
             {
-                WriteLine("FFmpeg ENCODERS" + Underline);
-
-                var writerProvider = ServiceProvider.Get<FFmpegWriterProvider>();
-
-                var i = 0;
-
-                foreach (var codec in writerProvider)
-                {
-                    WriteLine($"{i.ToString().PadRight(2)}: {codec}");
-                    ++i;
-                }
-
-                WriteLine();
+                return;
             }
+
+            WriteLine("FFmpeg ENCODERS" + Underline);
+
+            var writerProvider = ServiceProvider.Get<FFmpegWriterProvider>();
+
+            var i = 0;
+
+            foreach (var codec in writerProvider)
+            {
+                WriteLine($"{i.ToString().PadRight(2)}: {codec}");
+                ++i;
+            }
+
+            WriteLine();
         }
     }
 }

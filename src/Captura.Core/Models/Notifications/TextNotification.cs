@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using Captura.Base.Notification;
 
-namespace Captura
+namespace Captura.Core.Models.Notifications
 {
     public class TextNotification : INotification
     {
         readonly Action _onClick;
 
-        public TextNotification(string PrimaryText, Action OnClick = null, string SecondaryText = null)
+        public TextNotification(string primaryText, Action onClick = null, string secondaryText = null)
         {
-            _onClick = OnClick;
+            _onClick = onClick;
 
-            this.PrimaryText = PrimaryText;
-            this.SecondaryText = SecondaryText;
+            PrimaryText = primaryText;
+            SecondaryText = secondaryText;
         }
 
         public int Progress => 0;

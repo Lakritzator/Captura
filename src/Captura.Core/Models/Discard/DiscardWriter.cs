@@ -1,4 +1,7 @@
-﻿namespace Captura.Models
+﻿using Captura.Base.Images;
+using Captura.Base.Video;
+
+namespace Captura.Core.Models.Discard
 {
     public class DiscardWriter : IVideoFileWriter
     {
@@ -6,20 +9,20 @@
 
         readonly byte[] _dummyBuffer = { 0 };
 
-        public void WriteFrame(IBitmapFrame Image)
+        public void WriteFrame(IBitmapFrame image)
         {
-            if (Image is RepeatFrame)
+            if (image is RepeatFrame)
                 return;
 
-            using (Image)
+            using (image)
             {
                 // HACK: Don't know why, this fixes Preview showing multiple mouse pointers
-                Image.CopyTo(_dummyBuffer, _dummyBuffer.Length);
+                image.CopyTo(_dummyBuffer, _dummyBuffer.Length);
             }
         }
 
         public bool SupportsAudio => false;
 
-        public void WriteAudio(byte[] Buffer, int Length) { }
+        public void WriteAudio(byte[] buffer, int length) { }
     }
 }

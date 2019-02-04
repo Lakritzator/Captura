@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows;
-using Captura.Models;
+using Captura.Base.Services;
+using Captura.Base.Video;
+using Captura.ViewModels;
+using Captura.Windows;
+using Screna;
 
-namespace Captura
+namespace Captura.Models
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RegionSelectorProvider : IRegionProvider
     {
-        readonly Lazy<RegionSelector> _regionSelector;
-        readonly RegionItem _regionItem;
-        readonly RegionSelectorViewModel _viewModel;
+        private readonly Lazy<RegionSelector> _regionSelector;
+        private readonly RegionItem _regionItem;
+        private readonly RegionSelectorViewModel _viewModel;
 
-        public RegionSelectorProvider(IVideoSourcePicker VideoSourcePicker, RegionSelectorViewModel ViewModel)
+        public RegionSelectorProvider(IVideoSourcePicker videoSourcePicker, RegionSelectorViewModel viewModel)
         {
-            _viewModel = ViewModel;
+            _viewModel = viewModel;
 
             _regionSelector = new Lazy<RegionSelector>(() =>
             {
-                var reg = new RegionSelector(VideoSourcePicker, ViewModel);
+                var reg = new RegionSelector(videoSourcePicker, viewModel);
 
                 reg.SelectorHidden += () => SelectorHidden?.Invoke();
 

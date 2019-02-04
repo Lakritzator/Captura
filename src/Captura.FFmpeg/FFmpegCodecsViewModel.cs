@@ -1,26 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
-using Captura.Models;
+using Captura.Base;
+using Captura.FFmpeg.Audio;
+using Captura.FFmpeg.Settings;
 
-namespace Captura.ViewModels
+namespace Captura.FFmpeg
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class FFmpegCodecsViewModel : NotifyPropertyChanged
     {
         public FFmpegSettings Settings { get; }
 
-        public FFmpegCodecsViewModel(FFmpegSettings Settings)
+        public FFmpegCodecsViewModel(FFmpegSettings settings)
         {
-            this.Settings = Settings;
+            Settings = settings;
 
-            AddCustomCodecCommand = new DelegateCommand(() => Settings.CustomCodecs.Add(new CustomFFmpegCodec()));
+            AddCustomCodecCommand = new DelegateCommand(() => settings.CustomCodecs.Add(new CustomFFmpegCodec()));
 
-            RemoveCustomCodecCommand = new DelegateCommand(M =>
+            RemoveCustomCodecCommand = new DelegateCommand(o =>
             {
-                if (M is CustomFFmpegCodec codec)
+                if (o is CustomFFmpegCodec codec)
                 {
-                    Settings.CustomCodecs.Remove(codec);
+                    settings.CustomCodecs.Remove(codec);
                 }
             });
         }
@@ -29,6 +31,6 @@ namespace Captura.ViewModels
 
         public ICommand RemoveCustomCodecCommand { get; }
 
-        public IEnumerable<string> AudioCodecNames => FFmpegAudioItem.Items.Select(M => M.Name.Split(' ')[0]);
+        public IEnumerable<string> AudioCodecNames => FFmpegAudioItem.Items.Select(fmpegAudioItem => fmpegAudioItem.Name.Split(' ')[0]);
     }
 }

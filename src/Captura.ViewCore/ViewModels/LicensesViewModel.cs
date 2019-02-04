@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
-using Captura.Models;
+using Captura.Base;
 
-namespace Captura.ViewModels
+namespace Captura.ViewCore.ViewModels
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class LicensesViewModel : NotifyPropertyChanged
@@ -12,22 +12,29 @@ namespace Captura.ViewModels
         {
             var selfPath = Assembly.GetEntryAssembly().Location;
 
-            var folder = Path.Combine(Path.GetDirectoryName(selfPath), "licenses");
-
-            if (Directory.Exists(folder))
+            string directoryName = Path.GetDirectoryName(selfPath);
+            if (string.IsNullOrEmpty(directoryName))
             {
-                Licenses = Directory.EnumerateFiles(folder).Select(FileName => new FileContentItem(FileName)).ToArray();
+                return;
+            }
+            var folder = Path.Combine(directoryName, "licenses");
 
-                if (Licenses.Length > 0)
-                {
-                    SelectedLicense = Licenses[0];
-                }
+            if (!Directory.Exists(folder))
+            {
+                return;
+            }
+
+            Licenses = Directory.EnumerateFiles(folder).Select(fileName => new FileContentItem(fileName)).ToArray();
+
+            if (Licenses.Length > 0)
+            {
+                SelectedLicense = Licenses[0];
             }
         }
 
         public FileContentItem[] Licenses { get; }
 
-        FileContentItem _selectedLicense;
+        private FileContentItem _selectedLicense;
 
         public FileContentItem SelectedLicense
         {

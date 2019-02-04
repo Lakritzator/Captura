@@ -1,17 +1,19 @@
-﻿<Window x:Class="Captura.ImageEditorWindow"
+﻿<Window x:Class="Captura.ImageEditor.ImageEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Captura"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:imageEditor="clr-namespace:Captura.ImageEditor"
+        xmlns:effects="clr-namespace:Captura.ImageEditor.Effects"
+        xmlns:controls="clr-namespace:Captura.ImageEditor.Controls"
         mc:Ignorable="d"
         Title="{Binding ImageEditor, Source={StaticResource Loc}, Mode=OneWay}"
         Height="600"
         Width="800"
         Closing="ImageEditorWindow_OnClosing">
     <Window.DataContext>
-        <local:ImageEditorViewModel/>
+        <imageEditor:ImageEditorViewModel/>
     </Window.DataContext>
     <Window.CommandBindings>
         <CommandBinding Command="Close"
@@ -269,26 +271,26 @@
 
             <MenuItem Header="Filters">
                 <MenuItem Header="{Binding None, Source={StaticResource Loc}, Mode=OneWay}"
-                          CommandParameter="{x:Static local:ImageEffect.None}"
+                          CommandParameter="{x:Static effects:ImageEffect.None}"
                           Command="{Binding SetEffectCommand}"/>
                 
                 <MenuItem Header="Grayscale"
-                          CommandParameter="{x:Static local:ImageEffect.Grayscale}"
+                          CommandParameter="{x:Static effects:ImageEffect.Grayscale}"
                           Command="{Binding SetEffectCommand}"/>
                 <MenuItem Header="Sepia"
-                          CommandParameter="{x:Static local:ImageEffect.Sepia}"
+                          CommandParameter="{x:Static effects:ImageEffect.Sepia}"
                           Command="{Binding SetEffectCommand}"/>
                 <MenuItem Header="Negative"
-                          CommandParameter="{x:Static local:ImageEffect.Negative}"
+                          CommandParameter="{x:Static effects:ImageEffect.Negative}"
                           Command="{Binding SetEffectCommand}"/>
                 <MenuItem Header="Red"
-                          CommandParameter="{x:Static local:ImageEffect.Red}"
+                          CommandParameter="{x:Static effects:ImageEffect.Red}"
                           Command="{Binding SetEffectCommand}"/>
                 <MenuItem Header="Green"
-                          CommandParameter="{x:Static local:ImageEffect.Green}"
+                          CommandParameter="{x:Static effects:ImageEffect.Green}"
                           Command="{Binding SetEffectCommand}"/>
                 <MenuItem Header="Blue"
-                          CommandParameter="{x:Static local:ImageEffect.Blue}"
+                          CommandParameter="{x:Static effects:ImageEffect.Blue}"
                           Command="{Binding SetEffectCommand}"/>
             </MenuItem>
         </Menu>
@@ -400,7 +402,7 @@
                 BorderBrush="#77333333"
                 Visibility="{Binding OriginalBitmap, Converter={StaticResource NotNullConverter}}">
             <DockPanel LastChildFill="False">
-                <ListBox ItemsSource="{x:Static local:ExtendedInkTool.Tools}"
+                <ListBox ItemsSource="{x:Static controls:ExtendedInkTool.Tools}"
                          Name="ModesBox"
                          Padding="1"
                          DockPanel.Dock="Top"
@@ -447,7 +449,7 @@
             <Image Source="{Binding TransformedBitmap}"
                    Name="Image"/>
             
-            <local:ExtendedInkCanvas  Background="Transparent"
+            <controls:ExtendedInkCanvas  Background="Transparent"
                        x:Name="InkCanvas"
                        IsEnabled="False"
                        MouseUp="InkCanvas_OnMouseUp"/>

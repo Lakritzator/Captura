@@ -1,5 +1,4 @@
-﻿using Captura.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,24 +6,26 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Captura.Base.Services;
+using Captura.ViewModels;
 using Color = System.Windows.Media.Color;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class RegionSelector
     {
-        readonly IVideoSourcePicker _videoSourcePicker;
-        readonly RegionSelectorViewModel _viewModel;
+        private readonly IVideoSourcePicker _videoSourcePicker;
+        private readonly RegionSelectorViewModel _viewModel;
 
-        public RegionSelector(IVideoSourcePicker VideoSourcePicker, RegionSelectorViewModel ViewModel)
+        public RegionSelector(IVideoSourcePicker videoSourcePicker, RegionSelectorViewModel viewModel)
         {
-            _videoSourcePicker = VideoSourcePicker;
-            _viewModel = ViewModel;
+            _videoSourcePicker = videoSourcePicker;
+            _viewModel = viewModel;
 
             InitializeComponent();
 
             // Prevent Closing by User
-            Closing += (S, E) => E.Cancel = true;
+            Closing += (sender, e) => e.Cancel = true;
 
             ModesBox.ItemsSource = new[]
             {
@@ -41,13 +42,13 @@ namespace Captura
             InkCanvas.DefaultDrawingAttributes.FitToCurve = true;
         }
 
-        void SizeBox_OnValueChanged(object Sender, RoutedPropertyChangedEventArgs<object> E)
+        private void SizeBox_OnValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (InkCanvas != null && E.NewValue is int i)
+            if (InkCanvas != null && e.NewValue is int i)
                 InkCanvas.DefaultDrawingAttributes.Height = InkCanvas.DefaultDrawingAttributes.Width = i;
         }
 
-        void ModesBox_OnSelectionChanged(object Sender, SelectionChangedEventArgs E)
+        private void ModesBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ModesBox.SelectedValue is InkCanvasEditingMode mode)
             {
@@ -66,13 +67,13 @@ namespace Captura
             }
         }
 
-        void ColorPicker_OnSelectedColorChanged(object Sender, RoutedPropertyChangedEventArgs<Color?> E)
+        private void ColorPicker_OnSelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (E.NewValue != null && InkCanvas != null)
-                InkCanvas.DefaultDrawingAttributes.Color = E.NewValue.Value;
+            if (e.NewValue != null && InkCanvas != null)
+                InkCanvas.DefaultDrawingAttributes.Color = e.NewValue.Value;
         }
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E)
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Hide();
 
@@ -82,19 +83,19 @@ namespace Captura
         public event Action SelectorHidden;
 
         // Prevent Maximizing
-        protected override void OnStateChanged(EventArgs E)
+        protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState != WindowState.Normal)
                 WindowState = WindowState.Normal;
 
-            base.OnStateChanged(E);
+            base.OnStateChanged(e);
         }
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo SizeInfo)
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             InkCanvas.Strokes.Clear();
 
-            base.OnRenderSizeChanged(SizeInfo);
+            base.OnRenderSizeChanged(sizeInfo);
         }
 
         public void Lock()
@@ -123,9 +124,9 @@ namespace Captura
 
         public IntPtr Handle => new WindowInteropHelper(this).Handle;
 
-        void Snapper_OnClick(object Sender, RoutedEventArgs E)
+        private void Snapper_OnClick(object sender, RoutedEventArgs e)
         {
-            var win = _videoSourcePicker.PickWindow(M => M.Handle != Handle && !M.IsMaximized);
+            var win = _videoSourcePicker.PickWindow(window => window.Handle != Handle && !window.IsMaximized);
 
             if (win == null)
                 return;
@@ -150,20 +151,20 @@ namespace Captura
             }
         }
 
-        void UIElement_OnPreviewMouseLeftButtonDown(object Sender, MouseButtonEventArgs E)
+        private void UIElement_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
         }
 
-        void Thumb_OnDragDelta(object Sender, DragDeltaEventArgs E)
+        private void Thumb_OnDragDelta(object sender, DragDeltaEventArgs e)
         {
-            void DoTop() => _viewModel.ResizeFromTop(E.VerticalChange);
+            void DoTop() => _viewModel.ResizeFromTop(e.VerticalChange);
 
-            void DoLeft() => _viewModel.ResizeFromLeft(E.HorizontalChange);
+            void DoLeft() => _viewModel.ResizeFromLeft(e.HorizontalChange);
 
             void DoBottom()
             {
-                var height = Region.Height + E.VerticalChange;
+                var height = Region.Height + e.VerticalChange;
 
                 if (height > 0)
                     Region.Height = height;
@@ -171,13 +172,13 @@ namespace Captura
 
             void DoRight()
             {
-                var width = Region.Width + E.HorizontalChange;
+                var width = Region.Width + e.HorizontalChange;
 
                 if (width > 0)
                     Region.Width = width;
             }
 
-            if (Sender is FrameworkElement element)
+            if (sender is FrameworkElement element)
             {
                 switch (element.Tag)
                 {

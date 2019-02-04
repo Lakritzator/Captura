@@ -6,12 +6,12 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Captura.ViewModels
+namespace Captura.FFmpeg
 {
     public static class DownloadFFmpeg
     {
-        static readonly Uri FFmpegUri;
-        static readonly string FFmpegArchivePath;
+        private static readonly Uri FFmpegUri;
+        private static readonly string FFmpegArchivePath;
 
         static DownloadFFmpeg()
         {
@@ -22,32 +22,32 @@ namespace Captura.ViewModels
             FFmpegArchivePath = Path.Combine(Path.GetTempPath(), "ffmpeg.zip");
         }
 
-        public static async Task DownloadArchive(Action<int> Progress, IWebProxy Proxy, CancellationToken CancellationToken)
+        public static async Task DownloadArchive(Action<int> progress, IWebProxy proxy, CancellationToken cancellationToken)
         {
-            using (var webClient = new WebClient { Proxy = Proxy })
+            using (var webClient = new WebClient { Proxy = proxy })
             {
-                CancellationToken.Register(() => webClient.CancelAsync());
+                cancellationToken.Register(() => webClient.CancelAsync());
 
-                webClient.DownloadProgressChanged += (S, E) =>
+                webClient.DownloadProgressChanged += (sender, e) =>
                 {
-                    Progress?.Invoke(E.ProgressPercentage);
+                    progress?.Invoke(e.ProgressPercentage);
                 };
                 
                 await webClient.DownloadFileTaskAsync(FFmpegUri, FFmpegArchivePath);
             }
         }
 
-        const string ExeName = "ffmpeg.exe";
+        private const string ExeName = "ffmpeg.exe";
 
-        public static async Task ExtractTo(string FolderPath)
+        public static async Task ExtractTo(string folderPath)
         {
             await Task.Run(() =>
             {
                 using (var archive = ZipFile.OpenRead(FFmpegArchivePath))
                 {
-                    var ffmpegEntry = archive.Entries.First(M => M.Name == ExeName);
+                    var ffmpegEntry = archive.Entries.First(zipArchiveEntry => zipArchiveEntry.Name == ExeName);
 
-                    ffmpegEntry.ExtractToFile(Path.Combine(FolderPath, ExeName), true);
+                    ffmpegEntry.ExtractToFile(Path.Combine(folderPath, ExeName), true);
                 }
             });
         }

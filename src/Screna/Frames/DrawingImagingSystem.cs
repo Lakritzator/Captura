@@ -1,24 +1,24 @@
 ﻿using System.Drawing;
 using System.IO;
-using Captura;
+using Captura.Base.Images;
 
-namespace Screna
+namespace Screna.Frames
 {
     public class DrawingImagingSystem : IImagingSystem
     {
-        public IBitmapImage CreateBitmap(int Width, int Height)
+        public IBitmapImage CreateBitmap(int width, int height)
         {
-            return new DrawingImage(new Bitmap(Width, Height));
+            return new DrawingImage(new Bitmap(width, height));
         }
 
-        public IBitmapImage LoadBitmap(string FileName)
+        public IBitmapImage LoadBitmap(string fileName)
         {
-            return new DrawingImage(new Bitmap(FileName));
+            return new DrawingImage(new Bitmap(fileName));
         }
 
-        public IBitmapImage LoadBitmap(Stream Stream)
+        public IBitmapImage LoadBitmap(Stream stream)
         {
-            return new DrawingImage(new Bitmap(Stream));
+            return new DrawingImage(new Bitmap(stream));
         }
     }
 }

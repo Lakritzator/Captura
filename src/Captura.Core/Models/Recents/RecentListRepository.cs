@@ -2,9 +2,11 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Captura.Base.Recent;
+using Captura.Base.Services;
 using Newtonsoft.Json.Linq;
 
-namespace Captura.Models
+namespace Captura.Core.Models.Recents
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class RecentListRepository : IRecentList
@@ -20,11 +22,11 @@ namespace Captura.Models
             return Path.Combine(ServiceProvider.SettingsDir, "RecentItems.json");
         }
 
-        public RecentListRepository(IEnumerable<IRecentItemSerializer> RecentItemSerializers)
+        public RecentListRepository(IEnumerable<IRecentItemSerializer> recentItemSerializers)
         {
             Items = new ReadOnlyObservableCollection<IRecentItem>(_recentList);
 
-            _recentItemSerializers = RecentItemSerializers;
+            _recentItemSerializers = recentItemSerializers;
 
             Load();
         }
@@ -43,7 +45,7 @@ namespace Captura.Models
                 {
                     var jObj = (JObject)jItem;
 
-                    var serializer = _recentItemSerializers.FirstOrDefault(M => M.CanDeserialize(jObj));
+                    var serializer = _recentItemSerializers.FirstOrDefault(recentItemSerializer => recentItemSerializer.CanDeserialize(jObj));
 
                     var item = serializer?.Deserialize(jObj);
 
@@ -67,12 +69,12 @@ namespace Captura.Models
             }
         }
 
-        public void Add(IRecentItem RecentItem)
+        public void Add(IRecentItem recentItem)
         {
             // Insert on Top
-            _recentList.Insert(0, RecentItem);
+            _recentList.Insert(0, recentItem);
 
-            RecentItem.RemoveRequested += () => _recentList.Remove(RecentItem);
+            recentItem.RemoveRequested += () => _recentList.Remove(recentItem);
         }
 
         public void Clear()
@@ -88,7 +90,7 @@ namespace Captura.Models
 
                 foreach (var item in Items)
                 {
-                    var serializer = _recentItemSerializers.FirstOrDefault(M => M.CanSerialize(item));
+                    var serializer = _recentItemSerializers.FirstOrDefault(recentItemSerializer => recentItemSerializer.CanSerialize(item));
 
                     var jItem = serializer?.Serialize(item);
 

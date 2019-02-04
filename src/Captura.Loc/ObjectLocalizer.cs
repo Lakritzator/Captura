@@ -1,10 +1,10 @@
-﻿namespace Captura
+﻿namespace Captura.Loc
 {
     public class ObjectLocalizer<T> : TextLocalizer
     {
-        public ObjectLocalizer(T Source, string LocalizationKey) : base(LocalizationKey)
+        public ObjectLocalizer(T source, string localizationKey) : base(localizationKey)
         {
-            this.Source = Source;            
+            Source = source;            
         }
         
         public T Source { get; }

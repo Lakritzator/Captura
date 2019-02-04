@@ -1,4 +1,6 @@
-﻿namespace Captura.Tests
+﻿using Captura.Base.Settings;
+
+namespace Tests.Models
 {
     public class FakePropertyStore : PropertyStore
     {

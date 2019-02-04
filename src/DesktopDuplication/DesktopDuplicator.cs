@@ -3,7 +3,8 @@
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using System;
-using Captura;
+using Captura.Base.Images;
+using DesktopDuplication.MousePointer;
 using SharpDX.Direct3D;
 using Device = SharpDX.Direct3D11.Device;
 
@@ -11,27 +12,27 @@ namespace DesktopDuplication
 {
     public class DesktopDuplicator : IDisposable
     {
-        Texture2D _desktopImageTexture;
-        Texture2D _stagingTexture;
-        Direct2DEditorSession _editorSession;
-        DxMousePointer _mousePointer;
-        DuplCapture _duplCapture;
-        Device _device;
-        Device _deviceForDeskDupl;
+        private Texture2D _desktopImageTexture;
+        private Texture2D _stagingTexture;
+        private Direct2DEditorSession _editorSession;
+        private DxMousePointer _mousePointer;
+        private DesktopDuplicationCapture _desktopDuplicationCapture;
+        private Device _device;
+        private Device _deviceForDesktopDuplication;
 
-        public DesktopDuplicator(bool IncludeCursor, Output1 Output)
+        public DesktopDuplicator(bool includeCursor, Output1 output)
         {
             _device = new Device(DriverType.Hardware,
                 DeviceCreationFlags.BgraSupport,
                 FeatureLevel.Level_11_1);
 
             // Separate Device required otherwise AccessViolationException happens
-            using (var adapter = Output.GetParent<Adapter>())
-                _deviceForDeskDupl = new Device(adapter);
+            using (var adapter = output.GetParent<Adapter>())
+                _deviceForDesktopDuplication = new Device(adapter);
 
-            _duplCapture = new DuplCapture(_deviceForDeskDupl, Output);
+            _desktopDuplicationCapture = new DesktopDuplicationCapture(_deviceForDesktopDuplication, output);
 
-            var bounds = Output.Description.DesktopBounds;
+            var bounds = output.Description.DesktopBounds;
             var width = bounds.Right - bounds.Left;
             var height = bounds.Bottom - bounds.Top;
 
@@ -65,20 +66,25 @@ namespace DesktopDuplication
 
             _editorSession = new Direct2DEditorSession(_desktopImageTexture, _device, _stagingTexture);
 
-            if (IncludeCursor)
+            if (includeCursor)
                 _mousePointer = new DxMousePointer(_editorSession);
         }
-        
+
         public IEditableFrame Capture()
         {
             try
             {
-                if (!_duplCapture.Get(_desktopImageTexture, _mousePointer))
+                if (!_desktopDuplicationCapture.Get(_desktopImageTexture, _mousePointer))
+                {
                     return RepeatFrame.Instance;
+                }
             }
             catch
             {
-                try { _duplCapture.Init(); }
+                try
+                {
+                    _desktopDuplicationCapture.Init();
+                }
                 catch
                 {
                     // ignored
@@ -96,33 +102,59 @@ namespace DesktopDuplication
 
         public void Dispose()
         {
-            try { _mousePointer?.Dispose(); }
-            catch { }
-            finally { _mousePointer = null; }
+            try
+            {
+                _mousePointer?.Dispose();
+            }
+            catch
+            {
+                // Ignored in dispose
+            }
+            _mousePointer = null;
 
             try { _editorSession.Dispose(); }
-            catch { }
-            finally { _editorSession = null; }
+            catch
+            {
+                // Ignored in dispose
+            }
 
-            try { _duplCapture.Dispose(); }
-            catch { }
-            finally { _duplCapture = null; }
+            _editorSession = null;
+
+            try { _desktopDuplicationCapture.Dispose(); }
+            catch
+            {
+                // Ignored in dispose
+            }
+
+            _desktopDuplicationCapture = null;
 
             try { _desktopImageTexture.Dispose(); }
-            catch { }
-            finally { _desktopImageTexture = null; }
+            catch
+            {
+                // Ignored in dispose
+            }
+            _desktopImageTexture = null;
 
             try { _stagingTexture.Dispose(); }
-            catch { }
-            finally { _stagingTexture = null; }
+            catch
+            {
+                // Ignored in dispose
+            }
+            _stagingTexture = null;
 
             try { _device.Dispose(); }
-            catch { }
-            finally { _device = null; }
+            catch
+            {
+                // Ignored in dispose
+            }
+            _device = null;
 
-            try { _deviceForDeskDupl.Dispose(); }
-            catch { }
-            finally { _deviceForDeskDupl = null; }
+            try { _deviceForDesktopDuplication.Dispose(); }
+            catch
+            {
+                // Ignored in dispose
+            }
+            _deviceForDesktopDuplication = null;
         }
     }
 }

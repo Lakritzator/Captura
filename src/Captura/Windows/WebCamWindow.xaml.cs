@@ -1,32 +1,32 @@
 ﻿using System.Drawing;
 using System.Windows;
-using Captura.Models;
-using Captura.ViewModels;
-using Screna;
+using Captura.Base.Services;
+using Captura.Core.ViewModels;
+using Screna.Frames;
 
-namespace Captura
+namespace Captura.Windows
 {
     public partial class WebCamWindow
     {
-        WebCamWindow()
+        private WebCamWindow()
         {
             InitializeComponent();
             
-            Closing += (S, E) =>
+            Closing += (sender, e) =>
             {
                 Hide();
 
-                E.Cancel = true;
+                e.Cancel = true;
             };
         }
 
         public static WebCamWindow Instance { get; } = new WebCamWindow();
 
-        public WebcamControl GetWebCamControl() => WebCameraControl;
+        public Controls.WebCamControl GetWebCamControl() => WebCameraControl;
 
-        void CloseButton_Click(object Sender, RoutedEventArgs E) => Close();
-        
-        async void CaptureImage_OnClick(object Sender, RoutedEventArgs E)
+        private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+        private async void CaptureImage_OnClick(object sender, RoutedEventArgs e)
         {
             try
             {

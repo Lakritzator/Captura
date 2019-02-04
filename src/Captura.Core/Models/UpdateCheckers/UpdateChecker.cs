@@ -3,9 +3,10 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Captura.Base.Settings;
 using Newtonsoft.Json.Linq;
 
-namespace Captura.Models
+namespace Captura.Core.Models.UpdateCheckers
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class UpdateChecker : IUpdateChecker
@@ -13,9 +14,9 @@ namespace Captura.Models
         readonly ProxySettings _proxySettings;
         readonly Version _currentVersion;
 
-        public UpdateChecker(ProxySettings ProxySettings)
+        public UpdateChecker(ProxySettings proxySettings)
         {
-            _proxySettings = ProxySettings;
+            _proxySettings = proxySettings;
 
             _currentVersion = Assembly.GetEntryAssembly().GetName().Version;
         }

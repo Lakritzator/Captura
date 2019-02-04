@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Captura.Windows.Native.Enums;
+using Captura.Windows.Native.Structs;
 
-namespace Captura
+namespace Captura.Windows.Native
 {
     static class Shell32
     {
         const string DllName = "shell32.dll";
 
         [DllImport(DllName, CharSet = CharSet.Unicode)]
-        public static extern int SHFileOperation(ref ShFileOpStruct FileOp);
+        public static extern int SHFileOperation(ref ShFileOpStruct fileOp);
 
-        public static int FileOperation(string Path, FileOperationType OperationType, FileOperationFlags Flags)
+        public static int FileOperation(string path, FileOperationType operationType, FileOperationFlags flags)
         {
             try
             {
                 var fs = new ShFileOpStruct
                 {
-                    Func = OperationType,
-                    From = Path + '\0' + '\0',
-                    Flags = Flags
+                    Func = operationType,
+                    From = path + '\0' + '\0',
+                    Flags = flags
                 };
 
                 return SHFileOperation(ref fs);

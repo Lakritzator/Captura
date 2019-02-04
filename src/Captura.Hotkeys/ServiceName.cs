@@ -1,4 +1,4 @@
-﻿namespace Captura
+﻿namespace Captura.HotKeys
 {
     public enum ServiceName
     {

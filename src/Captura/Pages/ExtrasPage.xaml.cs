@@ -1,27 +1,27 @@
-﻿using FirstFloor.ModernUI.Presentation;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
-using Captura.ViewModels;
+using Captura.Core.ViewModels;
+using FirstFloor.ModernUI.Presentation;
 
-namespace Captura
+namespace Captura.Pages
 {
     public partial class ExtrasPage
     {
-        void SelectedAccentColorChanged(object Sender, RoutedPropertyChangedEventArgs<Color?> E)
+        private void SelectedAccentColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
         {
-            if (E.NewValue != null && DataContext is ViewModelBase vm)
+            if (e.NewValue != null && DataContext is ViewModelBase vm)
             {
-                AppearanceManager.Current.AccentColor = E.NewValue.Value;
+                AppearanceManager.Current.AccentColor = e.NewValue.Value;
 
-                vm.Settings.UI.AccentColor = E.NewValue.Value.ToString();
+                vm.Settings.Ui.AccentColor = e.NewValue.Value.ToString();
             }
         }
 
-        void DarkThemeClick(object Sender, RoutedEventArgs E)
+        private void DarkThemeClick(object sender, RoutedEventArgs e)
         {
             if (DataContext is ViewModelBase vm)
             {
-                AppearanceManager.Current.ThemeSource = vm.Settings.UI.DarkTheme
+                AppearanceManager.Current.ThemeSource = vm.Settings.Ui.DarkTheme
                     ? AppearanceManager.DarkThemeSource
                     : AppearanceManager.LightThemeSource;
             }

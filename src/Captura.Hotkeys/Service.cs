@@ -1,20 +1,22 @@
 ﻿using System.Text;
+using Captura.Base;
+using Captura.Loc;
 
-namespace Captura.Models
+namespace Captura.HotKeys
 {
     public class Service : NotifyPropertyChanged
     {
-        readonly LanguageManager _loc;
+        private readonly LanguageManager _loc;
 
-        public Service(ServiceName ServiceName)
+        public Service(ServiceName serviceName)
         {
-            this.ServiceName = ServiceName;
+            ServiceName = serviceName;
             _loc = LanguageManager.Instance;
 
-            _loc.LanguageChanged += L => RaisePropertyChanged(nameof(Description));
+            _loc.LanguageChanged += cultureInfo => RaisePropertyChanged(nameof(Description));
         }
 
-        ServiceName _serviceName;
+        private ServiceName _serviceName;
 
         public ServiceName ServiceName
         {
@@ -31,7 +33,7 @@ namespace Captura.Models
 
         public string Description => GetDescription();
 
-        string GetDescription()
+        private string GetDescription()
         {
             switch (ServiceName)
             {
@@ -60,7 +62,7 @@ namespace Captura.Models
                     return _loc.ToggleKeystrokes;
 
                 case ServiceName.ScreenShotRegion:
-                    return "Screenshot (Region)";
+                    return "ScreenShot (Region)";
 
                 case ServiceName.ScreenShotScreen:
                     return "ScreenShot (Screen)";
@@ -73,9 +75,9 @@ namespace Captura.Models
             }
         }
 
-        static string SpaceAtCapitals<T>(T Obj)
+        private static string SpaceAtCapitals<T>(T obj)
         {
-            var s = Obj.ToString();
+            var s = obj.ToString();
 
             var sb = new StringBuilder();
 

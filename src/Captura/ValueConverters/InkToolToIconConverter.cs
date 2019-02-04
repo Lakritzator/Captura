@@ -2,16 +2,18 @@ using System;
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Captura.Base.Services;
+using Captura.ImageEditor.Controls;
 
-namespace Captura
+namespace Captura.ValueConverters
 {
     public class InkToolToIconConverter : OneWayConverter
     {
-        static string GetPath(object Value)
+        private static string GetPath(object value)
         {
             var icons = ServiceProvider.Get<IIconSet>();
 
-            switch (Value)
+            switch (value)
             {
                 case InkCanvasEditingMode.Ink:
                 case ExtendedInkTool.Pen:
@@ -45,9 +47,9 @@ namespace Captura
             return icons.Cursor;
         }
 
-        public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Geometry.Parse(GetPath(Value));
+            return Geometry.Parse(GetPath(value));
         }
     }
 }

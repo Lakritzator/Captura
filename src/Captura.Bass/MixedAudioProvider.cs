@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using ManagedBass;
-using ManagedBass.Mix;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Wf = Captura.Audio.WaveFormat;
-using Captura.Audio;
+using Captura.Base.Audio;
+using ManagedBass;
+using ManagedBass.Mix;
+using Wf = Captura.Base.Audio.WaveFormat.WaveFormat;
 
-namespace Captura.Models
+namespace Captura.Bass
 {
     /// <summary>
     /// Provides mixed audio from Microphone input and Speaker Output (Wasapi Loopback).
     /// Requires the presence of bass.dll and bassmix.dll.
     /// </summary>
-    class MixedAudioProvider : IAudioProvider
+    internal class MixedAudioProvider : IAudioProvider
     {
-        class RecordingItem
+        private class RecordingItem
         {
             public int DeviceId { get; set; }
 
@@ -24,17 +24,17 @@ namespace Captura.Models
             public int SilenceHandle { get; set; }
         }
 
-        readonly Dictionary<int, RecordingItem> _devices = new Dictionary<int, RecordingItem>();
-        readonly int _mixer;
-        readonly object _syncLock = new object();
-        bool _running;
+        private readonly Dictionary<int, RecordingItem> _devices = new Dictionary<int, RecordingItem>();
+        private readonly int _mixer;
+        private readonly object _syncLock = new object();
+        private bool _running;
 
         /// <summary>
         /// Creates a new instance of <see cref="MixedAudioProvider"/>.
         /// </summary>
-        public MixedAudioProvider(IEnumerable<BassItem> Devices)
+        public MixedAudioProvider(IEnumerable<BassItem> devices)
         {
-            if (Devices == null)
+            if (devices == null)
                 throw new ArgumentNullException();
 
             for (var i = 0; i < BufferCount; ++i)
@@ -44,80 +44,87 @@ namespace Captura.Models
 
             _mixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop);
 
-            foreach (var recordingDevice in Devices)
+            foreach (var recordingDevice in devices)
             {
                 InitDevice(recordingDevice);
             }
 
             // mute the mixer
-            Bass.ChannelSetAttribute(_mixer, ChannelAttribute.Volume, 0);
+            ManagedBass.Bass.ChannelSetAttribute(_mixer, ChannelAttribute.Volume, 0);
 
-            Bass.ChannelSetDSP(_mixer, Procedure);
+            ManagedBass.Bass.ChannelSetDSP(_mixer, Procedure);
         }
-        
-        void InitDevice(BassItem Device)
+
+        private void InitDevice(BassItem device)
         {
-            _devices.Add(Device.Id, new RecordingItem
+            _devices.Add(device.Id, new RecordingItem
             {
-                DeviceId = Device.Id
+                DeviceId = device.Id
             });
 
-            Device.PropertyChanged += (S, E) =>
+            device.PropertyChanged += (sender, e) =>
             {
-                if (E.PropertyName == nameof(Device.Active))
+                if (e.PropertyName != nameof(device.Active))
                 {
-                    if (Device.Active)
-                        AddDevice(Device);
-                    else RemoveDevice(Device);
+                    return;
+                }
+
+                if (device.Active)
+                {
+                    AddDevice(device);
+                }
+                else
+                {
+                    RemoveDevice(device);
                 }
             };
 
-            if (Device.Active)
-                AddDevice(Device);
+            if (device.Active)
+                AddDevice(device);
         }
 
-        void RemoveDevice(BassItem Device)
+        private void RemoveDevice(BassItem device)
         {
             lock (_syncLock)
             {
-                if (_devices[Device.Id].RecordingHandle == 0)
+                if (_devices[device.Id].RecordingHandle == 0)
                     return;
 
-                var handle = _devices[Device.Id].RecordingHandle;
+                var handle = _devices[device.Id].RecordingHandle;
 
                 BassMix.MixerRemoveChannel(handle);
 
-                Bass.StreamFree(handle);
+                ManagedBass.Bass.StreamFree(handle);
 
-                _devices[Device.Id].RecordingHandle = 0;
+                _devices[device.Id].RecordingHandle = 0;
 
-                Bass.StreamFree(_devices[Device.Id].SilenceHandle);
+                ManagedBass.Bass.StreamFree(_devices[device.Id].SilenceHandle);
 
-                _devices[Device.Id].SilenceHandle = 0;
+                _devices[device.Id].SilenceHandle = 0;
             }
         }
 
-        static int FindPlaybackDevice(DeviceInfo LoopbackDeviceInfo)
+        private static int FindPlaybackDevice(DeviceInfo loopbackDeviceInfo)
         {
-            for (var i = 0; Bass.GetDeviceInfo(i, out var info); ++i)
+            for (var i = 0; ManagedBass.Bass.GetDeviceInfo(i, out var info); ++i)
             {
-                if (info.Driver == LoopbackDeviceInfo.Driver)
+                if (info.Driver == loopbackDeviceInfo.Driver)
                     return i;
             }
 
             return -1;
         }
 
-        void AddDevice(BassItem Device)
+        private void AddDevice(BassItem device)
         {
             lock (_syncLock)
             {
-                if (_devices[Device.Id].RecordingHandle != 0)
+                if (_devices[device.Id].RecordingHandle != 0)
                     return;
 
-                Bass.RecordInit(Device.Id);
+                ManagedBass.Bass.RecordInit(device.Id);
 
-                var devInfo = Bass.RecordGetDeviceInfo(Device.Id);
+                var devInfo = ManagedBass.Bass.RecordGetDeviceInfo(device.Id);
 
                 if (devInfo.IsLoopback)
                 {
@@ -125,61 +132,61 @@ namespace Captura.Models
 
                     if (playbackDevice != -1)
                     {
-                        Bass.Init(playbackDevice);
-                        Bass.CurrentDevice = playbackDevice;
+                        ManagedBass.Bass.Init(playbackDevice);
+                        ManagedBass.Bass.CurrentDevice = playbackDevice;
 
-                        var silence = Bass.CreateStream(44100, 2, BassFlags.Default, Extensions.SilenceStreamProcedure);
+                        var silence = ManagedBass.Bass.CreateStream(44100, 2, BassFlags.Default, Extensions.SilenceStreamProcedure);
 
-                        Bass.ChannelSetAttribute(silence, ChannelAttribute.Volume, 0);
+                        ManagedBass.Bass.ChannelSetAttribute(silence, ChannelAttribute.Volume, 0);
 
-                        _devices[Device.Id].SilenceHandle = silence;
+                        _devices[device.Id].SilenceHandle = silence;
                     }
                 }
 
-                Bass.CurrentRecordingDevice = Device.Id;
+                ManagedBass.Bass.CurrentRecordingDevice = device.Id;
 
-                var info = Bass.RecordingInfo;
+                var info = ManagedBass.Bass.RecordingInfo;
 
-                var handle = Bass.RecordStart(info.Frequency, info.Channels, BassFlags.RecordPause, null);
+                var handle = ManagedBass.Bass.RecordStart(info.Frequency, info.Channels, BassFlags.RecordPause, null);
 
-                _devices[Device.Id].RecordingHandle = handle;
+                _devices[device.Id].RecordingHandle = handle;
 
                 BassMix.MixerAddChannel(_mixer, handle, BassFlags.MixerDownMix | BassFlags.MixerLimit);
 
                 if (_running)
                 {
-                    Bass.ChannelPlay(handle);
+                    ManagedBass.Bass.ChannelPlay(handle);
                 }
             }
         }
 
-        const int BufferCount = 3;
+        private const int BufferCount = 3;
 
-        int _bufferIndex;
+        private int _bufferIndex;
 
-        readonly List<byte[]> _buffers = new List<byte[]>();
+        private readonly List<byte[]> _buffers = new List<byte[]>();
 
-        byte[] GetBuffer(int Length)
+        private byte[] GetBuffer(int length)
         {
             _bufferIndex = ++_bufferIndex % BufferCount;
 
-            if (_buffers[_bufferIndex] == null || _buffers[_bufferIndex].Length < Length)
+            if (_buffers[_bufferIndex] == null || _buffers[_bufferIndex].Length < length)
             {
-                _buffers[_bufferIndex] = new byte[Length + 1000];
+                _buffers[_bufferIndex] = new byte[length + 1000];
 
-                Console.WriteLine($"New Audio Buffer Allocated: {Length}");
+                Console.WriteLine($"New Audio Buffer Allocated: {length}");
             }
 
             return _buffers[_bufferIndex];
         }
 
-        void Procedure(int Handle, int Channel, IntPtr Buffer, int Length, IntPtr User)
+        private void Procedure(int handle, int channel, IntPtr buffer, int length, IntPtr user)
         {
-            var buffer = GetBuffer(Length);
+            var newBuffer = GetBuffer(length);
 
-            Marshal.Copy(Buffer, buffer, 0, Length);
+            Marshal.Copy(buffer, newBuffer, 0, length);
 
-            Task.Run(() => DataAvailable?.Invoke(this, new DataAvailableEventArgs(buffer, Length)));
+            Task.Run(() => DataAvailable?.Invoke(this, new DataAvailableEventArgs(newBuffer, length)));
         }
         
         /// <summary>
@@ -199,15 +206,15 @@ namespace Captura.Models
         {
             lock (_syncLock)
             {
-                Bass.StreamFree(_mixer);
+                ManagedBass.Bass.StreamFree(_mixer);
 
                 foreach (var rec in _devices.Values)
                 {
                     if (rec.RecordingHandle != 0)
-                        Bass.StreamFree(rec.RecordingHandle);
+                        ManagedBass.Bass.StreamFree(rec.RecordingHandle);
 
                     if (rec.SilenceHandle != 0)
-                        Bass.StreamFree(rec.SilenceHandle);
+                        ManagedBass.Bass.StreamFree(rec.SilenceHandle);
                 }
 
                 _running = false;
@@ -226,13 +233,13 @@ namespace Captura.Models
                 foreach (var rec in _devices.Values)
                 {
                     if (rec.SilenceHandle != 0)
-                        Bass.ChannelPlay(rec.SilenceHandle);
+                        ManagedBass.Bass.ChannelPlay(rec.SilenceHandle);
 
                     if (rec.RecordingHandle != 0)
-                        Bass.ChannelPlay(rec.RecordingHandle);
+                        ManagedBass.Bass.ChannelPlay(rec.RecordingHandle);
                 }
 
-                Bass.ChannelPlay(_mixer);
+                ManagedBass.Bass.ChannelPlay(_mixer);
 
                 _running = true;
             }
@@ -245,15 +252,15 @@ namespace Captura.Models
         {
             lock (_syncLock)
             {
-                Bass.ChannelPause(_mixer);
+                ManagedBass.Bass.ChannelPause(_mixer);
 
                 foreach (var rec in _devices.Values)
                 {
                     if (rec.RecordingHandle != 0)
-                        Bass.ChannelPause(rec.RecordingHandle);
+                        ManagedBass.Bass.ChannelPause(rec.RecordingHandle);
 
                     if (rec.SilenceHandle != 0)
-                        Bass.ChannelPause(rec.SilenceHandle);
+                        ManagedBass.Bass.ChannelPause(rec.SilenceHandle);
                 }
 
                 _running = false;
